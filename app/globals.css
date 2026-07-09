@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+/* Paleta copiada do mockup aprovado (referencia-visual-dashboard.html).
+   Vira classes Tailwind: bg-fundo, bg-cartao, text-suave, border-borda... */
+@theme {
+  --color-fundo: #17181c; /* fundo da página */
+  --color-moldura: #1f2126; /* frame externo e inputs */
+  --color-cartao: #292b32; /* cards */
+  --color-borda: #3a3d45; /* borda dos cards e barras vazias */
+  --color-borda-suave: #33363e; /* borda do frame */
+  --color-texto: #e8e9ec; /* texto principal */
+  --color-suave: #9a9da6; /* texto secundário (muted) */
+  --color-apagado: #7c7f88; /* texto terciário (dim) */
+}
+
+body {
+  background: var(--color-fundo);
+  color: var(--color-texto);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
