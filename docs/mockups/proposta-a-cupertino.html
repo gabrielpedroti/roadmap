@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proposta A — Cupertino · Painel de estudos</title>
+<style>
+  /* ============ TOKENS ============ */
+  :root {
+    color-scheme: light dark;
+    --bg: #F5F5F7;
+    --surface: #FFFFFF;
+    --ink: #1D1D1F;
+    --ink-2: #6E6E73;
+    --hairline: rgba(0, 0, 0, 0.08);
+    --seg-bg: rgba(120, 120, 128, 0.12);
+    --seg-on: #FFFFFF;
+    --track: rgba(120, 120, 128, 0.16);
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.05);
+    --seg-shadow: 0 1px 4px rgba(0,0,0,.12);
+    --dev: #0071E3;   /* azul Apple (recomendação p/ Dev) */
+    --ia: #D97757;    /* laranja Claude */
+    --ing: #58CC02;   /* verde Duolingo */
+    --accent: #0071E3;
+    --tint: rgba(0, 113, 227, 0.10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #000000;
+      --surface: #1C1C1E;
+      --ink: #F5F5F7;
+      --ink-2: #A1A1A6;
+      --hairline: rgba(255, 255, 255, 0.10);
+      --seg-bg: rgba(120, 120, 128, 0.24);
+      --seg-on: #636366;
+      --track: rgba(120, 120, 128, 0.28);
+      --shadow: none;
+      --seg-shadow: none;
+      --dev: #0A84FF;
+      --accent: #0A84FF;
+      --tint: rgba(10, 132, 255, 0.16);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #000000;
+    --surface: #1C1C1E;
+    --ink: #F5F5F7;
+    --ink-2: #A1A1A6;
+    --hairline: rgba(255, 255, 255, 0.10);
+    --seg-bg: rgba(120, 120, 128, 0.24);
+    --seg-on: #636366;
+    --track: rgba(120, 120, 128, 0.28);
+    --shadow: none;
+    --seg-shadow: none;
+    --dev: #0A84FF;
+    --accent: #0A84FF;
+    --tint: rgba(10, 132, 255, 0.16);
+  }
+
+  * { margin: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+    display: flex; justify-content: center;
+    padding: 48px 20px 80px;
+    transition: background .25s ease;
+  }
+  .page { width: 880px; max-width: 100%; }
+
+  /* ============ HEADER ============ */
+  header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 22px; padding: 0 4px; }
+  header h1 { font-size: 20px; font-weight: 650; letter-spacing: -0.02em; }
+  header .quem { font-size: 13px; color: var(--ink-2); }
+  header .quem b { color: var(--ink); font-weight: 500; }
+
+  /* ============ GRID + CARDS ============ */
+  .grid { display: grid; grid-template-columns: 210px 1fr 230px; gap: 16px; }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--surface);
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--hairline);
+  }
+  .card h2 { font-size: 13px; font-weight: 600; color: var(--ink-2); margin-bottom: 16px; }
+
+  /* ============ TRILHAS ============ */
+  .trilha { display: block; text-decoration: none; color: inherit; padding: 6px 0 14px; cursor: pointer; }
+  .trilha .linha1 { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; font-size: 14px; font-weight: 500; }
+  .trilha .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .trilha .pct { margin-left: auto; font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .bar { height: 4px; border-radius: 2px; background: var(--track); overflow: hidden; }
+  .bar i { display: block; height: 100%; border-radius: 2px; }
+  .nota { font-size: 12px; color: var(--ink-2); margin-top: 6px; }
+
+  /* ============ SEGMENTED CONTROL ============ */
+  .seg { display: flex; background: var(--seg-bg); border-radius: 9px; padding: 2px; }
+  .seg button {
+    flex: 1; border: none; background: transparent; color: var(--ink-2);
+    font: inherit; font-size: 12.5px; font-weight: 500; padding: 5px 8px;
+    border-radius: 7px; cursor: pointer; transition: color .15s ease; white-space: nowrap;
+  }
+  .seg button.on { background: var(--seg-on); color: var(--ink); box-shadow: var(--seg-shadow); font-weight: 600; }
+
+  /* ============ POMODORO ============ */
+  .pomodoro { display: flex; flex-direction: column; align-items: center; }
+  .pomodoro .seg.trilhas { align-self: stretch; margin-bottom: 18px; }
+  #timer {
+    font-size: 76px; font-weight: 200; letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums; line-height: 1;
+  }
+  .timer-cap { font-size: 12px; color: var(--ink-2); margin: 8px 0 20px; }
+  .chips-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; align-self: stretch; }
+  .chips-row .rotulo { width: 42px; text-align: right; font-size: 12px; color: var(--ink-2); flex-shrink: 0; }
+  .chips-row .seg { flex: 1; }
+  .longa { font-size: 11.5px; color: var(--ink-2); margin: 2px 0 18px; }
+  .acoes { display: flex; gap: 10px; align-items: center; }
+  .btn-iniciar {
+    border: none; background: var(--accent); color: #fff; font: inherit;
+    font-size: 15px; font-weight: 600; padding: 11px 34px; border-radius: 999px;
+    cursor: pointer; transition: transform .15s ease, opacity .15s ease;
+  }
+  .btn-iniciar:hover { opacity: .9; }
+  .btn-iniciar:active { transform: scale(.97); }
+  .btn-reset {
+    width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--hairline);
+    background: transparent; color: var(--ink-2); font-size: 16px; cursor: pointer;
+  }
+
+  /* ============ CONSTÂNCIA ============ */
+  .constancia .topo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .constancia .topo h2 { margin: 0; }
+  .constancia .topo .eng { color: var(--ink-2); cursor: pointer; font-size: 14px; }
+  .streak { text-align: center; padding: 2px 0 16px; }
+  .streak .num { font-size: 40px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .streak .num small { font-size: 15px; font-weight: 500; color: var(--ink-2); letter-spacing: 0; }
+  .streak .regra { font-size: 12px; color: var(--ink-2); margin-top: 3px; }
+  .metas { border-top: 1px solid var(--hairline); padding-top: 14px; }
+  .meta { margin-bottom: 14px; }
+  .meta .linha1 { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; }
+  .meta .linha1 .val { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .meta .bar i { background: var(--ink); }
+  .btn-manual {
+    width: 100%; border: none; background: var(--tint); color: var(--accent);
+    font: inherit; font-size: 13px; font-weight: 600; padding: 9px; border-radius: 10px; cursor: pointer;
+  }
+
+  /* ============ ÚLTIMAS SESSÕES ============ */
+  .sessoes { margin-top: 24px; padding: 0 6px; }
+  .sessoes h3 { font-size: 12px; font-weight: 600; color: var(--ink-2); margin-bottom: 10px; cursor: pointer; }
+  .sessao { display: flex; align-items: center; gap: 8px; padding: 7px 0; font-size: 13px; border-top: 1px solid var(--hairline); }
+  .sessao .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .sessao .meta-s { margin-left: auto; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+  /* ============ CONTROLE DE PREVIEW (não faz parte do app) ============ */
+  .preview {
+    position: fixed; bottom: 16px; right: 16px; display: flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--hairline); border-radius: 999px;
+    padding: 5px 6px 5px 14px; box-shadow: var(--shadow); font-size: 11px; color: var(--ink-2);
+  }
+  .preview .seg { width: 180px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>Painel de estudos</h1>
+    <span class="quem"><b>gabriel</b> · sair</span>
+  </header>
+
+  <div class="grid">
+    <!-- Trilhas -->
+    <section class="card">
+      <h2>Trilhas</h2>
+      <a class="trilha">
+        <div class="linha1"><span class="dot" style="background:var(--dev)"></span>Dev<span class="pct">18%</span></div>
+        <div class="bar"><i style="width:18%;background:var(--dev)"></i></div>
+      </a>
+      <a class="trilha">
+        <div class="linha1"><span class="dot" style="background:var(--ia)"></span>IA · Automação<span class="pct">22%</span></div>
+        <div class="bar"><i style="width:22%;background:var(--ia)"></i></div>
+      </a>
+      <a class="trilha">
+        <div class="linha1"><span class="dot" style="background:var(--ing)"></span>Inglês<span class="pct">9%</span></div>
+        <div class="bar"><i style="width:9%;background:var(--ing)"></i></div>
+      </a>
+      <div class="nota">Toque numa trilha para abrir o checklist</div>
+    </section>
+
+    <!-- Pomodoro -->
+    <section class="card pomodoro">
+      <div class="seg trilhas" id="segTrilha">
+        <button>Dev</button><button class="on">IA</button><button>Inglês</button>
+      </div>
+      <div id="timer">25:00</div>
+      <div class="timer-cap">foco · a sessão é registrada ao concluir</div>
+      <div class="chips-row">
+        <span class="rotulo">foco</span>
+        <div class="seg f"><button class="on" data-m="25">25</button><button data-m="50">50</button><button data-m="90">90</button><button data-m="custom">✎</button></div>
+      </div>
+      <div class="chips-row">
+        <span class="rotulo">pausa</span>
+        <div class="seg p"><button class="on">5</button><button>10</button><button>15</button></div>
+      </div>
+      <div class="longa">pausa longa de 15 a cada 4 ciclos · ⚙</div>
+      <div class="acoes">
+        <button class="btn-iniciar">Iniciar</button>
+        <button class="btn-reset" title="Zerar">↻</button>
+      </div>
+    </section>
+
+    <!-- Constância -->
+    <section class="card constancia">
+      <div class="topo"><h2>Constância</h2><span class="eng">⚙</span></div>
+      <div class="streak">
+        <div class="num">🔥 12 <small>dias</small></div>
+        <div class="regra">mínimo 30 min/dia · seg–dom</div>
+      </div>
+      <div class="metas">
+        <div class="meta">
+          <div class="linha1"><span>Semana</span><span class="val">7,5 / 10h</span></div>
+          <div class="bar"><i style="width:75%"></i></div>
+        </div>
+        <div class="meta">
+          <div class="linha1"><span>Mês</span><span class="val">22 / 40h</span></div>
+          <div class="bar"><i style="width:55%"></i></div>
+        </div>
+      </div>
+      <button class="btn-manual">+ Registrar manual</button>
+    </section>
+  </div>
+
+  <!-- Últimas sessões -->
+  <div class="sessoes">
+    <h3>Últimas sessões ▾</h3>
+    <div class="sessao"><span class="dot" style="background:var(--ia)"></span>Hoje 21:10 · IA · Automação<span class="meta-s">50 min · pomodoro</span></div>
+    <div class="sessao"><span class="dot" style="background:var(--ing)"></span>Hoje 07:30 · Inglês<span class="meta-s">30 min · manual</span></div>
+    <div class="sessao"><span class="dot" style="background:var(--dev)"></span>Ontem 20:00 · Dev<span class="meta-s">1h 05 · pomodoro</span></div>
+  </div>
+</div>
+
+<!-- Controle só do mockup: no app real o tema segue o sistema sozinho -->
+<div class="preview">
+  tema
+  <div class="seg" id="segTema">
+    <button class="on" data-t="">Auto</button><button data-t="light">Claro</button><button data-t="dark">Escuro</button>
+  </div>
+</div>
+
+<script>
+  // troca de segmento (visual)
+  document.querySelectorAll(".seg").forEach(function (seg) {
+    seg.addEventListener("click", function (e) {
+      var b = e.target.closest("button");
+      if (!b) return;
+      seg.querySelectorAll("button").forEach(function (x) { x.classList.remove("on"); });
+      b.classList.add("on");
+    });
+  });
+  // chips de foco atualizam o display (como no app real)
+  document.querySelector(".seg.f").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    var m = b.dataset.m;
+    if (m === "custom") { var v = prompt("Minutos de foco:", "35"); if (!v) return; m = parseInt(v, 10) || 25; }
+    document.getElementById("timer").textContent = String(m).padStart(2, "0") + ":00";
+  });
+  // seletor de tema do PREVIEW
+  document.getElementById("segTema").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.t) document.documentElement.dataset.theme = b.dataset.t;
+    else delete document.documentElement.dataset.theme;
+  });
+</script>
+</body>
+</html>
