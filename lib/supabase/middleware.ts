@@ -4,7 +4,11 @@ import { NextResponse, type NextRequest } from "next/server";
 // Roda a cada request (via proxy.ts). Duas responsabilidades:
 // 1. Renovar o access token automaticamente — é isso que mantém a sessão
 //    persistente por meses sem o usuário perceber.
-// 2. Redirecionar quem não está logado para /login.
+// 2. Mandar quem já está logado de /login direto pro painel.
+//
+// O app é PÚBLICO para visualização (roadmaps e pomodoro funcionam sem
+// conta); login só é necessário para salvar progresso — por isso não
+// existe mais redirecionamento forçado para /login.
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -35,16 +39,7 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const rota = request.nextUrl.pathname;
-  const rotaPublica = rota.startsWith("/login") || rota.startsWith("/auth");
-
-  if (!user && !rotaPublica) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
-  }
-
-  if (user && rota.startsWith("/login")) {
+  if (user && request.nextUrl.pathname.startsWith("/login")) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);

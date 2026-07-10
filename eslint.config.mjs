@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Cache local do Claude Code (contém uma cópia do projeto — não lintar)
+    ".claude/**",
   ]),
 ]);
 

@@ -17,8 +17,8 @@ const DIAS = [
 ];
 
 const campo =
-  "w-full rounded-lg border border-borda bg-moldura px-2 py-[6px] text-[13px] text-texto";
-const rotulo = "mb-1 block text-[11px] text-suave";
+  "w-full rounded-lg border border-hairline bg-fundo px-2 py-[7px] text-[13px] text-tinta";
+const rotulo = "mb-1 block text-[11px] text-tinta2";
 
 // Engrenagem: streak, dias que contam, metas e tempos do pomodoro.
 // Salvar faz upsert — a linha de user_settings nasce aqui na 1ª vez.
@@ -94,10 +94,10 @@ export function ModalConfiguracoes({
                 key={d.num}
                 type="button"
                 onClick={() => alternarDia(d.num)}
-                className={`cursor-pointer rounded-[14px] border px-2 py-[3px] text-[12px] ${
+                className={`cursor-pointer rounded-full border border-hairline px-[10px] py-1 text-[12px] ${
                   form.dias_que_contam.includes(d.num)
-                    ? "border-borda bg-borda text-texto"
-                    : "border-borda bg-moldura text-apagado"
+                    ? "bg-seg font-semibold text-tinta"
+                    : "bg-transparent text-tinta2"
                 }`}
               >
                 {d.rotulo}
@@ -197,7 +197,7 @@ export function ModalConfiguracoes({
         <button
           type="submit"
           disabled={salvando}
-          className="rounded-lg bg-texto py-2 text-[13px] font-semibold text-moldura disabled:opacity-60"
+          className="rounded-full bg-acao py-[10px] text-[14px] font-semibold text-white disabled:opacity-60"
         >
           {salvando ? "Salvando..." : "Salvar"}
         </button>

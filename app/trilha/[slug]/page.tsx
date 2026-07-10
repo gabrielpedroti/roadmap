@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BarraProgresso } from "@/components/BarraProgresso";
 import { Cabecalho } from "@/components/Cabecalho";
@@ -10,6 +11,7 @@ import {
 } from "@/lib/progress";
 
 // Tela de uma trilha: blocos com barra própria, expandir → grupos → itens.
+// Visitante sem login VÊ tudo (roadmap público), mas não marca checkbox.
 export default async function TelaTrilha({
   params,
 }: {
@@ -70,33 +72,40 @@ export default async function TelaTrilha({
   );
 
   return (
-    <main className="flex justify-center px-4 py-10">
-      <div className="w-full max-w-[720px] rounded-2xl border border-borda-suave bg-moldura p-[18px]">
-        <Cabecalho
-          email={user.email ?? ""}
-          volta={{ href: "/", rotulo: "Painel" }}
-        />
+    <main className="mx-auto flex min-h-dvh w-full max-w-[900px] flex-col px-[clamp(14px,2.5vw,32px)] py-[clamp(12px,2vh,24px)]">
+      <Cabecalho
+        email={user?.email ?? null}
+        volta={{ href: "/", rotulo: "Painel" }}
+      />
 
-        <div className="mb-4 rounded-xl border border-borda bg-cartao p-[14px]">
-          <div className="mb-1 flex items-baseline justify-between">
-            <span className="text-[15px] font-semibold text-texto">
-              {trilha.nome}
-            </span>
-            <span className="text-[13px] text-suave">
-              {Math.round(progressoTotal * 100)}%
-            </span>
-          </div>
-          <BarraProgresso fracao={progressoTotal} cor={trilha.cor} />
+      <div className="cartao mb-4 p-[clamp(16px,1.8vw,24px)]">
+        <div className="mb-2 flex items-baseline justify-between">
+          <span className="text-[16px] font-semibold text-tinta">
+            {trilha.nome}
+          </span>
+          <span className="text-[14px] tabular-nums text-tinta2">
+            {user ? `${Math.round(progressoTotal * 100)}%` : "—"}
+          </span>
         </div>
-
-        <ListaBlocos
-          blocos={blocosParaTela}
-          feitosIniciais={[...feitos]}
-          concluidosForaDaTrilha={concluidosForaDaTrilha}
-          cor={trilha.cor}
-          userId={user.id}
-        />
+        <BarraProgresso fracao={user ? progressoTotal : 0} cor={trilha.cor} />
+        {!user && (
+          <p className="mt-3 text-[12px] text-tinta2">
+            Você está no modo visualização.{" "}
+            <Link href="/login" className="font-medium text-acao">
+              Entre
+            </Link>{" "}
+            para marcar seu progresso.
+          </p>
+        )}
       </div>
+
+      <ListaBlocos
+        blocos={blocosParaTela}
+        feitosIniciais={[...feitos]}
+        concluidosForaDaTrilha={concluidosForaDaTrilha}
+        cor={trilha.cor}
+        userId={user?.id ?? null}
+      />
     </main>
   );
 }

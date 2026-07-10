@@ -7,7 +7,7 @@ import type { SeedTrack } from "./tipos";
 export const trilhaDev: SeedTrack = {
   slug: "dev",
   nome: "Dev",
-  cor: "#5dcaa5",
+  cor: "#9D2235", // bordô PUCPR (Pantone 201)
   ordem: 1,
   blocos: [
     // ----------------------------------------------------------------

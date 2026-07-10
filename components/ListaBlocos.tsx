@@ -21,6 +21,7 @@ export type BlocoTela = Block & {
 // Lista de blocos da trilha. Marca/desmarca com update OTIMISTA: o estado
 // local muda na hora (barras e desbloqueio recalculam via lib/progress) e o
 // Supabase persiste em seguida — se falhar, reverte.
+// `userId` null = visitante: tudo visível, checkboxes desabilitados.
 export function ListaBlocos({
   blocos,
   feitosIniciais,
@@ -32,13 +33,17 @@ export function ListaBlocos({
   feitosIniciais: string[];
   concluidosForaDaTrilha: string[];
   cor: string;
-  userId: string;
+  userId: string | null;
 }) {
   const router = useRouter();
   const [feitos, setFeitos] = useState(() => new Set(feitosIniciais));
   const [expandidos, setExpandidos] = useState<Set<string>>(() => {
     // começa com o primeiro bloco ainda não concluído aberto
-    const inicial = calcularEstado(blocos, new Set(feitosIniciais), concluidosForaDaTrilha);
+    const inicial = calcularEstado(
+      blocos,
+      new Set(feitosIniciais),
+      concluidosForaDaTrilha
+    );
     const primeiro = blocos.find((b) => {
       const info = inicial.get(b.id);
       return info && info.desbloqueado && !info.concluido;
@@ -47,6 +52,7 @@ export function ListaBlocos({
   });
 
   const estado = calcularEstado(blocos, feitos, concluidosForaDaTrilha);
+  const somenteLeitura = userId === null;
 
   function alternarExpandido(blocoId: string) {
     const novos = new Set(expandidos);
@@ -56,7 +62,7 @@ export function ListaBlocos({
   }
 
   async function alternarItem(item: Item, bloqueado: boolean) {
-    if (bloqueado) return;
+    if (bloqueado || somenteLeitura) return;
 
     const estavaMarcado = feitos.has(item.id);
     const novos = new Set(feitos);
@@ -69,11 +75,11 @@ export function ListaBlocos({
       ? await supabase
           .from("user_checks")
           .delete()
-          .eq("user_id", userId)
+          .eq("user_id", userId!)
           .eq("item_id", item.id)
       : await supabase
           .from("user_checks")
-          .insert({ user_id: userId, item_id: item.id });
+          .insert({ user_id: userId!, item_id: item.id });
 
     if (error) {
       setFeitos(feitos); // deu ruim → volta como estava
@@ -98,48 +104,49 @@ export function ListaBlocos({
         return (
           <div
             key={bloco.id}
-            className={`mb-3 rounded-xl border border-borda bg-cartao ${
-              bloqueado ? "opacity-55 grayscale" : ""
-            }`}
+            className={`cartao mb-3 ${bloqueado ? "opacity-55 grayscale" : ""}`}
           >
             <button
               onClick={() => alternarExpandido(bloco.id)}
-              className="w-full cursor-pointer p-[14px] text-left"
+              className="w-full cursor-pointer p-[clamp(14px,1.6vw,20px)] text-left"
             >
-              <div className="mb-1 flex items-baseline justify-between gap-2">
-                <span className="text-[13px] font-medium text-texto">
-                  <span className="mr-1 text-apagado">{aberto ? "▾" : "▸"}</span>
+              <div className="mb-2 flex items-baseline justify-between gap-2">
+                <span className="text-[14px] font-medium text-tinta">
+                  <span className="mr-1 text-tinta2">{aberto ? "▾" : "▸"}</span>
                   {bloqueado && "🔒 "}
                   {bloco.titulo}
                 </span>
-                <span className="shrink-0 text-[12px] text-suave">
-                  {Math.round(info.progresso * 100)}%
+                <span className="shrink-0 text-[13px] tabular-nums text-tinta2">
+                  {somenteLeitura ? "—" : `${Math.round(info.progresso * 100)}%`}
                 </span>
               </div>
-              <BarraProgresso fracao={info.progresso} cor={cor} />
+              <BarraProgresso
+                fracao={somenteLeitura ? 0 : info.progresso}
+                cor={cor}
+              />
               {bloco.semanas_estimadas && (
-                <div className="mt-1 text-[11px] text-apagado">
+                <div className="mt-2 text-[12px] text-tinta2">
                   {bloco.semanas_estimadas}
                 </div>
               )}
             </button>
 
             {bloqueado && faltando.length > 0 && (
-              <div className="px-[14px] pb-3 text-[11px] text-suave">
+              <div className="px-[clamp(14px,1.6vw,20px)] pb-3 text-[12px] text-tinta2">
                 antes de começar: conclua {faltando.join(" e ")}
               </div>
             )}
 
             {aberto && (
-              <div className="border-t border-borda px-[14px] pb-[14px]">
+              <div className="border-t border-hairline px-[clamp(14px,1.6vw,20px)] pb-[clamp(14px,1.6vw,20px)]">
                 {bloco.descricao && (
-                  <p className="pt-3 text-[11px] text-suave">
+                  <p className="pt-3 text-[12px] text-tinta2">
                     {bloco.descricao}
                   </p>
                 )}
                 {bloco.grupos.map((grupo) => (
-                  <div key={grupo.id} className="pt-3">
-                    <div className="mb-1 text-[12px] font-medium text-suave">
+                  <div key={grupo.id} className="pt-4">
+                    <div className="mb-1 text-[12px] font-semibold text-tinta2">
                       {grupo.titulo}
                     </div>
                     {grupo.itens.map((item) => (
@@ -147,7 +154,7 @@ export function ListaBlocos({
                         key={item.id}
                         item={item}
                         marcado={feitos.has(item.id)}
-                        bloqueado={bloqueado}
+                        desabilitado={bloqueado || somenteLeitura}
                         cor={cor}
                         onAlternar={() => alternarItem(item, bloqueado)}
                       />
@@ -210,13 +217,13 @@ function calcularEstado(
 function LinhaItem({
   item,
   marcado,
-  bloqueado,
+  desabilitado,
   cor,
   onAlternar,
 }: {
   item: Item;
   marcado: boolean;
-  bloqueado: boolean;
+  desabilitado: boolean;
   cor: string;
   onAlternar: () => void;
 }) {
@@ -225,52 +232,44 @@ function LinhaItem({
 
   return (
     <label
-      className={`flex items-start gap-2 py-[3px] ${
-        bloqueado ? "cursor-not-allowed" : "cursor-pointer"
-      } ${
-        ehProjeto
-          ? "my-1 rounded-lg border-l-2 bg-moldura p-2"
-          : ""
-      }`}
-      style={ehProjeto ? { borderLeftColor: cor } : undefined}
+      className={`com-cor flex items-start gap-2 py-[3px] ${
+        desabilitado ? "cursor-not-allowed" : "cursor-pointer"
+      } ${ehProjeto ? "my-1 rounded-xl bg-fundo p-3" : ""}`}
+      style={{ "--cor": cor } as React.CSSProperties}
     >
       <input
         type="checkbox"
         checked={marcado}
-        disabled={bloqueado}
+        disabled={desabilitado}
         onChange={onAlternar}
         className="mt-[3px] shrink-0"
-        style={{ accentColor: cor }}
+        style={{ accentColor: "var(--cor-final)" }}
       />
       <span className="min-w-0">
         <span
-          className={`text-[13px] ${
+          className={`text-[13.5px] ${
             ehOpcional
-              ? "text-apagado"
+              ? "text-tinta2"
               : ehProjeto
-                ? "font-semibold text-texto"
-                : "text-texto"
-          } ${marcado && !ehProjeto ? "line-through opacity-70" : ""}`}
+                ? "font-semibold text-tinta"
+                : "text-tinta"
+          } ${marcado && !ehProjeto ? "line-through opacity-60" : ""}`}
         >
           {ehProjeto && "🏗️ "}
           {item.titulo}
         </span>
         {item.tipo === "review" && (
-          <span className="ml-2 rounded-[10px] border border-borda px-[6px] py-[1px] text-[10px] text-suave">
+          <span className="ml-2 rounded-full border border-hairline px-[7px] py-[1px] text-[10px] text-tinta2">
             faculdade
           </span>
         )}
         {ehOpcional && (
-          <span className="ml-2 rounded-[10px] border border-borda px-[6px] py-[1px] text-[10px] text-apagado">
+          <span className="ml-2 rounded-full border border-hairline px-[7px] py-[1px] text-[10px] text-tinta2">
             não conta
           </span>
         )}
         {item.descricao && (
-          <span
-            className={`block text-[11px] ${
-              ehOpcional ? "text-apagado" : "text-suave"
-            }`}
-          >
+          <span className="block text-[12px] text-tinta2">
             {item.descricao}
           </span>
         )}

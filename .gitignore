@@ -41,3 +41,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 /painel-de-estudos-kit
+
+# Claude Code (worktrees e cache local)
+.claude/

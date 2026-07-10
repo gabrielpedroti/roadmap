@@ -16,18 +16,18 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       onClick={onFechar}
     >
       <div
-        className="w-full max-w-sm rounded-xl border border-borda bg-cartao p-4"
+        className="cartao w-full max-w-sm p-5"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-3 flex items-center justify-between">
-          <span className="text-[13px] font-semibold text-texto">{titulo}</span>
+        <div className="mb-4 flex items-center justify-between">
+          <span className="text-[14px] font-semibold text-tinta">{titulo}</span>
           <button
             onClick={onFechar}
-            className="cursor-pointer text-suave hover:text-texto"
+            className="cursor-pointer text-tinta2 hover:text-tinta"
             aria-label="Fechar"
           >
             ✕
