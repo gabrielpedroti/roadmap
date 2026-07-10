@@ -2,17 +2,17 @@
 
 [![CI](https://github.com/gabrielpedroti/roadmap/actions/workflows/ci.yml/badge.svg)](https://github.com/gabrielpedroti/roadmap/actions/workflows/ci.yml)
 
-**Meu plano de estudos até me tornar desenvolvedor full stack — transformado em produto.**
+**Plano de estudos interativo para me tornar desenvolvedor full stack.**
 
-Começa pela revisão da faculdade (ADS · PUC-PR), mas cobre tudo o que falta pra virar dev de verdade — com IA e inglês correndo na mesma esteira. Em vez de planilha, virou um web app: trilhas com progresso ponderado, pomodoro que registra as sessões sozinho, streak de constância e metas de horas.
+Era para ser apenas uma revisão da faculdade (ADS · PUC-PR), mas acabou evoluindo para algo maior: um plano que cobre tudo o que ainda preciso desenvolver para me tornar um bom desenvolvedor full stack, com IA e inglês correndo na mesma esteira. Em vez de uma planilha, virou um web app com trilhas de aprendizado, progresso ponderado, pomodoro integrado, streak de constância e metas de estudo.
 
-## Por quê
+## Objetivo
 
-Entrei na área bem no boom da IA — e escolhi um caminho do meio.
+Fiz a faculdade durante o boom da IA, o mercado mudou muito, e muita coisa acabou ficando atropelada no meio do caminho. Com este plano de estudos, quero desenvolver habilidades importantes e construir soluções por conta própria, como um bom programador old school que entende o que está fazendo e não depende de ferramentas externas para resolver tudo.
 
-Quero ser uma mistura do **programador old school**, que sabe codar sozinho e entende o que está acontecendo debaixo do capô, com alguém que **usa IA a favor**: ela traz facilidade e ganho de performance reais, e não apostar nisso é ficar atrasado no mercado. Não quero ser um *vibecoder* que só aceita o que o modelo cospe — mas também não dá pra mirar no passado.
+Ao mesmo tempo, snão posso ignorar o potencial da IA. Ela traz ganhos reais de produtividade, automação e escalabilidade, e pretendo usá-la como uma aliada para me manter atualizado e preparado para as tendências atuais e futuras da área.
 
-Por isso o plano tem fundamento e futuro ao mesmo tempo: base sólida de programação primeiro, IA aplicada ao trabalho real junto, e inglês porque é a língua em que tudo isso acontece.
+A ideia é unir uma base sólida de programação com o uso inteligente da IA, aproveitando o melhor dos dois mundos.
 
 ## As trilhas
 
