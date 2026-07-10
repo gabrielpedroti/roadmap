@@ -44,3 +44,6 @@ next-env.d.ts
 
 # Claude Code (worktrees e cache local)
 .claude/
+
+# Contexto interno de trabalho (Claude) — nao versionar
+.agents/

@@ -84,3 +84,50 @@ body {
     --cor-fundo: color-mix(in srgb, var(--cor) 22%, transparent);
   }
 }
+
+/* Fundo da tela de uma trilha: um "brilho" suave da cor da trilha no topo
+   que se dissolve no fundo padrão. Dá identidade sem virar bananeira.
+   Requer --cor definido no elemento (a cor crua do banco). */
+.trilha-fundo {
+  background: radial-gradient(
+    130% 55% at 50% -5%,
+    color-mix(in srgb, var(--cor) 15%, var(--bg)) 0%,
+    var(--bg) 55%
+  );
+}
+
+/* Vidro fosco estilo iOS — usado no segmento SELECIONADO dos controles.
+   Sobre a cor da tela da trilha o efeito aparece de verdade; sobre um card
+   branco fica uma pastilha translúcida discreta (tudo bem). */
+.vidro {
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.09),
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.7);
+}
+@media (prefers-color-scheme: dark) {
+  .vidro {
+    background: rgba(120, 120, 128, 0.38);
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.35),
+      inset 0 0.5px 0 rgba(255, 255, 255, 0.14);
+  }
+}
+
+/* Barra de navegação (Home + trilhas) rola na horizontal no mobile sem
+   mostrar a barra de rolagem. */
+.scroll-x {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.scroll-x::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto;
+  }
+}

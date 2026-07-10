@@ -45,7 +45,7 @@ export default async function Dashboard() {
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[1320px] flex-col px-[clamp(14px,2.5vw,32px)] py-[clamp(12px,2vh,24px)]">
-      <Cabecalho email={user?.email ?? null} />
+      <Cabecalho email={user?.email ?? null} tracks={tracks} atual="home" />
 
       {tracks.length === 0 ? (
         <div className="cartao flex flex-1 items-center justify-center p-8 text-center text-[13px] text-tinta2">

@@ -10,7 +10,7 @@ Era para ser apenas uma revisão da faculdade (ADS · PUC-PR), mas acabou evolui
 
 Fiz a faculdade durante o boom da IA, o mercado mudou muito, e muita coisa acabou ficando atropelada no meio do caminho. Com este plano de estudos, quero desenvolver habilidades importantes e construir soluções por conta própria, como um bom programador old school que entende o que está fazendo e não depende de ferramentas externas para resolver tudo.
 
-Ao mesmo tempo, snão posso ignorar o potencial da IA. Ela traz ganhos reais de produtividade, automação e escalabilidade, e pretendo usá-la como uma aliada para me manter atualizado e preparado para as tendências atuais e futuras da área.
+Ao mesmo tempo, não posso ignorar o potencial da IA. Ela traz ganhos reais de produtividade, automação e escalabilidade, e pretendo usá-la como uma aliada para me manter atualizado e preparado para as tendências atuais e futuras da área.
 
 A ideia é unir uma base sólida de programação com o uso inteligente da IA, aproveitando o melhor dos dois mundos.
 
@@ -58,7 +58,6 @@ Setup completo (banco, auth, deploy): [docs/GUIA-ATIVACAO.md](docs/GUIA-ATIVACAO
 | [COMO-CRIAR-SUA-TRILHA.md](docs/COMO-CRIAR-SUA-TRILHA.md) | montar o SEU roadmap com este projeto (qualquer conteúdo) |
 | [GUIA-ATIVACAO.md](docs/GUIA-ATIVACAO.md) | colocar o app no ar do zero (Supabase + Vercel) |
 | [COMO-ATUALIZAR-CONTEUDO.md](docs/COMO-ATUALIZAR-CONTEUDO.md) | editar o conteúdo das trilhas (escrito para uma IA executar) |
-| [AUDITORIA-V1.md](docs/AUDITORIA-V1.md) | auditoria técnica com débitos conhecidos e priorizados |
 
 ## Licença
 
