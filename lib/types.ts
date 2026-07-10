@@ -6,6 +6,7 @@ export type Track = {
   id: string;
   slug: string;
   nome: string;
+  descricao: string | null;
   cor: string;
   ordem: number;
 };

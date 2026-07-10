@@ -7,6 +7,8 @@ import type { SeedTrack } from "./tipos";
 export const trilhaIa: SeedTrack = {
   slug: "ia",
   nome: "IA · Automação",
+  descricao:
+    "IA e automação aplicadas ao BPO financeiro: das ferramentas no-code (Power Automate, n8n) até agentes com a API do Claude — sempre com precisão acima de velocidade.",
   cor: "#D97757", // laranja Claude
   ordem: 2,
   blocos: [
@@ -16,7 +18,7 @@ export const trilhaIa: SeedTrack = {
       semanas: "2-4 semanas",
       comecaAberto: true,
       descricao:
-        "Paralela à Etapa 1. Formação Fundamentos de IA (Alura): pulada — redundante com curso intro já em andamento.",
+        "Fundamentos de web, APIs e webhooks + primeiros cursos da Anthropic Academy. Corre em paralelo com a Etapa 1.",
       grupos: [
         {
           titulo: "Cursos",
@@ -55,7 +57,7 @@ export const trilhaIa: SeedTrack = {
       titulo: "Etapa 1 — IA para Automação de Processos",
       comecaAberto: true,
       descricao:
-        "Carreira Alura (19 cursos). Fazer inteira, na ordem dos níveis. ROI imediato no trabalho.",
+        "Carreira Alura de IA para Automação de Processos: Power Automate, Copilot Studio, n8n e Excel com IA — retorno imediato no trabalho.",
       grupos: [
         {
           titulo: "Base",
@@ -126,7 +128,7 @@ export const trilhaIa: SeedTrack = {
     {
       titulo: "Etapa 2 — Especialista em IA",
       descricao:
-        "Carreira Alura (26 cursos). 🔒 Pré-requisito: Bloco 2 da trilha Dev concluído (POO + Python sólido). Nível 1 já virá ~80% feito da Etapa 1 (cursos compartilhados contam uma vez).",
+        "Especialista em IA: RAG, LangChain, MCP e o projeto-âncora — o agente Claude do caso real do BPO. 🔒 Exige o Bloco 2 da trilha Dev (Python sólido).",
       grupos: [
         {
           titulo: "Base",
@@ -208,7 +210,7 @@ export const trilhaIa: SeedTrack = {
     {
       titulo: "Etapa 3 — Engenharia de Agentes de IA",
       descricao:
-        "Carreira Alura (só o restante). Pular: bloco PyTorch/Deep Learning/Transformers/Difusão — fora do escopo BPO; retomar só se quiser seguir ML.",
+        "Engenharia de agentes: CI para LLMs e os cursos de Claude Code da Anthropic Academy.",
       grupos: [
         {
           titulo: "Cursos",

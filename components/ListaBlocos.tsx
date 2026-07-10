@@ -153,6 +153,7 @@ export function ListaBlocos({
                       <LinhaItem
                         key={item.id}
                         item={item}
+                        grupoTitulo={grupo.titulo}
                         marcado={feitos.has(item.id)}
                         desabilitado={bloqueado || somenteLeitura}
                         cor={cor}
@@ -211,17 +212,45 @@ function calcularEstado(
   );
 }
 
+// Tag colorida (bg suave + texto na cor) ou neutra (borda fina)
+function Tag({ texto, cor }: { texto: string; cor?: string }) {
+  if (!cor) {
+    return (
+      <span className="ml-2 rounded-full border border-hairline px-2 py-[2px] align-middle text-[10px] font-medium text-tinta2">
+        {texto}
+      </span>
+    );
+  }
+  return (
+    <span
+      className="com-cor ml-2 rounded-full px-2 py-[2px] align-middle text-[10px] font-semibold"
+      style={
+        {
+          "--cor": cor,
+          background: "var(--cor-fundo)",
+          color: "var(--cor-texto)",
+        } as React.CSSProperties
+      }
+    >
+      {texto}
+    </span>
+  );
+}
+
 // Uma linha de item, com o visual do seu tipo:
-// concept = check normal · review = badge "faculdade" ·
-// optional = apagado + "não conta" · project = destaque com 🏗️
+// concept = check normal · review = tag "ADS PUC-PR" ·
+// optional = apagado + tag "opcional" · project = destaque com 🏗️
+// Itens da Anthropic Academy (grupo com "Anthropic" no nome) ganham tag.
 function LinhaItem({
   item,
+  grupoTitulo,
   marcado,
   desabilitado,
   cor,
   onAlternar,
 }: {
   item: Item;
+  grupoTitulo: string;
   marcado: boolean;
   desabilitado: boolean;
   cor: string;
@@ -229,10 +258,11 @@ function LinhaItem({
 }) {
   const ehProjeto = item.tipo === "project";
   const ehOpcional = item.tipo === "optional";
+  const ehAnthropic = grupoTitulo.includes("Anthropic");
 
   return (
     <label
-      className={`com-cor flex items-start gap-2 py-[3px] ${
+      className={`com-cor flex items-start gap-2 py-1 ${
         desabilitado ? "cursor-not-allowed" : "cursor-pointer"
       } ${ehProjeto ? "my-1 rounded-xl bg-fundo p-3" : ""}`}
       style={{ "--cor": cor } as React.CSSProperties}
@@ -258,16 +288,9 @@ function LinhaItem({
           {ehProjeto && "🏗️ "}
           {item.titulo}
         </span>
-        {item.tipo === "review" && (
-          <span className="ml-2 rounded-full border border-hairline px-[7px] py-[1px] text-[10px] text-tinta2">
-            faculdade
-          </span>
-        )}
-        {ehOpcional && (
-          <span className="ml-2 rounded-full border border-hairline px-[7px] py-[1px] text-[10px] text-tinta2">
-            não conta
-          </span>
-        )}
+        {item.tipo === "review" && <Tag texto="ADS PUC-PR" cor="#9D2235" />}
+        {ehAnthropic && <Tag texto="Anthropic" cor="#D97757" />}
+        {ehOpcional && <Tag texto="opcional" />}
         {item.descricao && (
           <span className="block text-[12px] text-tinta2">
             {item.descricao}

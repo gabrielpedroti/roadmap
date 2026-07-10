@@ -15,10 +15,11 @@ Roteiro completo, sem pressupor que você conhece Supabase ou Vercel. Tempo tota
 2. **New project** → escolha a organização; nome: `roadmap`; **Database password**: gere uma e **guarde num lugar seguro** (não vamos usar no dia a dia, mas é a senha-mestra do banco); região: **South America (São Paulo)**.
 3. Aguarde ~2 min até o projeto ficar pronto.
 
-### 1.2 Criar as tabelas (migration)
+### 1.2 Criar as tabelas (migrations)
 1. No menu lateral do projeto: **SQL Editor** → **New query**.
 2. Abra o arquivo `supabase/migrations/0001_schema.sql` do repositório, copie TUDO, cole no editor e clique **Run**.
-3. Deve aparecer "Success. No rows returned". Confira em **Table Editor**: as tabelas `tracks`, `blocks`, `item_groups`, `items`, `user_checks`, `sessions`, `user_settings` devem existir.
+3. Repita com `supabase/migrations/0002_publico_e_descricoes.sql` (roda os arquivos da pasta `migrations/` SEMPRE em ordem numérica).
+4. Deve aparecer "Success. No rows returned". Confira em **Table Editor**: as tabelas `tracks`, `blocks`, `item_groups`, `items`, `user_checks`, `sessions`, `user_settings` devem existir.
 
 ### 1.3 Pegar as chaves
 1. Menu lateral: **Project Settings** (engrenagem) → **API Keys**.
@@ -87,6 +88,13 @@ Clique **Deploy** e aguarde (~2 min). No final a Vercel mostra a URL do site (ex
 - **Teste da sessão persistente:** feche o navegador, volte outro dia → deve continuar logado.
 
 ---
+
+## Já tinha instalado e chegou uma atualização?
+
+Quando o código ganhar uma migration nova (`supabase/migrations/000X_*.sql`):
+1. Rode o(s) arquivo(s) novo(s) no **SQL Editor**, em ordem numérica.
+2. Se a atualização mudou o CONTEÚDO das trilhas, rode `npm run seed -- --force` — ⚠️ isso apaga os checks marcados de todos os usuários (sessões e streak ficam intactos).
+3. `git pull` na sua máquina; a Vercel redeploya sozinha a cada push na branch conectada.
 
 ## Problemas comuns
 

@@ -10,31 +10,16 @@ function dataDeHoje() {
   });
 }
 
-// Cabeçalho: título + data à esquerda; "usuário · sair" (logado) ou
-// "entrar" (visitante) à direita.
-export function Cabecalho({
-  email,
-  volta,
-}: {
-  email: string | null;
-  volta?: { href: string; rotulo: string };
-}) {
+// Cabeçalho IDÊNTICO em todas as telas (título nunca sai do lugar):
+// título + data à esquerda; "usuário · sair" (logado) ou "entrar" à direita.
+// O botão de voltar das trilhas fica no card da trilha, não aqui.
+export function Cabecalho({ email }: { email: string | null }) {
   return (
     <header className="flex items-baseline justify-between px-1 pb-4">
       <div>
-        <div className="flex items-baseline gap-3">
-          {volta && (
-            <Link
-              href={volta.href}
-              className="text-[13px] text-tinta2 hover:text-tinta"
-            >
-              ‹ {volta.rotulo}
-            </Link>
-          )}
-          <h1 className="text-[clamp(19px,2vw,22px)] font-semibold tracking-[-0.02em] text-tinta">
-            Roadmap
-          </h1>
-        </div>
+        <h1 className="text-[clamp(19px,2vw,22px)] font-semibold tracking-[-0.02em] text-tinta">
+          Roadmap
+        </h1>
         <div className="mt-[2px] text-[13px] text-tinta2">{dataDeHoje()}</div>
       </div>
 
