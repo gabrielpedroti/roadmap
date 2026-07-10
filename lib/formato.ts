@@ -18,20 +18,6 @@ export function formatarDuracao(min: number): string {
   return resto === 0 ? `${h}h` : `${h}h ${String(resto).padStart(2, "0")}`;
 }
 
-// [1..7] → "seg–dom" · [1..5] → "seg–sex" · [1,3,5] → "seg, qua, sex"
-const NOMES_DIAS = ["seg", "ter", "qua", "qui", "sex", "sáb", "dom"];
-
-export function formatarDiasQueContam(dias: number[]): string {
-  const ordenados = [...dias].sort((a, b) => a - b);
-  const semBuracos = ordenados.every(
-    (d, i) => i === 0 || d === ordenados[i - 1] + 1
-  );
-  if (semBuracos && ordenados.length > 1) {
-    return `${NOMES_DIAS[ordenados[0] - 1]}–${NOMES_DIAS[ordenados[ordenados.length - 1] - 1]}`;
-  }
-  return ordenados.map((d) => NOMES_DIAS[d - 1]).join(", ");
-}
-
 export function horaLocalSP(isoUtc: string): string {
   return new Date(isoUtc).toLocaleTimeString("pt-BR", {
     timeZone: "America/Sao_Paulo",

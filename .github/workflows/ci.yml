@@ -1,0 +1,35 @@
+# CI: a cada push/PR roda lint, testes e build.
+# Se algo aqui falhar, NÃO faça deploy — conserta primeiro.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Testes (regras de progresso e streak)
+        run: npm test
+
+      - name: Build de produção
+        run: npm run build
+        env:
+          # valores falsos só pro build passar — as páginas são dinâmicas
+          # e só falam com o Supabase em runtime, com as env vars reais
+          NEXT_PUBLIC_SUPABASE_URL: https://exemplo.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: chave-falsa-so-para-o-build

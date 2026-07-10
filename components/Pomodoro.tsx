@@ -4,18 +4,18 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Track, UserSettings } from "@/lib/types";
-import { ModalConfiguracoes } from "./ModalConfiguracoes";
 
-// Pomodoro do centro do dashboard (fiel ao mockup):
-// seletor de trilha ACIMA do display, chips de foco e pausa, Iniciar/reset.
-// Ao CONCLUIR um ciclo de foco a sessão é registrada sozinha; pausa não
-// conta como estudo; reset no meio descarta o tempo (decisão do plano).
+// Card "Foco" (pomodoro), fiel ao mockup final:
+// - seletor de trilha em segmented control; clicar de novo DESMARCA
+//   (dá pra estudar por tempo sem registrar em trilha nenhuma)
+// - ao CONCLUIR um foco: registra a sessão (se logado E com trilha)
+// - pausa não conta como estudo; reset descarta o ciclo atual
+// - o estado sobrevive a refresh via localStorage
 
 type Fase = "foco" | "pausa";
 
-// O que sobrevive a um refresh da página (guardado no localStorage)
 type EstadoSalvo = {
-  trilhaId: string;
+  trilhaId: string | null;
   focoMin: number;
   pausaMin: number;
   fase: Fase;
@@ -23,10 +23,10 @@ type EstadoSalvo = {
   fimEm: number | null; // timestamp ms de quando a fase atual termina
   restanteMs: number;
   inicioFoco: string | null; // ISO de quando o foco começou (p/ started_at)
-  ciclosFoco: number; // quantos focos concluídos (decide a pausa longa)
+  ciclosFoco: number; // focos concluídos (decide a pausa longa)
 };
 
-const CHAVE_STORAGE = "painel-pomodoro-v1";
+const CHAVE_STORAGE = "roadmap-pomodoro-v1";
 
 // Bip simples com WebAudio — sem arquivo de som pra carregar
 function tocarBip(vezes: number) {
@@ -39,7 +39,10 @@ function tocarBip(vezes: number) {
       gain.connect(ctx.destination);
       osc.frequency.value = 880;
       gain.gain.setValueAtTime(0.25, ctx.currentTime + i * 0.5);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.5 + 0.4);
+      gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        ctx.currentTime + i * 0.5 + 0.4
+      );
       osc.start(ctx.currentTime + i * 0.5);
       osc.stop(ctx.currentTime + i * 0.5 + 0.45);
     }
@@ -48,6 +51,12 @@ function tocarBip(vezes: number) {
   }
 }
 
+// classes compartilhadas dos segmented controls
+const segFundo = "flex rounded-[10px] bg-seg p-[2px]";
+const segBotao =
+  "relative flex min-h-[38px] flex-1 cursor-pointer items-center justify-center gap-[7px] rounded-[8px] border-none bg-transparent px-2 text-[13px] font-medium text-tinta2 transition-colors";
+const segBotaoOn = "bg-seg-on font-semibold text-tinta shadow-sm";
+
 export function Pomodoro({
   trilhas,
   settings,
@@ -55,18 +64,19 @@ export function Pomodoro({
 }: {
   trilhas: Track[];
   settings: UserSettings;
-  userId: string;
+  userId: string | null; // null = visitante (timer funciona, não salva)
 }) {
   const router = useRouter();
 
-  const [trilhaId, setTrilhaId] = useState(trilhas[0]?.id ?? "");
+  const [trilhaId, setTrilhaId] = useState<string | null>(null);
   const [focoMin, setFocoMin] = useState(settings.pomodoro_foco_min);
   const [pausaMin, setPausaMin] = useState(settings.pausa_curta_min);
   const [fase, setFase] = useState<Fase>("foco");
   const [rodando, setRodando] = useState(false);
-  const [restanteMs, setRestanteMs] = useState(settings.pomodoro_foco_min * 60_000);
+  const [restanteMs, setRestanteMs] = useState(
+    settings.pomodoro_foco_min * 60_000
+  );
   const [aviso, setAviso] = useState<string | null>(null);
-  const [configAberta, setConfigAberta] = useState(false);
 
   // refs pra valores que o intervalo lê sem re-renderizar
   const fimEm = useRef<number | null>(null);
@@ -94,11 +104,12 @@ export function Pomodoro({
   );
 
   const registrarSessao = useCallback(
-    async (inicioIso: string, duracaoMin: number) => {
+    async (inicioIso: string, duracaoMin: number, naTrilha: string) => {
+      if (!userId) return;
       const supabase = createClient();
       const { error } = await supabase.from("sessions").insert({
         user_id: userId,
-        track_id: trilhaId,
+        track_id: naTrilha,
         started_at: inicioIso,
         ended_at: new Date().toISOString(),
         duration_min: duracaoMin,
@@ -110,10 +121,10 @@ export function Pomodoro({
         router.refresh(); // atualiza streak, metas e últimas sessões
       }
     },
-    [userId, trilhaId, router]
+    [userId, router]
   );
 
-  // Fim de um FOCO: registra, avisa e emenda na pausa automaticamente
+  // Fim de um FOCO: registra (se possível), avisa e emenda na pausa
   const concluirFoco = useCallback(() => {
     tocarBip(2);
     ciclosFoco.current += 1;
@@ -121,14 +132,16 @@ export function Pomodoro({
       ciclosFoco.current % settings.ciclos_ate_pausa_longa === 0;
     const duracao = ehPausaLonga ? settings.pausa_longa_min : pausaMin;
 
-    if (inicioFoco.current) {
-      registrarSessao(inicioFoco.current, focoMin);
+    if (inicioFoco.current && trilhaId && userId) {
+      registrarSessao(inicioFoco.current, focoMin, trilhaId);
+      setAviso(`✅ Foco concluído e registrado! Pausa de ${duracao} min.`);
+    } else if (!userId) {
+      setAviso("✅ Foco concluído! Entre para salvar suas sessões.");
+    } else {
+      setAviso("✅ Foco concluído (sem trilha — não registrado).");
     }
     inicioFoco.current = null;
 
-    setAviso(
-      `✅ Foco concluído e registrado! ${ehPausaLonga ? "Pausa longa" : "Pausa"} de ${duracao} min.`
-    );
     setFase("pausa");
     fimEm.current = Date.now() + duracao * 60_000;
     setRestanteMs(duracao * 60_000);
@@ -140,7 +153,7 @@ export function Pomodoro({
       inicioFoco: null,
       ciclosFoco: ciclosFoco.current,
     });
-  }, [settings, pausaMin, focoMin, registrarSessao, salvarEstado]);
+  }, [settings, pausaMin, focoMin, trilhaId, userId, registrarSessao, salvarEstado]);
 
   // Fim de uma PAUSA: avisa e espera o usuário iniciar o próximo foco
   const concluirPausa = useCallback(() => {
@@ -181,11 +194,11 @@ export function Pomodoro({
       if (salvo.rodando && salvo.fimEm) {
         if (salvo.fimEm <= Date.now()) {
           // a fase terminou enquanto a página estava fechada
-          if (salvo.fase === "foco" && salvo.inicioFoco) {
-            registrarSessao(salvo.inicioFoco, salvo.focoMin);
-            inicioFoco.current = null;
-            setAviso("✅ Foco concluído (registrado) enquanto a página estava fechada.");
+          if (salvo.fase === "foco" && salvo.inicioFoco && salvo.trilhaId) {
+            registrarSessao(salvo.inicioFoco, salvo.focoMin, salvo.trilhaId);
+            setAviso("✅ Foco concluído (registrado) com a página fechada.");
           }
+          inicioFoco.current = null;
           setFase("foco");
           setRodando(false);
           setRestanteMs(salvo.focoMin * 60_000);
@@ -207,7 +220,7 @@ export function Pomodoro({
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  // O relógio: recalcula a partir de fimEm (não acumula atraso de setInterval)
+  // O relógio: recalcula a partir de fimEm (não acumula atraso)
   useEffect(() => {
     if (!rodando) return;
     const intervalo = setInterval(() => {
@@ -239,7 +252,11 @@ export function Pomodoro({
     }
     fimEm.current = Date.now() + restanteMs;
     setRodando(true);
-    salvarEstado({ rodando: true, fimEm: fimEm.current, inicioFoco: inicioFoco.current });
+    salvarEstado({
+      rodando: true,
+      fimEm: fimEm.current,
+      inicioFoco: inicioFoco.current,
+    });
   }
 
   function resetar() {
@@ -259,11 +276,22 @@ export function Pomodoro({
     });
   }
 
+  // clicar na trilha seleciona; clicar de novo DESMARCA
+  function alternarTrilha(id: string) {
+    if (rodando && fase === "foco") return; // não troca no meio de um foco
+    const nova = trilhaId === id ? null : id;
+    setTrilhaId(nova);
+    salvarEstado({ trilhaId: nova });
+  }
+
   function escolherFoco(min: number) {
-    if (rodando) return; // não troca no meio de um ciclo
+    if (rodando) return;
     setFocoMin(min);
     if (fase === "foco") setRestanteMs(min * 60_000);
-    salvarEstado({ focoMin: min, restanteMs: fase === "foco" ? min * 60_000 : restanteMs });
+    salvarEstado({
+      focoMin: min,
+      restanteMs: fase === "foco" ? min * 60_000 : restanteMs,
+    });
   }
 
   function escolherFocoCustom() {
@@ -281,103 +309,109 @@ export function Pomodoro({
 
   const minutos = Math.floor(Math.ceil(restanteMs / 1000) / 60);
   const segundos = Math.ceil(restanteMs / 1000) % 60;
-  const chipFoco = "cursor-pointer rounded-[14px] border px-[11px] py-[3px] text-[12px]";
-  const chipOn = "border-borda bg-borda text-texto";
-  const chipOff = "border-borda bg-moldura text-suave";
 
   return (
-    <div className="flex flex-col items-center rounded-xl border border-borda bg-cartao p-[14px]">
-      <select
-        value={trilhaId}
-        onChange={(e) => {
-          setTrilhaId(e.target.value);
-          salvarEstado({ trilhaId: e.target.value });
-        }}
-        disabled={rodando && fase === "foco"}
-        className="mb-2 w-full rounded-lg border border-borda bg-moldura px-[10px] py-[7px] text-[13px] text-texto"
-      >
-        {trilhas.map((t) => (
-          <option key={t.id} value={t.id}>
-            {t.nome}
-          </option>
-        ))}
-      </select>
+    <section className="cartao flex flex-col p-[clamp(16px,1.8vw,24px)] max-md:order-1">
+      <h2 className="text-[13px] font-semibold text-tinta2">Foco</h2>
 
-      <div className="my-1 text-[52px] font-semibold leading-[1.1] tracking-[2px] text-texto">
-        {String(minutos).padStart(2, "0")}:{String(segundos).padStart(2, "0")}
-      </div>
-      <div className="mb-2 text-[11px] text-apagado">
-        {fase === "foco"
-          ? "foco · a sessão é registrada ao concluir"
-          : "pausa · não conta como estudo"}
-      </div>
+      <div className="flex flex-1 flex-col items-center justify-center py-[clamp(8px,2vh,20px)]">
+        {/* seletor de trilha — a selecionada ganha um risquinho da sua cor */}
+        <div className={`${segFundo} w-full max-w-[420px]`}>
+          {trilhas.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => alternarTrilha(t.id)}
+              className={`${segBotao} ${trilhaId === t.id ? segBotaoOn : ""}`}
+              title={
+                trilhaId === t.id
+                  ? "Clique para desmarcar (foco sem registro)"
+                  : `Registrar o foco em ${t.nome}`
+              }
+            >
+              {t.nome}
+              {trilhaId === t.id && (
+                <span
+                  className="com-cor absolute bottom-[5px] left-1/2 h-[2px] w-4 -translate-x-1/2 rounded-full"
+                  style={
+                    {
+                      "--cor": t.cor,
+                      background: "var(--cor-final)",
+                    } as React.CSSProperties
+                  }
+                />
+              )}
+            </button>
+          ))}
+        </div>
 
-      <div className="mb-[6px] flex items-center gap-[6px]">
-        <span className="w-[38px] text-right text-[11px] text-suave">foco</span>
-        {[25, 50, 90].map((min) => (
+        <div className="my-[clamp(16px,4vh,40px)] text-[clamp(56px,min(13vh,10vw),120px)] font-extralight leading-none tabular-nums tracking-[-0.01em] text-tinta">
+          {String(minutos).padStart(2, "0")}:{String(segundos).padStart(2, "0")}
+        </div>
+
+        <div className="flex w-full max-w-[400px] flex-col gap-[10px]">
+          <div className="flex items-center gap-3">
+            <span className="w-11 shrink-0 text-right text-[13px] text-tinta2">
+              foco
+            </span>
+            <div className={`${segFundo} flex-1`}>
+              {[25, 50, 90].map((min) => (
+                <button
+                  key={min}
+                  onClick={() => escolherFoco(min)}
+                  className={`${segBotao} ${focoMin === min ? segBotaoOn : ""}`}
+                >
+                  {min}
+                </button>
+              ))}
+              <button
+                onClick={escolherFocoCustom}
+                className={`${segBotao} ${![25, 50, 90].includes(focoMin) ? segBotaoOn : ""}`}
+                title="Foco personalizado"
+              >
+                {![25, 50, 90].includes(focoMin) ? focoMin : "✎"}
+              </button>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="w-11 shrink-0 text-right text-[13px] text-tinta2">
+              pausa
+            </span>
+            <div className={`${segFundo} flex-1`}>
+              {[5, 10, 15].map((min) => (
+                <button
+                  key={min}
+                  onClick={() => escolherPausa(min)}
+                  className={`${segBotao} ${pausaMin === min ? segBotaoOn : ""}`}
+                >
+                  {min}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-[clamp(16px,4vh,32px)] flex items-center gap-3">
           <button
-            key={min}
-            onClick={() => escolherFoco(min)}
-            className={`${chipFoco} ${focoMin === min ? chipOn : chipOff}`}
+            onClick={iniciarOuPausar}
+            className="cursor-pointer rounded-full bg-acao px-11 py-[13px] text-[16px] font-semibold text-white transition-[transform,opacity] hover:opacity-90 active:scale-[.97]"
           >
-            {min}
+            {rodando ? "⏸ Pausar" : "▶ Iniciar"}
           </button>
-        ))}
-        <button
-          onClick={escolherFocoCustom}
-          className={`${chipFoco} ${![25, 50, 90].includes(focoMin) ? chipOn : chipOff}`}
-          title="Foco personalizado"
-        >
-          {![25, 50, 90].includes(focoMin) ? focoMin : "✎"}
-        </button>
-      </div>
-
-      <div className="mb-[10px] flex items-center gap-[6px]">
-        <span className="w-[38px] text-right text-[11px] text-suave">pausa</span>
-        {[5, 10, 15].map((min) => (
           <button
-            key={min}
-            onClick={() => escolherPausa(min)}
-            className={`${chipFoco} ${pausaMin === min ? chipOn : chipOff}`}
+            onClick={resetar}
+            title="Zerar (descarta o ciclo atual)"
+            className="h-12 w-12 cursor-pointer rounded-full border border-hairline text-[17px] text-tinta2"
           >
-            {min}
+            ↻
           </button>
-        ))}
-        <button
-          onClick={() => setConfigAberta(true)}
-          className="cursor-pointer text-[11px] text-apagado hover:text-suave"
-          title="Configurar pausa longa"
-        >
-          longa {settings.pausa_longa_min} a cada {settings.ciclos_ate_pausa_longa} ⚙
-        </button>
+        </div>
+
+        {(aviso || fase === "pausa") && (
+          <div className="mt-4 text-center text-[12px] text-tinta2">
+            {aviso ?? "pausa · não conta como estudo"}
+          </div>
+        )}
       </div>
-
-      <div className="flex gap-2">
-        <button
-          onClick={iniciarOuPausar}
-          className="cursor-pointer rounded-lg bg-texto px-[22px] py-2 text-[13px] font-semibold text-moldura"
-        >
-          {rodando ? "⏸ Pausar" : "▶ Iniciar"}
-        </button>
-        <button
-          onClick={resetar}
-          title="Zerar (descarta o ciclo atual)"
-          className="cursor-pointer rounded-lg border border-borda bg-moldura px-3 py-2 text-[13px] text-suave"
-        >
-          ↻
-        </button>
-      </div>
-
-      {aviso && (
-        <div className="mt-3 text-center text-[11px] text-suave">{aviso}</div>
-      )}
-
-      <ModalConfiguracoes
-        aberto={configAberta}
-        onFechar={() => setConfigAberta(false)}
-        settings={settings}
-        userId={userId}
-      />
-    </div>
+    </section>
   );
 }

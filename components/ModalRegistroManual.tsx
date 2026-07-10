@@ -8,11 +8,11 @@ import type { Track } from "@/lib/types";
 import { Modal } from "./Modal";
 
 const campo =
-  "w-full rounded-lg border border-borda bg-moldura px-2 py-[6px] text-[13px] text-texto";
-const rotulo = "mb-1 block text-[11px] text-suave";
+  "w-full rounded-lg border border-hairline bg-fundo px-2 py-[7px] text-[13px] text-tinta";
+const rotulo = "mb-1 block text-[11px] text-tinta2";
 
 // "+ Registrar manual": trilha, data e (hora início/fim OU duração).
-// Serve pro estudo feito longe do app — inclusive retroativo (papel e caneta).
+// Serve pro estudo feito longe do app — inclusive retroativo.
 export function ModalRegistroManual({
   aberto,
   onFechar,
@@ -106,7 +106,7 @@ export function ModalRegistroManual({
           />
         </div>
 
-        <div className="flex gap-3 text-[12px] text-suave">
+        <div className="flex gap-3 text-[12px] text-tinta2">
           <label className="flex cursor-pointer items-center gap-1">
             <input
               type="radio"
@@ -166,7 +166,7 @@ export function ModalRegistroManual({
         <button
           type="submit"
           disabled={salvando}
-          className="rounded-lg bg-texto py-2 text-[13px] font-semibold text-moldura disabled:opacity-60"
+          className="rounded-full bg-acao py-[10px] text-[14px] font-semibold text-white disabled:opacity-60"
         >
           {salvando ? "Salvando..." : "Registrar"}
         </button>

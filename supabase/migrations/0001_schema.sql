@@ -1,15 +1,15 @@
 -- =============================================================
--- Painel de Estudos — schema v1
+-- Roadmap — schema v1
 -- Como aplicar: Supabase Dashboard → SQL Editor → colar tudo → Run
 -- =============================================================
 
--- ---------- CONTEÚDO GLOBAL (igual para todos os usuários) ----------
+-- ---------- CONTEÚDO GLOBAL (igual para todos; leitura é PÚBLICA) ----------
 
 create table tracks (
   id    uuid primary key default gen_random_uuid(),
   slug  text unique not null,          -- usado na URL: /trilha/dev
   nome  text not null,
-  cor   text not null,                 -- cor da barra, ex. #5dcaa5
+  cor   text not null,                 -- hex da trilha, ex. #9D2235
   ordem int  not null
 );
 
@@ -46,7 +46,7 @@ create table items (
   tipo      text not null check (tipo in ('concept', 'review', 'optional', 'project'))
 );
 
--- ---------- DADOS DO USUÁRIO ----------
+-- ---------- DADOS DO USUÁRIO (exigem login) ----------
 
 create table user_checks (
   user_id    uuid not null references auth.users(id) on delete cascade,
@@ -55,47 +55,53 @@ create table user_checks (
   primary key (user_id, item_id)
 );
 
--- Sessões de estudo (pomodoro concluído ou registro manual)
+-- Sessões de estudo (pomodoro concluído ou registro manual).
+-- Os CHECKs impedem dados sem sentido mesmo se alguém chamar a API na mão:
+-- fim depois do início e duração de no máximo 24h.
 create table sessions (
   id           uuid primary key default gen_random_uuid(),
   user_id      uuid not null references auth.users(id) on delete cascade,
   track_id     uuid not null references tracks(id),
   started_at   timestamptz not null,
   ended_at     timestamptz not null,
-  duration_min int  not null check (duration_min > 0),
-  origem       text not null check (origem in ('pomodoro', 'manual'))
+  duration_min int  not null,
+  origem       text not null check (origem in ('pomodoro', 'manual')),
+  check (ended_at > started_at),
+  check (duration_min > 0 and duration_min <= 1440)
 );
 
 create index sessions_user_started on sessions (user_id, started_at desc);
 
 create table user_settings (
   user_id                uuid primary key references auth.users(id) on delete cascade,
-  streak_min_diario_min  int     not null default 30,
-  -- dias da semana que contam pro streak: 1=seg ... 7=dom
-  dias_que_contam        int[]   not null default '{1,2,3,4,5,6,7}',
-  meta_semanal_h         numeric not null default 10,
-  meta_mensal_h          numeric not null default 40,
-  pomodoro_foco_min      int     not null default 25,
-  pausa_curta_min        int     not null default 5,
-  pausa_longa_min        int     not null default 15,
-  ciclos_ate_pausa_longa int     not null default 4
+  streak_min_diario_min  int     not null default 30 check (streak_min_diario_min > 0),
+  -- dias da semana que contam pro streak: 1=seg ... 7=dom (nunca vazio)
+  dias_que_contam        int[]   not null default '{1,2,3,4,5,6,7}'
+                                 check (array_length(dias_que_contam, 1) >= 1),
+  meta_semanal_h         numeric not null default 10 check (meta_semanal_h > 0),
+  meta_mensal_h          numeric not null default 40 check (meta_mensal_h > 0),
+  pomodoro_foco_min      int     not null default 25 check (pomodoro_foco_min > 0),
+  pausa_curta_min        int     not null default 5  check (pausa_curta_min > 0),
+  pausa_longa_min        int     not null default 15 check (pausa_longa_min > 0),
+  ciclos_ate_pausa_longa int     not null default 4  check (ciclos_ate_pausa_longa > 0)
 );
 
 -- =============================================================
 -- RLS — habilitado em TODAS as tabelas, na mesma migration que as cria
 -- =============================================================
 
--- Conteúdo global: qualquer usuário logado LÊ; ninguém escreve pela API
--- (o seed usa a service role key, que ignora RLS)
+-- Conteúdo global: leitura PÚBLICA (os roadmaps abrem sem login e o
+-- visitante usa o pomodoro); ninguém escreve pela API — o seed usa a
+-- service role key, que ignora RLS.
 alter table tracks      enable row level security;
 alter table blocks      enable row level security;
 alter table item_groups enable row level security;
 alter table items       enable row level security;
 
-create policy "conteudo: leitura para logados" on tracks      for select to authenticated using (true);
-create policy "conteudo: leitura para logados" on blocks      for select to authenticated using (true);
-create policy "conteudo: leitura para logados" on item_groups for select to authenticated using (true);
-create policy "conteudo: leitura para logados" on items       for select to authenticated using (true);
+create policy "conteudo: leitura publica" on tracks      for select to anon, authenticated using (true);
+create policy "conteudo: leitura publica" on blocks      for select to anon, authenticated using (true);
+create policy "conteudo: leitura publica" on item_groups for select to anon, authenticated using (true);
+create policy "conteudo: leitura publica" on items       for select to anon, authenticated using (true);
 
 -- Dados do usuário: cada um só enxerga e mexe no que é seu
 alter table user_checks   enable row level security;

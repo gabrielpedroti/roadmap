@@ -8,7 +8,7 @@ import type { SeedTrack } from "./tipos";
 export const trilhaIngles: SeedTrack = {
   slug: "ingles",
   nome: "Inglês",
-  cor: "#85b7eb",
+  cor: "#58CC02", // verde Duolingo
   ordem: 3,
   blocos: [
     // ----------------------------------------------------------------

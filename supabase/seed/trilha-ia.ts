@@ -7,7 +7,7 @@ import type { SeedTrack } from "./tipos";
 export const trilhaIa: SeedTrack = {
   slug: "ia",
   nome: "IA · Automação",
-  cor: "#afa9ec",
+  cor: "#D97757", // laranja Claude
   ordem: 2,
   blocos: [
     // ----------------------------------------------------------------

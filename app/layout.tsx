@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Painel de estudos",
+  title: "Roadmap",
   description:
-    "Acompanhamento pessoal das trilhas Dev, IA · Automação e Inglês",
+    "Roadmap de estudos — trilhas Dev, IA · Automação e Inglês, com pomodoro, streak e metas",
 };
 
 export default function RootLayout({

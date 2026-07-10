@@ -14,7 +14,9 @@ Gabriel (dono e único usuário principal): dev iniciante, trabalha em BPO finan
 
 ## Product Purpose
 
-Painel de acompanhamento de estudos: 3 trilhas com progresso ponderado (projeto 30% / obrigatórios 70%), pomodoro com auto-registro de sessões, streak de constância e metas de volume. Sucesso = Gabriel abre o painel todo dia, em segundos sabe onde parou e o que falta, e a constância se mantém. O app em si vira projeto de portfólio (ele vai refatorá-lo no Bloco 6 da própria trilha).
+**Roadmap** (nome oficial do app): 3 trilhas com progresso ponderado (projeto 30% / obrigatórios 70%), pomodoro com auto-registro de sessões, streak de constância e metas de volume. Sucesso = Gabriel abre o painel todo dia, em segundos sabe onde parou e o que falta, e a constância se mantém. O app em si vira projeto de portfólio (ele vai refatorá-lo no Bloco 6 da própria trilha).
+
+Acesso é **público para visualização**: qualquer pessoa abre os roadmaps e usa o pomodoro sem conta; login (magic link) é o que permite salvar progresso, sessões e streak.
 
 ## Brand Personality
 
@@ -29,7 +31,7 @@ Minimalista à la Apple: calmo, preciso, bonito sem enfeite. Três palavras: **l
 ## Design Principles
 
 1. **O timer é o palco.** A ação diária nº 1 é dar play; tudo o mais é contexto ao redor.
-2. **Cor = identidade da trilha.** Uma cor por trilha (IA: laranja Claude · Inglês: verde Duolingo · Dev: azul), usada em barras, anéis e indicadores — nunca em texto pequeno nem decoração.
+2. **Cor = identidade da trilha.** Uma cor por trilha — Dev: bordô PUCPR `#9D2235` (Pantone 201, clareado no tema escuro) · IA: laranja Claude `#D97757` · Inglês: verde Duolingo `#58CC02` — usada em barras e indicadores, nunca em texto pequeno nem decoração. O azul `#0071E3`/`#0A84FF` é a cor de AÇÃO (botões), não de trilha. Visual aprovado: `docs/mockups/proposta-final.html`.
 3. **Tema segue o sistema.** Claro/escuro automático via `prefers-color-scheme`, sem botão de tema no app.
 4. **Familiaridade ganha de surpresa.** Controles com cara de sistema (segmented controls, checkboxes nativos estilizados); nada de affordances inventadas.
 5. **Denso onde é tarefa, arejado onde é status.** A tela de trilha pode ser densa (checklist); o dashboard respira.

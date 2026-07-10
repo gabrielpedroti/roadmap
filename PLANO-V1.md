@@ -2,7 +2,7 @@
 
 > Fonte de verdade: `painel-de-estudos-kit/SPEC-APP.md` (fora do git). Este arquivo é o plano de execução — cada etapa termina com um teste que o Gabriel consegue fazer sozinho. Marque as etapas conforme forem concluídas.
 >
-> **Status geral:** código da v1 completo (build + testes verdes). Pendências que dependem do Gabriel: aplicar a migration no Supabase, preencher `.env.local`, rodar o seed, configurar Auth/redirects, testar login real e importar na Vercel — checklist no README.
+> **Status geral:** v1 completa na branch `v1`, com o visual final aprovado (app renomeado pra **Roadmap**, tema claro/escuro automático, Dev bordô PUCPR) e mudanças de escopo aprovadas pelo Gabriel: **acesso público sem login** (visualizar roadmaps + pomodoro; salvar exige conta) e pomodoro sem trilha selecionada (não registra). Fase 1 da auditoria aplicada (CI, constraints no schema, error/loading, CLAUDE.md). Pendências do Gabriel: **docs/GUIA-ATIVACAO.md** (Supabase + Vercel, passo a passo).
 
 ## Stack e estrutura (decisões fixas)
 
