@@ -1,44 +1,53 @@
-# Roadmap
+# 🗺️ Roadmap
 
-Web app de acompanhamento de estudos com 3 trilhas (Dev, IA · Automação, Inglês), pomodoro com auto-registro, streak de constância e metas de volume. Os roadmaps e o pomodoro são **públicos** (não precisa de conta); login por magic link salva progresso, sessões e streak.
+[![CI](https://github.com/gabrielpedroti/roadmap/actions/workflows/ci.yml/badge.svg)](https://github.com/gabrielpedroti/roadmap/actions/workflows/ci.yml)
 
-**Stack:** Next.js (App Router) + TypeScript + Tailwind v4 · Supabase (Postgres + Auth) · Vercel.
+**Meu plano de estudos até me tornar desenvolvedor full stack — transformado em produto.**
 
-- 🚀 **Como colocar no ar (passo a passo pra leigos):** [docs/GUIA-ATIVACAO.md](docs/GUIA-ATIVACAO.md)
-- 📋 Plano de implementação: [PLANO-V1.md](PLANO-V1.md) · Auditoria técnica: [docs/AUDITORIA-V1.md](docs/AUDITORIA-V1.md)
-- 🎨 Visual aprovado: [docs/mockups/proposta-final.html](docs/mockups/proposta-final.html) — tema segue o sistema (claro/escuro automático)
-- 🤖 Convenções pro Claude Code: [CLAUDE.md](CLAUDE.md)
+Em vez de uma planilha ou um bloco de notas, o plano virou um web app: três trilhas de estudo com progresso ponderado, pomodoro que registra as sessões sozinho, streak de constância e metas de horas. Aberto para visualização — [qualquer pessoa pode navegar pelas trilhas](https://github.com/gabrielpedroti/roadmap) e usar o pomodoro sem conta.
 
-## Rodando localmente
+## As trilhas
 
-1. `npm install`
-2. Copie `.env.local.example` para `.env.local` e preencha (ver o [guia](docs/GUIA-ATIVACAO.md)).
-3. `npm run dev` → http://localhost:3000
+| Trilha | Objetivo | Duração estimada |
+|---|---|---|
+| 🎓 **Dev** | Revisar as 20 matérias técnicas de ADS (PUC-PR) com alicerce sólido e chegar pronto na Pós Tech Full Stack da FIAP | ~14 meses |
+| 🤖 **IA · Automação** | Automação e IA aplicadas ao trabalho real de BPO financeiro — de Power Automate e n8n até agentes com a API do Claude | ~12 meses |
+| 🇺🇸 **Inglês** | Recap A1 → B2 com foco em produção falada: transformar inglês passivo em inglês que sai | ~12-15 meses |
 
-## Scripts
+Cada trilha é dividida em blocos com desbloqueio sequencial: o próximo só abre quando o atual está 100% concluído — incluindo o **projeto prático**, que vale 30% do bloco. Há até pré-requisito cruzado entre trilhas (a etapa de agentes de IA exige a base de Python da trilha Dev).
 
-| Comando | O que faz |
+## Como funciona
+
+- 🍅 **Pomodoro integrado** — ao concluir um ciclo de foco, a sessão é registrada automaticamente na trilha selecionada. Pausa não conta como estudo.
+- 🔥 **Streak de constância** — a chama só acende no dia em que o mínimo de estudo foi cumprido. Constância e volume são métricas independentes.
+- 📊 **Progresso ponderado** — conceitos e revisões dividem 70% do bloco; o projeto vale 30%; itens opcionais não contam.
+- 🌗 **Tema automático** — claro ou escuro conforme o sistema, com uma cor de identidade por trilha (o bordô é herança da PUC-PR).
+- 🔐 **Login opcional** — magic link por e-mail, sem senha, apenas para salvar o próprio progresso. Cada usuário vê somente os seus dados (RLS no Postgres).
+
+## Stack
+
+**Next.js** (App Router) · **TypeScript** · **Tailwind CSS v4** · **Supabase** (Postgres + Auth + RLS) · **Vercel** · **Vitest** (28 testes nas regras de negócio) · **GitHub Actions**
+
+Este app também é parte do próprio plano: refatorá-lo com as próprias mãos é um dos projetos da trilha Dev.
+
+## Rodando
+
+```bash
+npm install
+npm run dev
+```
+
+Setup completo (banco, auth, deploy): [docs/GUIA-ATIVACAO.md](docs/GUIA-ATIVACAO.md)
+
+## Documentação
+
+| Doc | Para quê |
 |---|---|
-| `npm run dev` | servidor de desenvolvimento |
-| `npm test` | testes das regras de progresso e streak (vitest) |
-| `npm run seed` | popula as trilhas no Supabase |
-| `npm run build` | build de produção |
-| `npm run lint` | ESLint |
+| [GUIA-ATIVACAO.md](docs/GUIA-ATIVACAO.md) | colocar o app no ar do zero (Supabase + Vercel) |
+| [COMO-ATUALIZAR-CONTEUDO.md](docs/COMO-ATUALIZAR-CONTEUDO.md) | editar o conteúdo das trilhas (escrito para uma IA executar) |
+| [COMO-CRIAR-SUA-TRILHA.md](docs/COMO-CRIAR-SUA-TRILHA.md) | usar este projeto como base para o SEU plano de estudos |
+| [AUDITORIA-V1.md](docs/AUDITORIA-V1.md) | auditoria técnica com débitos conhecidos e priorizados |
 
-O CI (GitHub Actions) roda lint + testes + build a cada push.
+## Licença
 
-## Regras de negócio principais
-
-- **Progresso do bloco:** projeto = 30%; conceitos + revisões dividem 70%; opcionais não contam. Bloco sem projeto: obrigatórios dividem 100%.
-- **Progresso da trilha:** média dos blocos ponderada pelo nº de itens obrigatórios.
-- **Desbloqueio:** sequencial por trilha + pré-requisito cruzado (IA Etapa 2 ← Dev Bloco 2).
-- **Streak ≠ metas:** streak = constância (mínimo diário nos dias que contam; a chama 🔥 só acende quando o mínimo de HOJE foi cumprido); metas = volume (h/semana, h/mês). Pausa do pomodoro não conta como estudo.
-- **Pomodoro sem trilha:** dá pra rodar o timer sem selecionar trilha (clicar de novo desmarca) — nesse caso o foco não é registrado.
-- **Fuso horário:** timestamps em UTC no banco; dias/semanas/meses calculados em America/Sao_Paulo.
-
-## ⚠️ Avisos importantes
-
-- **Nunca** rode `npm audit fix --force` (o npm sugere um downgrade destrutivo do Next).
-- **Nunca** rode `npm run seed -- --force` depois que houver progresso real — apaga os checks de todos os usuários.
-- No plano gratuito, o Supabase **pausa o projeto após ~1 semana sem uso**; se o login parar do nada, reative no dashboard (Restore project).
-- A service role key fica só no `.env.local` — nunca no git, nunca na Vercel.
+[MIT](LICENSE) — use, estude, adapte.

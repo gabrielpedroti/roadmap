@@ -31,7 +31,7 @@ Minimalista à la Apple: calmo, preciso, bonito sem enfeite. Três palavras: **l
 ## Design Principles
 
 1. **O timer é o palco.** A ação diária nº 1 é dar play; tudo o mais é contexto ao redor.
-2. **Cor = identidade da trilha.** Uma cor por trilha — Dev: bordô PUCPR `#9D2235` (Pantone 201, clareado no tema escuro) · IA: laranja Claude `#D97757` · Inglês: verde Duolingo `#58CC02` — usada em barras e indicadores, nunca em texto pequeno nem decoração. O azul `#0071E3`/`#0A84FF` é a cor de AÇÃO (botões), não de trilha. Visual aprovado: `docs/mockups/proposta-final.html`.
+2. **Cor = identidade da trilha.** Uma cor por trilha — Dev: bordô PUCPR `#9D2235` (Pantone 201, clareado no tema escuro) · IA: laranja Claude `#D97757` · Inglês: verde Duolingo `#58CC02` — usada em barras e indicadores, nunca em texto pequeno nem decoração. O azul `#0071E3`/`#0A84FF` é a cor de AÇÃO (botões), não de trilha. Visual aprovado: `mockups/proposta-final.html` (nesta pasta). Nas telas de trilha, a cor da trilha É a identidade: hero tingido, título colorido, tags e checkboxes na cor.
 3. **Tema segue o sistema.** Claro/escuro automático via `prefers-color-scheme`, sem botão de tema no app.
 4. **Familiaridade ganha de surpresa.** Controles com cara de sistema (segmented controls, checkboxes nativos estilizados); nada de affordances inventadas.
 5. **Denso onde é tarefa, arejado onde é status.** A tela de trilha pode ser densa (checklist); o dashboard respira.

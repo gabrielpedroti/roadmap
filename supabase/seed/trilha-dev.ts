@@ -7,6 +7,8 @@ import type { SeedTrack } from "./tipos";
 export const trilhaDev: SeedTrack = {
   slug: "dev",
   nome: "Dev",
+  descricao:
+    "Do zero ao full stack: revisão das 20 matérias técnicas de ADS (PUC-PR) com alicerce sólido, preparando a entrada na Pós Tech Full Stack Development da FIAP.",
   cor: "#9D2235", // bordô PUCPR (Pantone 201)
   ordem: 1,
   blocos: [
@@ -16,7 +18,7 @@ export const trilhaDev: SeedTrack = {
       semanas: "~6-8 semanas",
       comecaAberto: true,
       descricao:
-        "Critério de check de conceito: “consigo explicar em voz alta e usar em código sem colar de tutorial”.",
+        "A base de tudo: ambiente, terminal, Git e lógica de programação com Python.",
       grupos: [
         {
           titulo: "Ambiente e ferramentas",
@@ -231,7 +233,7 @@ export const trilhaDev: SeedTrack = {
       titulo: "Bloco 2 — POO e Estruturas de Dados (Python)",
       semanas: "~8-10 semanas",
       descricao:
-        "🔓 Concluir este bloco desbloqueia a Etapa 2 da trilha de IA (Python: IA Aplicada, RAG, LangChain).",
+        "Orientação a objetos, estruturas de dados e o primeiro contato sério com APIs e testes. 🔓 Concluir aqui desbloqueia a Etapa 2 da trilha de IA.",
       grupos: [
         {
           titulo: "Programação Orientada a Objetos",
@@ -428,6 +430,8 @@ export const trilhaDev: SeedTrack = {
     {
       titulo: "Bloco 3 — Web e Front-end Básico",
       semanas: "~6-8 semanas",
+      descricao:
+        "Como a web funciona por dentro: HTML semântico, CSS moderno e o primeiro JavaScript no navegador.",
       grupos: [
         {
           titulo: "Como a web funciona",
@@ -582,7 +586,7 @@ export const trilhaDev: SeedTrack = {
       titulo: "Bloco 4 — JavaScript de Verdade",
       semanas: "~8-10 semanas",
       descricao:
-        "⭐ Fim deste bloco = pré-requisito mínimo da Pós Tech FIAP.",
+        "A linguagem a fundo: assincronia, protótipos e arrays de verdade. ⭐ Fim deste bloco = pré-requisito mínimo da Pós Tech FIAP.",
       grupos: [
         {
           titulo: "A linguagem a fundo",
@@ -735,6 +739,8 @@ export const trilhaDev: SeedTrack = {
     {
       titulo: "Bloco 5 — Back-end com Node + Banco de Dados",
       semanas: "~10-12 semanas",
+      descricao:
+        "O lado do servidor: Node + Express, SQL de verdade no PostgreSQL, autenticação e segurança.",
       grupos: [
         {
           titulo: "Node.js",
@@ -905,7 +911,8 @@ export const trilhaDev: SeedTrack = {
     {
       titulo: "Bloco 6 — TypeScript + React",
       semanas: "~8-10 semanas",
-      descricao: "Bloco 100% conteúdo novo — nenhuma matéria da faculdade.",
+      descricao:
+        "O ecossistema moderno de front-end: TypeScript, React e deploy na Vercel.",
       grupos: [
         {
           titulo: "TypeScript",
@@ -1015,7 +1022,8 @@ export const trilhaDev: SeedTrack = {
     {
       titulo: "Bloco 7 — Engenharia de Software, DevOps e Mobile",
       semanas: "~8-10 semanas",
-      descricao: "Fim deste bloco = entrada confortável na Pós Tech FIAP.",
+      descricao:
+        "O processo completo de construir software: engenharia, métodos ágeis, DevOps e mobile. Fim deste bloco = entrada confortável na pós.",
       grupos: [
         {
           titulo: "Engenharia de software",

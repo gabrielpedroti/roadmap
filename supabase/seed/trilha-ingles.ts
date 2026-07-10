@@ -8,6 +8,8 @@ import type { SeedTrack } from "./tipos";
 export const trilhaIngles: SeedTrack = {
   slug: "ingles",
   nome: "Inglês",
+  descricao:
+    "Recap A1 → B2 com foco em produção: transformar o inglês passivo em inglês FALADO. Regra 50/50 — metade consumo, metade produção.",
   cor: "#58CC02", // verde Duolingo
   ordem: 3,
   blocos: [
@@ -16,7 +18,7 @@ export const trilhaIngles: SeedTrack = {
       titulo: "Passo 0 — Diagnóstico",
       comecaAberto: true,
       descricao:
-        "Método da trilha (regra 50/50): metade consumo (Duolingo, leitura, vídeo), metade PRODUÇÃO (falar, escrever). Produção diária de 20-30 min conversando com o Claude em inglês; shadowing 2x/semana; escrita 2x/semana.",
+        "Ponto de partida: o teste EF SET mostra o nível real, sem achismo.",
       grupos: [
         {
           titulo: "Diagnóstico",
@@ -36,6 +38,8 @@ export const trilhaIngles: SeedTrack = {
       titulo: "Nível A1 — Fundação",
       semanas: "~3-4 semanas de revisão",
       comecaAberto: true,
+      descricao:
+        "As estruturas básicas que precisam sair falando, sem pensar.",
       grupos: [
         {
           titulo: "Estruturas",
@@ -96,6 +100,7 @@ export const trilhaIngles: SeedTrack = {
     {
       titulo: "Nível A2 — Passado e planos",
       semanas: "~4-6 semanas",
+      descricao: "Contar o que aconteceu ontem e o que vem amanhã.",
       grupos: [
         {
           titulo: "Estruturas",
@@ -157,6 +162,8 @@ export const trilhaIngles: SeedTrack = {
     {
       titulo: "Nível B1 — Autonomia",
       semanas: "~2-3 meses",
+      descricao:
+        "Condicionais, modais e voz passiva — conversa de verdade, com opinião.",
       grupos: [
         {
           titulo: "Estruturas",
@@ -219,6 +226,8 @@ export const trilhaIngles: SeedTrack = {
     {
       titulo: "Nível B2 — Consolidação",
       semanas: "~3-4 meses",
+      descricao:
+        "Nuances, conectores formais e inglês profissional por escrito e falado.",
       grupos: [
         {
           titulo: "Estruturas",

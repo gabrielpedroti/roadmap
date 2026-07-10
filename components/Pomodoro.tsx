@@ -1,16 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Track, UserSettings } from "@/lib/types";
 
-// Card "Foco" (pomodoro), fiel ao mockup final:
-// - seletor de trilha em segmented control; clicar de novo DESMARCA
-//   (dá pra estudar por tempo sem registrar em trilha nenhuma)
-// - ao CONCLUIR um foco: registra a sessão (se logado E com trilha)
-// - pausa não conta como estudo; reset descarta o ciclo atual
-// - o estado sobrevive a refresh via localStorage
+// Card "Foco" (pomodoro):
+// - seletor de trilha em segmented control; a selecionada fica com o fundo
+//   claro E o nome na cor da trilha; clicar de novo DESMARCA (dá pra focar
+//   sem registrar em trilha nenhuma)
+// - ao CONCLUIR um foco: registra a sessão (se logado E com trilha) e a
+//   pausa começa sozinha; ao fim da pausa, espera o próximo Iniciar
+// - reset descarta o ciclo atual; o estado sobrevive a refresh (localStorage)
+//
+// O relógio usa UM setInterval fixo que chama sempre a versão mais recente
+// de tick() via ref — evita a classe de bug de closure velha que congelava
+// a contagem da pausa.
 
 type Fase = "foco" | "pausa";
 
@@ -53,8 +58,11 @@ function tocarBip(vezes: number) {
 
 // classes compartilhadas dos segmented controls
 const segFundo = "flex rounded-[10px] bg-seg p-[2px]";
+// sem bg na base (o preflight do Tailwind já deixa button transparente);
+// bg-transparent aqui BRIGARIA com o bg-seg-on do selecionado e o fundo
+// claro da seleção sumiria — foi exatamente o bug da v1
 const segBotao =
-  "relative flex min-h-[38px] flex-1 cursor-pointer items-center justify-center gap-[7px] rounded-[8px] border-none bg-transparent px-2 text-[13px] font-medium text-tinta2 transition-colors";
+  "flex min-h-[38px] flex-1 cursor-pointer items-center justify-center gap-[6px] rounded-[8px] border-none px-2 text-[13px] font-medium text-tinta2 transition-colors";
 const segBotaoOn = "bg-seg-on font-semibold text-tinta shadow-sm";
 
 export function Pomodoro({
@@ -78,54 +86,53 @@ export function Pomodoro({
   );
   const [aviso, setAviso] = useState<string | null>(null);
 
-  // refs pra valores que o intervalo lê sem re-renderizar
+  // refs pra valores que o relógio lê/escreve sem re-renderizar
   const fimEm = useRef<number | null>(null);
   const inicioFoco = useRef<string | null>(null);
   const ciclosFoco = useRef(0);
   const restaurado = useRef(false);
+  const tickRef = useRef<() => void>(() => {});
 
-  const salvarEstado = useCallback(
-    (extra?: Partial<EstadoSalvo>) => {
-      const estado: EstadoSalvo = {
-        trilhaId,
-        focoMin,
-        pausaMin,
-        fase,
-        rodando,
-        fimEm: fimEm.current,
-        restanteMs,
-        inicioFoco: inicioFoco.current,
-        ciclosFoco: ciclosFoco.current,
-        ...extra,
-      };
-      localStorage.setItem(CHAVE_STORAGE, JSON.stringify(estado));
-    },
-    [trilhaId, focoMin, pausaMin, fase, rodando, restanteMs]
-  );
+  function salvarEstado(extra?: Partial<EstadoSalvo>) {
+    const estado: EstadoSalvo = {
+      trilhaId,
+      focoMin,
+      pausaMin,
+      fase,
+      rodando,
+      fimEm: fimEm.current,
+      restanteMs,
+      inicioFoco: inicioFoco.current,
+      ciclosFoco: ciclosFoco.current,
+      ...extra,
+    };
+    localStorage.setItem(CHAVE_STORAGE, JSON.stringify(estado));
+  }
 
-  const registrarSessao = useCallback(
-    async (inicioIso: string, duracaoMin: number, naTrilha: string) => {
-      if (!userId) return;
-      const supabase = createClient();
-      const { error } = await supabase.from("sessions").insert({
-        user_id: userId,
-        track_id: naTrilha,
-        started_at: inicioIso,
-        ended_at: new Date().toISOString(),
-        duration_min: duracaoMin,
-        origem: "pomodoro",
-      });
-      if (error) {
-        setAviso("Erro ao registrar a sessão — anote e registre manual.");
-      } else {
-        router.refresh(); // atualiza streak, metas e últimas sessões
-      }
-    },
-    [userId, router]
-  );
+  async function registrarSessao(
+    inicioIso: string,
+    duracaoMin: number,
+    naTrilha: string
+  ) {
+    if (!userId) return;
+    const supabase = createClient();
+    const { error } = await supabase.from("sessions").insert({
+      user_id: userId,
+      track_id: naTrilha,
+      started_at: inicioIso,
+      ended_at: new Date().toISOString(),
+      duration_min: duracaoMin,
+      origem: "pomodoro",
+    });
+    if (error) {
+      setAviso("Erro ao registrar a sessão — anote e registre manual.");
+    } else {
+      router.refresh(); // atualiza streak, metas e últimas sessões
+    }
+  }
 
-  // Fim de um FOCO: registra (se possível), avisa e emenda na pausa
-  const concluirFoco = useCallback(() => {
+  // Fim de um FOCO: registra (se possível) e a pausa começa sozinha
+  function concluirFoco() {
     tocarBip(2);
     ciclosFoco.current += 1;
     const ehPausaLonga =
@@ -143,6 +150,7 @@ export function Pomodoro({
     inicioFoco.current = null;
 
     setFase("pausa");
+    setRodando(true);
     fimEm.current = Date.now() + duracao * 60_000;
     setRestanteMs(duracao * 60_000);
     salvarEstado({
@@ -153,10 +161,10 @@ export function Pomodoro({
       inicioFoco: null,
       ciclosFoco: ciclosFoco.current,
     });
-  }, [settings, pausaMin, focoMin, trilhaId, userId, registrarSessao, salvarEstado]);
+  }
 
   // Fim de uma PAUSA: avisa e espera o usuário iniciar o próximo foco
-  const concluirPausa = useCallback(() => {
+  function concluirPausa() {
     tocarBip(1);
     setAviso("⏰ Pausa encerrada — pronto pro próximo foco?");
     setFase("foco");
@@ -169,7 +177,32 @@ export function Pomodoro({
       fimEm: null,
       restanteMs: focoMin * 60_000,
     });
-  }, [focoMin, salvarEstado]);
+  }
+
+  function tick() {
+    if (!rodando || fimEm.current === null) return;
+    const resta = fimEm.current - Date.now();
+    if (resta > 0) {
+      setRestanteMs(resta);
+      return;
+    }
+    fimEm.current = null; // trava contra tick duplo na virada
+    if (fase === "foco") concluirFoco();
+    else concluirPausa();
+  }
+
+  // tickRef aponta SEMPRE pra versão mais recente do tick (padrão
+  // "latest ref": atualiza após cada render) — o interval fixo abaixo
+  // nunca fica preso num estado antigo
+  useEffect(() => {
+    tickRef.current = tick;
+  });
+
+  // um único interval, criado uma vez só
+  useEffect(() => {
+    const id = setInterval(() => tickRef.current(), 500);
+    return () => clearInterval(id);
+  }, []);
 
   // Restaura o estado salvo ao montar (sobrevive a refresh/fechar aba).
   // localStorage não existe no servidor, então precisa ser num effect —
@@ -219,22 +252,6 @@ export function Pomodoro({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
-
-  // O relógio: recalcula a partir de fimEm (não acumula atraso)
-  useEffect(() => {
-    if (!rodando) return;
-    const intervalo = setInterval(() => {
-      if (fimEm.current === null) return;
-      const resta = fimEm.current - Date.now();
-      if (resta <= 0) {
-        if (fase === "foco") concluirFoco();
-        else concluirPausa();
-      } else {
-        setRestanteMs(resta);
-      }
-    }, 500);
-    return () => clearInterval(intervalo);
-  }, [rodando, fase, concluirFoco, concluirPausa]);
 
   function iniciarOuPausar() {
     setAviso(null);
@@ -315,33 +332,31 @@ export function Pomodoro({
       <h2 className="text-[13px] font-semibold text-tinta2">Foco</h2>
 
       <div className="flex flex-1 flex-col items-center justify-center py-[clamp(8px,2vh,20px)]">
-        {/* seletor de trilha — a selecionada ganha um risquinho da sua cor */}
+        {/* seletor de trilha — fundo claro + nome na cor da trilha */}
         <div className={`${segFundo} w-full max-w-[420px]`}>
-          {trilhas.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => alternarTrilha(t.id)}
-              className={`${segBotao} ${trilhaId === t.id ? segBotaoOn : ""}`}
-              title={
-                trilhaId === t.id
-                  ? "Clique para desmarcar (foco sem registro)"
-                  : `Registrar o foco em ${t.nome}`
-              }
-            >
-              {t.nome}
-              {trilhaId === t.id && (
-                <span
-                  className="com-cor absolute bottom-[5px] left-1/2 h-[2px] w-4 -translate-x-1/2 rounded-full"
-                  style={
-                    {
-                      "--cor": t.cor,
-                      background: "var(--cor-final)",
-                    } as React.CSSProperties
-                  }
-                />
-              )}
-            </button>
-          ))}
+          {trilhas.map((t) => {
+            const selecionada = trilhaId === t.id;
+            return (
+              <button
+                key={t.id}
+                onClick={() => alternarTrilha(t.id)}
+                className={`com-cor ${segBotao} ${selecionada ? segBotaoOn : ""}`}
+                style={
+                  {
+                    "--cor": t.cor,
+                    ...(selecionada ? { color: "var(--cor-texto)" } : {}),
+                  } as React.CSSProperties
+                }
+                title={
+                  selecionada
+                    ? "Clique para desmarcar (foco sem registro)"
+                    : `Registrar o foco em ${t.nome}`
+                }
+              >
+                {t.nome}
+              </button>
+            );
+          })}
         </div>
 
         <div className="my-[clamp(16px,4vh,40px)] text-[clamp(56px,min(13vh,10vw),120px)] font-extralight leading-none tabular-nums tracking-[-0.01em] text-tinta">

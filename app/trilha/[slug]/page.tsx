@@ -10,8 +10,9 @@ import {
   progressoDaTrilha,
 } from "@/lib/progress";
 
-// Tela de uma trilha: blocos com barra própria, expandir → grupos → itens.
-// Visitante sem login VÊ tudo (roadmap público), mas não marca checkbox.
+// Tela de uma trilha. A identidade aqui é a COR da trilha: o hero ganha um
+// fundo levemente tingido e o título colorido; blocos, tags e checkboxes
+// seguem a mesma cor. Visitante sem login VÊ tudo, mas não marca.
 export default async function TelaTrilha({
   params,
 }: {
@@ -72,21 +73,41 @@ export default async function TelaTrilha({
   );
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-[900px] flex-col px-[clamp(14px,2.5vw,32px)] py-[clamp(12px,2vh,24px)]">
-      <Cabecalho
-        email={user?.email ?? null}
-        volta={{ href: "/", rotulo: "Painel" }}
-      />
+    <main className="mx-auto flex min-h-dvh w-full max-w-[1180px] flex-col px-[clamp(14px,2.5vw,32px)] py-[clamp(12px,2vh,24px)]">
+      <Cabecalho email={user?.email ?? null} />
 
-      <div className="cartao mb-4 p-[clamp(16px,1.8vw,24px)]">
-        <div className="mb-2 flex items-baseline justify-between">
-          <span className="text-[16px] font-semibold text-tinta">
+      {/* Hero da trilha: fundo tingido com a cor dela */}
+      <div
+        className="com-cor cartao mb-4 p-[clamp(18px,2vw,28px)]"
+        style={
+          {
+            "--cor": trilha.cor,
+            background: "color-mix(in srgb, var(--cor-final) 9%, var(--surface))",
+          } as React.CSSProperties
+        }
+      >
+        <Link
+          href="/"
+          className="text-[12px] text-tinta2 hover:text-tinta"
+        >
+          ‹ Voltar ao painel
+        </Link>
+        <div className="mt-2 mb-1 flex flex-wrap items-baseline justify-between gap-2">
+          <h2
+            className="text-[clamp(20px,2.4vw,26px)] font-bold tracking-[-0.02em]"
+            style={{ color: "var(--cor-texto)" }}
+          >
             {trilha.nome}
-          </span>
-          <span className="text-[14px] tabular-nums text-tinta2">
-            {user ? `${Math.round(progressoTotal * 100)}%` : "—"}
+          </h2>
+          <span className="text-[15px] font-semibold tabular-nums text-tinta">
+            {user ? `${Math.round(progressoTotal * 100)}%` : ""}
           </span>
         </div>
+        {trilha.descricao && (
+          <p className="mb-4 max-w-[70ch] text-[13.5px] leading-relaxed text-tinta2">
+            {trilha.descricao}
+          </p>
+        )}
         <BarraProgresso fracao={user ? progressoTotal : 0} cor={trilha.cor} />
         {!user && (
           <p className="mt-3 text-[12px] text-tinta2">

@@ -27,7 +27,9 @@ App pessoal de acompanhamento de estudos: 3 trilhas (Dev, IA · Automação, Ing
 - **NUNCA** rodar `npm audit fix --force` (instala next@9, destrói o projeto).
 - **NUNCA** rodar `npm run seed -- --force` com progresso real no banco (apaga user_checks de todos, por cascata).
 - `.env.local` nunca é commitado; a SERVICE_ROLE_KEY nunca vai pra Vercel.
-- A SPEC original vive fora do git em `painel-de-estudos-kit/` (pasta ignorada). Plano: `PLANO-V1.md`. Auditoria: `docs/AUDITORIA-V1.md`.
+- O README é VITRINE (portfólio/LinkedIn) — docs internos ficam em `docs/`: plano (`docs/PLANO-V1.md`), produto/design (`docs/PRODUCT.md`), auditoria (`docs/AUDITORIA-V1.md`), edição de conteúdo (`docs/COMO-ATUALIZAR-CONTEUDO.md`). A SPEC original vive fora do git em `painel-de-estudos-kit/` (pasta ignorada).
+- Tags nos itens: review → "ADS PUC-PR" (bordô), grupo com "Anthropic" no título → "Anthropic" (laranja), optional → "opcional" (neutra). Nada de "não conta"/"faculdade".
+- O relógio do pomodoro usa UM setInterval fixo chamando `tickRef.current()` — não voltar ao padrão de recriar interval em useEffect com deps (congelava a pausa).
 
 ## Estrutura
 

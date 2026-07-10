@@ -28,6 +28,7 @@ export type SeedBlock = {
 export type SeedTrack = {
   slug: string;
   nome: string;
+  descricao: string; // exibida no topo da tela da trilha
   cor: string;
   ordem: number;
   blocos: SeedBlock[];

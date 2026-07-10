@@ -46,6 +46,7 @@ async function inserirTrilha(trilha: SeedTrack) {
       .insert({
         slug: trilha.slug,
         nome: trilha.nome,
+        descricao: trilha.descricao,
         cor: trilha.cor,
         ordem: trilha.ordem,
       })
