@@ -6,23 +6,14 @@ import { createClient } from "@/lib/supabase/client";
 import type { UserSettings } from "@/lib/types";
 import { Modal } from "./Modal";
 
-const DIAS = [
-  { num: 1, rotulo: "seg" },
-  { num: 2, rotulo: "ter" },
-  { num: 3, rotulo: "qua" },
-  { num: 4, rotulo: "qui" },
-  { num: 5, rotulo: "sex" },
-  { num: 6, rotulo: "sáb" },
-  { num: 7, rotulo: "dom" },
-];
-
 const campo =
   "w-full rounded-lg border border-hairline bg-fundo px-2 py-[7px] text-[13px] text-tinta";
 const rotulo = "mb-1 block text-[11px] text-tinta2";
 
-// Engrenagem: streak, dias que contam, metas e tempos do pomodoro.
-// Salvar faz upsert — a linha de user_settings nasce aqui na 1ª vez.
-export function ModalConfiguracoes({
+// Config do POMODORO (tempos padrão + regra da pausa longa). Abre pela
+// engrenagem do card "Foco". Só edita os campos do pomodoro — os da
+// constância passam intactos no upsert da mesma linha user_settings.
+export function ModalConfigPomodoro({
   aberto,
   onFechar,
   settings,
@@ -38,13 +29,8 @@ export function ModalConfiguracoes({
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  function alternarDia(num: number) {
-    const atuais = form.dias_que_contam;
-    const novos = atuais.includes(num)
-      ? atuais.filter((d) => d !== num)
-      : [...atuais, num].sort((a, b) => a - b);
-    if (novos.length === 0) return; // pelo menos um dia precisa contar
-    setForm({ ...form, dias_que_contam: novos });
+  function num(valor: string, minimo = 1) {
+    return Math.max(minimo, parseInt(valor, 10) || minimo);
   }
 
   async function salvar(e: React.FormEvent) {
@@ -62,85 +48,18 @@ export function ModalConfiguracoes({
       setErro(error.message);
       return;
     }
-    router.refresh(); // barras e regra do streak recalculam na hora
+    router.refresh();
     onFechar();
   }
 
-  function num(valor: string, minimo = 1) {
-    return Math.max(minimo, parseInt(valor, 10) || minimo);
-  }
-
   return (
-    <Modal titulo="Configurações" aberto={aberto} onFechar={onFechar}>
+    <Modal titulo="Tempos do pomodoro" aberto={aberto} onFechar={onFechar}>
       <form onSubmit={salvar} className="flex flex-col gap-3">
-        <div>
-          <label className={rotulo}>Streak — mínimo por dia (min)</label>
-          <input
-            type="number"
-            min={1}
-            value={form.streak_min_diario_min}
-            onChange={(e) =>
-              setForm({ ...form, streak_min_diario_min: num(e.target.value) })
-            }
-            className={campo}
-          />
-        </div>
-
-        <div>
-          <label className={rotulo}>Dias que contam pro streak</label>
-          <div className="flex flex-wrap gap-1">
-            {DIAS.map((d) => (
-              <button
-                key={d.num}
-                type="button"
-                onClick={() => alternarDia(d.num)}
-                className={`cursor-pointer rounded-full border border-hairline px-[10px] py-1 text-[12px] ${
-                  form.dias_que_contam.includes(d.num)
-                    ? "bg-seg font-semibold text-tinta"
-                    : "bg-transparent text-tinta2"
-                }`}
-              >
-                {d.rotulo}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className={rotulo}>Meta semanal (h)</label>
-            <input
-              type="number"
-              min={1}
-              step="0.5"
-              value={form.meta_semanal_h}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  meta_semanal_h: Math.max(0.5, parseFloat(e.target.value) || 1),
-                })
-              }
-              className={campo}
-            />
-          </div>
-          <div>
-            <label className={rotulo}>Meta mensal (h)</label>
-            <input
-              type="number"
-              min={1}
-              step="0.5"
-              value={form.meta_mensal_h}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  meta_mensal_h: Math.max(0.5, parseFloat(e.target.value) || 1),
-                })
-              }
-              className={campo}
-            />
-          </div>
-        </div>
-
+        <p className="text-[12px] text-tinta2">
+          Os tempos padrão de foco e pausa também podem ser trocados na hora,
+          pelos botões do timer. Aqui você define o padrão e a regra da pausa
+          longa.
+        </p>
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className={rotulo}>Foco padrão (min)</label>

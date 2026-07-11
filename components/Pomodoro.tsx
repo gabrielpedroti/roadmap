@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Track, UserSettings } from "@/lib/types";
+import { ModalConfigPomodoro } from "./ModalConfigPomodoro";
 
 // Card "Foco" (pomodoro):
 // - seletor de trilha; a selecionada fica com vidro fosco + nome na cor da
@@ -75,9 +76,10 @@ const vidroBlur: React.CSSProperties = {
   WebkitBackdropFilter: "blur(16px) saturate(180%)",
 };
 
-// Rótulo "foco"/"pausa" que também liga/desliga aquela fase (define o modo).
-// Fica fora do componente pai pra não ser recriado a cada render.
-function RotuloModo({
+// "Foco"/"Pausa" como PÍLULA SELECIONÁVEL (mesma linguagem da seleção de
+// trilha): marcada = vidro fosco; desmarcada = contorno fino. Marcar/desmarcar
+// define o modo. Fora do componente pai pra não ser recriada a cada render.
+function PillFase({
   qual,
   ativo,
   rodando,
@@ -92,14 +94,19 @@ function RotuloModo({
     <button
       onClick={onToggle}
       disabled={rodando}
+      style={ativo ? vidroBlur : undefined}
       title={
-        ativo ? `Desativar ${qual} (contar só a outra fase)` : `Ativar ${qual}`
+        ativo
+          ? `Desmarcar ${qual} (contar só a outra fase)`
+          : `Marcar ${qual}`
       }
-      className={`w-11 shrink-0 text-right text-[13px] transition-opacity ${
-        ativo ? "font-medium text-tinta" : "text-tinta2 line-through opacity-50"
+      className={`min-h-[38px] w-[72px] shrink-0 rounded-[10px] text-[13px] transition-colors ${
+        ativo
+          ? "vidro font-semibold text-tinta"
+          : "border border-hairline text-tinta2"
       } ${rodando ? "cursor-default" : "cursor-pointer"}`}
     >
-      {qual}
+      {qual === "foco" ? "Foco" : "Pausa"}
     </button>
   );
 }
@@ -126,6 +133,7 @@ export function Pomodoro({
     settings.pomodoro_foco_min * 60_000
   );
   const [aviso, setAviso] = useState<string | null>(null);
+  const [configAberta, setConfigAberta] = useState(false);
 
   // refs pra valores que o relógio lê/escreve sem re-renderizar
   const fimEm = useRef<number | null>(null);
@@ -443,7 +451,18 @@ export function Pomodoro({
 
   return (
     <section className="cartao flex flex-col p-[clamp(16px,1.8vw,24px)] max-md:order-1">
-      <h2 className="text-[13px] font-semibold text-tinta2">Foco</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-[13px] font-semibold text-tinta2">Foco</h2>
+        {userId && (
+          <button
+            onClick={() => setConfigAberta(true)}
+            className="cursor-pointer text-[15px] text-tinta2 hover:text-tinta"
+            title="Tempos do pomodoro"
+          >
+            ⚙
+          </button>
+        )}
+      </div>
 
       <div className="flex flex-1 flex-col items-center justify-center py-[clamp(8px,2vh,20px)]">
         {/* seletor de trilha — vidro fosco + nome na cor da trilha */}
@@ -480,19 +499,18 @@ export function Pomodoro({
         </div>
 
         <div className="flex w-full max-w-[400px] flex-col gap-[10px]">
-          <div
-            className={`flex items-center gap-3 transition-opacity ${
-              focoAtivo ? "" : "opacity-40"
-            }`}
-          >
-            <RotuloModo
+          <div className="flex items-center gap-3">
+            <PillFase
               qual="foco"
               ativo={focoAtivo}
               rodando={rodando}
               onToggle={() => alternarModo("foco")}
             />
             <div
-              className={`${segFundo} flex-1 ${focoAtivo ? "" : "pointer-events-none"}`}
+              className={`${segFundo} flex-1 ${
+                focoAtivo ? "" : "pointer-events-none"
+              }`}
+              style={focoAtivo ? undefined : { opacity: 0.4 }}
             >
               {[25, 50, 90].map((min) => (
                 <button
@@ -514,19 +532,18 @@ export function Pomodoro({
               </button>
             </div>
           </div>
-          <div
-            className={`flex items-center gap-3 transition-opacity ${
-              pausaAtivo ? "" : "opacity-40"
-            }`}
-          >
-            <RotuloModo
+          <div className="flex items-center gap-3">
+            <PillFase
               qual="pausa"
               ativo={pausaAtivo}
               rodando={rodando}
               onToggle={() => alternarModo("pausa")}
             />
             <div
-              className={`${segFundo} flex-1 ${pausaAtivo ? "" : "pointer-events-none"}`}
+              className={`${segFundo} flex-1 ${
+                pausaAtivo ? "" : "pointer-events-none"
+              }`}
+              style={pausaAtivo ? undefined : { opacity: 0.4 }}
             >
               {[5, 10, 15].map((min) => (
                 <button
@@ -563,6 +580,15 @@ export function Pomodoro({
           <div className="mt-4 text-center text-[12px] text-tinta2">{aviso}</div>
         )}
       </div>
+
+      {userId && (
+        <ModalConfigPomodoro
+          aberto={configAberta}
+          onFechar={() => setConfigAberta(false)}
+          settings={settings}
+          userId={userId}
+        />
+      )}
     </section>
   );
 }

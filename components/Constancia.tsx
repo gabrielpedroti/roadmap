@@ -5,7 +5,7 @@ import Link from "next/link";
 import { formatarHoras } from "@/lib/formato";
 import type { Track, UserSettings } from "@/lib/types";
 import { BarraProgresso } from "./BarraProgresso";
-import { ModalConfiguracoes } from "./ModalConfiguracoes";
+import { ModalConfigConstancia } from "./ModalConfigConstancia";
 import { ModalRegistroManual } from "./ModalRegistroManual";
 
 // Card de Constância. Streak e metas são INDEPENDENTES:
@@ -123,7 +123,7 @@ export function Constancia({
         trilhas={trilhas}
         userId={userId}
       />
-      <ModalConfiguracoes
+      <ModalConfigConstancia
         aberto={configAberta}
         onFechar={() => setConfigAberta(false)}
         settings={settings}

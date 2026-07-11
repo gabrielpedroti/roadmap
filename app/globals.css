@@ -90,10 +90,20 @@ body {
    Requer --cor definido no elemento (a cor crua do banco). */
 .trilha-fundo {
   background: radial-gradient(
-    130% 55% at 50% -5%,
-    color-mix(in srgb, var(--cor) 15%, var(--bg)) 0%,
-    var(--bg) 55%
+    130% 60% at 50% -5%,
+    color-mix(in srgb, var(--cor) 18%, var(--bg)) 0%,
+    var(--bg) 58%
   );
+}
+/* no escuro, um pouco mais de cor pra o brilho aparecer sobre o preto */
+@media (prefers-color-scheme: dark) {
+  .trilha-fundo {
+    background: radial-gradient(
+      130% 62% at 50% -5%,
+      color-mix(in srgb, var(--cor) 30%, var(--bg)) 0%,
+      var(--bg) 60%
+    );
+  }
 }
 
 /* Vidro fosco estilo iOS — usado no segmento SELECIONADO dos controles.

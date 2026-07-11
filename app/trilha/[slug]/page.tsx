@@ -79,7 +79,7 @@ export default async function TelaTrilha({
       className="trilha-fundo min-h-dvh"
       style={{ "--cor": trilha.cor } as React.CSSProperties}
     >
-      <div className="mx-auto flex w-full max-w-[1180px] flex-col px-[clamp(14px,2.5vw,32px)] py-[clamp(12px,2vh,24px)]">
+      <div className="mx-auto flex w-full max-w-[1320px] flex-col px-[clamp(14px,2.5vw,40px)] py-[clamp(12px,2vh,24px)]">
         <Cabecalho
           email={user?.email ?? null}
           tracks={tracks}

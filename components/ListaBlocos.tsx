@@ -104,11 +104,11 @@ export function ListaBlocos({
         return (
           <div
             key={bloco.id}
-            className={`cartao mb-3 ${bloqueado ? "opacity-55 grayscale" : ""}`}
+            className={`cartao mb-[10px] ${bloqueado ? "opacity-55 grayscale" : ""}`}
           >
             <button
               onClick={() => alternarExpandido(bloco.id)}
-              className="w-full cursor-pointer p-[clamp(14px,1.6vw,20px)] text-left"
+              className="w-full cursor-pointer p-[clamp(13px,1.3vw,18px)] text-left"
             >
               <div className="mb-2 flex items-baseline justify-between gap-2">
                 <span className="text-[14px] font-medium text-tinta">
