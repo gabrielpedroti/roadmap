@@ -259,6 +259,7 @@ function LinhaItem({
   const ehProjeto = item.tipo === "project";
   const ehOpcional = item.tipo === "optional";
   const ehAnthropic = grupoTitulo.includes("Anthropic");
+  const ehDio = grupoTitulo.includes("DIO");
 
   return (
     <label
@@ -290,6 +291,7 @@ function LinhaItem({
         </span>
         {item.tipo === "review" && <Tag texto="ADS PUC-PR" cor="#9D2235" />}
         {ehAnthropic && <Tag texto="Anthropic" cor="#D97757" />}
+        {ehDio && <Tag texto="DIO" cor="#8E4DFF" />}
         {ehOpcional && <Tag texto="opcional" />}
         {item.descricao && (
           <span className="block text-[12px] text-tinta2">

@@ -91,7 +91,7 @@ body {
 .trilha-fundo {
   background: radial-gradient(
     130% 60% at 50% -5%,
-    color-mix(in srgb, var(--cor) 18%, var(--bg)) 0%,
+    color-mix(in srgb, var(--cor) 21%, var(--bg)) 0%,
     var(--bg) 58%
   );
 }
@@ -100,7 +100,7 @@ body {
   .trilha-fundo {
     background: radial-gradient(
       130% 62% at 50% -5%,
-      color-mix(in srgb, var(--cor) 30%, var(--bg)) 0%,
+      color-mix(in srgb, var(--cor) 34%, var(--bg)) 0%,
       var(--bg) 60%
     );
   }

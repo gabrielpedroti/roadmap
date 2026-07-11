@@ -9,12 +9,13 @@ import { ModalConfigPomodoro } from "./ModalConfigPomodoro";
 // Card "Foco" (pomodoro):
 // - seletor de trilha; a selecionada fica com vidro fosco + nome na cor da
 //   trilha; clicar de novo DESMARCA (foco sem registrar em trilha nenhuma)
-// - MODO (clicando nos rótulos "foco" / "pausa"):
-//     · os dois ativos  → automático: foco termina, pausa começa sozinha,
-//       pausa longa a cada N focos, e espera o próximo Iniciar
-//     · só "foco" ativo → conta só o foco e para
-//     · só "pausa" ativo→ conta só a pausa e para
-//   (pelo menos um precisa ficar ativo)
+// - O MODO é definido por quais TEMPOS estão selecionados (clicar no tempo
+//   selecionado o DESMARCA, igual a trilha):
+//     · foco e pausa selecionados → automático: foco termina, pausa começa
+//       sozinha, pausa longa a cada N focos, e espera o próximo Iniciar
+//     · só um tempo de foco → conta só o foco e para
+//     · só um tempo de pausa → conta só a pausa e para
+//   (pelo menos um tempo precisa ficar selecionado)
 // - ao CONCLUIR um foco: registra a sessão (se logado E com trilha)
 // - reset descarta o ciclo atual; o estado sobrevive a refresh (localStorage)
 //
@@ -26,19 +27,21 @@ type Fase = "foco" | "pausa";
 
 type EstadoSalvo = {
   trilhaId: string | null;
-  focoMin: number;
-  pausaMin: number;
-  focoAtivo: boolean;
-  pausaAtivo: boolean;
+  focoMin: number | null; // null = foco não selecionado
+  pausaMin: number | null; // null = pausa não selecionada
   fase: Fase;
   rodando: boolean;
   fimEm: number | null; // timestamp ms de quando a fase atual termina
   restanteMs: number;
   inicioFoco: string | null; // ISO de quando o foco começou (p/ started_at)
   ciclosFoco: number; // focos concluídos (decide a pausa longa)
+  // legado (estados salvos antes desta versão marcavam a fase por booleano):
+  focoAtivo?: boolean;
+  pausaAtivo?: boolean;
 };
 
 const CHAVE_STORAGE = "roadmap-pomodoro-v1";
+const FOCO_FIXOS = [25, 50, 90];
 
 // Bip simples com WebAudio — sem arquivo de som pra carregar
 function tocarBip(vezes: number) {
@@ -76,41 +79,6 @@ const vidroBlur: React.CSSProperties = {
   WebkitBackdropFilter: "blur(16px) saturate(180%)",
 };
 
-// "Foco"/"Pausa" como PÍLULA SELECIONÁVEL (mesma linguagem da seleção de
-// trilha): marcada = vidro fosco; desmarcada = contorno fino. Marcar/desmarcar
-// define o modo. Fora do componente pai pra não ser recriada a cada render.
-function PillFase({
-  qual,
-  ativo,
-  rodando,
-  onToggle,
-}: {
-  qual: Fase;
-  ativo: boolean;
-  rodando: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <button
-      onClick={onToggle}
-      disabled={rodando}
-      style={ativo ? vidroBlur : undefined}
-      title={
-        ativo
-          ? `Desmarcar ${qual} (contar só a outra fase)`
-          : `Marcar ${qual}`
-      }
-      className={`min-h-[38px] w-[72px] shrink-0 rounded-[10px] text-[13px] transition-colors ${
-        ativo
-          ? "vidro font-semibold text-tinta"
-          : "border border-hairline text-tinta2"
-      } ${rodando ? "cursor-default" : "cursor-pointer"}`}
-    >
-      {qual === "foco" ? "Foco" : "Pausa"}
-    </button>
-  );
-}
-
 export function Pomodoro({
   trilhas,
   settings,
@@ -123,10 +91,12 @@ export function Pomodoro({
   const router = useRouter();
 
   const [trilhaId, setTrilhaId] = useState<string | null>(null);
-  const [focoMin, setFocoMin] = useState(settings.pomodoro_foco_min);
-  const [pausaMin, setPausaMin] = useState(settings.pausa_curta_min);
-  const [focoAtivo, setFocoAtivo] = useState(true);
-  const [pausaAtivo, setPausaAtivo] = useState(true);
+  const [focoMin, setFocoMin] = useState<number | null>(
+    settings.pomodoro_foco_min
+  );
+  const [pausaMin, setPausaMin] = useState<number | null>(
+    settings.pausa_curta_min
+  );
   const [fase, setFase] = useState<Fase>("foco");
   const [rodando, setRodando] = useState(false);
   const [restanteMs, setRestanteMs] = useState(
@@ -134,6 +104,15 @@ export function Pomodoro({
   );
   const [aviso, setAviso] = useState<string | null>(null);
   const [configAberta, setConfigAberta] = useState(false);
+
+  // ativação de cada fase É a presença de um tempo selecionado
+  const focoAtivo = focoMin !== null;
+  const pausaAtivo = pausaMin !== null;
+  const focoCustom = focoMin !== null && !FOCO_FIXOS.includes(focoMin);
+
+  // valores seguros pra usar no relógio (a fase ativa nunca é null)
+  const focoSeguro = focoMin ?? settings.pomodoro_foco_min;
+  const pausaSegura = pausaMin ?? settings.pausa_curta_min;
 
   // refs pra valores que o relógio lê/escreve sem re-renderizar
   const fimEm = useRef<number | null>(null);
@@ -147,8 +126,6 @@ export function Pomodoro({
       trilhaId,
       focoMin,
       pausaMin,
-      focoAtivo,
-      pausaAtivo,
       fase,
       rodando,
       fimEm: fimEm.current,
@@ -182,14 +159,14 @@ export function Pomodoro({
     }
   }
 
-  // Fim de um FOCO: registra (se possível). Depois, se a pausa está ativa,
-  // emenda nela (modo automático); senão para (modo só-foco).
+  // Fim de um FOCO: registra (se possível). Depois, se a pausa está
+  // selecionada, emenda nela (automático); senão para (só-foco).
   function concluirFoco() {
     tocarBip(2);
     ciclosFoco.current += 1;
 
     const registrou = !!(inicioFoco.current && trilhaId && userId);
-    if (registrou) registrarSessao(inicioFoco.current!, focoMin, trilhaId!);
+    if (registrou) registrarSessao(inicioFoco.current!, focoSeguro, trilhaId!);
     inicioFoco.current = null;
 
     const msgFoco = registrou
@@ -199,10 +176,13 @@ export function Pomodoro({
         : "✅ Foco concluído (sem trilha — não registrado).";
 
     if (pausaAtivo) {
-      // modo automático: começa a pausa (longa a cada N focos)
-      const ehLonga = ciclosFoco.current % settings.ciclos_ate_pausa_longa === 0;
-      const duracao = ehLonga ? settings.pausa_longa_min : pausaMin;
-      setAviso(`${msgFoco} ${ehLonga ? "Pausa longa" : "Pausa"} de ${duracao} min.`);
+      // automático: começa a pausa (longa a cada N focos)
+      const ehLonga =
+        ciclosFoco.current % settings.ciclos_ate_pausa_longa === 0;
+      const duracao = ehLonga ? settings.pausa_longa_min : pausaSegura;
+      setAviso(
+        `${msgFoco} ${ehLonga ? "Pausa longa" : "Pausa"} de ${duracao} min.`
+      );
       setFase("pausa");
       setRodando(true);
       fimEm.current = Date.now() + duracao * 60_000;
@@ -221,12 +201,12 @@ export function Pomodoro({
       setFase("foco");
       setRodando(false);
       fimEm.current = null;
-      setRestanteMs(focoMin * 60_000);
+      setRestanteMs(focoSeguro * 60_000);
       salvarEstado({
         fase: "foco",
         rodando: false,
         fimEm: null,
-        restanteMs: focoMin * 60_000,
+        restanteMs: focoSeguro * 60_000,
         inicioFoco: null,
         ciclosFoco: ciclosFoco.current,
       });
@@ -234,7 +214,7 @@ export function Pomodoro({
   }
 
   // Fim de uma PAUSA: para e prepara a próxima fase (foco se ele estiver
-  // ativo; senão, outra pausa — modo só-pausa).
+  // selecionado; senão, outra pausa — modo só-pausa).
   function concluirPausa() {
     tocarBip(1);
     const proxima: Fase = focoAtivo ? "foco" : "pausa";
@@ -246,7 +226,7 @@ export function Pomodoro({
     setFase(proxima);
     setRodando(false);
     fimEm.current = null;
-    const dur = proxima === "foco" ? focoMin : pausaMin;
+    const dur = proxima === "foco" ? focoSeguro : pausaSegura;
     setRestanteMs(dur * 60_000);
     salvarEstado({
       fase: proxima,
@@ -296,27 +276,32 @@ export function Pomodoro({
       if (salvo.trilhaId && trilhas.some((t) => t.id === salvo.trilhaId)) {
         setTrilhaId(salvo.trilhaId);
       }
-      setFocoMin(salvo.focoMin);
-      setPausaMin(salvo.pausaMin);
-      // compat: estados salvos antes do modo não tinham esses campos
-      setFocoAtivo(salvo.focoAtivo ?? true);
-      setPausaAtivo(salvo.pausaAtivo ?? true);
+      // compat: no formato antigo a fase era ligada por booleano; se estava
+      // desligada, o tempo passa a ser null (não selecionado)
+      const fMin = salvo.focoAtivo === false ? null : salvo.focoMin;
+      const pMin = salvo.pausaAtivo === false ? null : salvo.pausaMin;
+      setFocoMin(fMin);
+      setPausaMin(pMin);
       ciclosFoco.current = salvo.ciclosFoco ?? 0;
       inicioFoco.current = salvo.inicioFoco;
+
+      const dm = (m: number | null) => (m ?? settings.pomodoro_foco_min) * 60_000;
 
       if (salvo.rodando && salvo.fimEm) {
         if (salvo.fimEm <= Date.now()) {
           // a fase terminou enquanto a página estava fechada
           if (salvo.fase === "foco" && salvo.inicioFoco && salvo.trilhaId) {
-            registrarSessao(salvo.inicioFoco, salvo.focoMin, salvo.trilhaId);
+            registrarSessao(
+              salvo.inicioFoco,
+              fMin ?? settings.pomodoro_foco_min,
+              salvo.trilhaId
+            );
             setAviso("✅ Foco concluído (registrado) com a página fechada.");
           }
           inicioFoco.current = null;
           setFase(salvo.fase);
           setRodando(false);
-          setRestanteMs(
-            (salvo.fase === "foco" ? salvo.focoMin : salvo.pausaMin) * 60_000
-          );
+          setRestanteMs(salvo.fase === "foco" ? dm(fMin) : dm(pMin));
         } else {
           setFase(salvo.fase);
           setRodando(true);
@@ -325,7 +310,7 @@ export function Pomodoro({
         }
       } else {
         setFase(salvo.fase);
-        setRestanteMs(salvo.restanteMs ?? salvo.focoMin * 60_000);
+        setRestanteMs(salvo.restanteMs ?? dm(fMin));
       }
     } catch {
       localStorage.removeItem(CHAVE_STORAGE);
@@ -366,7 +351,7 @@ export function Pomodoro({
     setFase(faseInicial);
     fimEm.current = null;
     inicioFoco.current = null;
-    const dur = faseInicial === "foco" ? focoMin : pausaMin;
+    const dur = faseInicial === "foco" ? focoSeguro : pausaSegura;
     setRestanteMs(dur * 60_000);
     salvarEstado({
       rodando: false,
@@ -377,31 +362,32 @@ export function Pomodoro({
     });
   }
 
-  // liga/desliga uma fase (o modo é definido por quais estão ativas).
-  // Não mexe durante a contagem.
-  function alternarModo(qual: Fase) {
-    if (rodando) return;
-    const nf = qual === "foco" ? !focoAtivo : focoAtivo;
-    const np = qual === "pausa" ? !pausaAtivo : pausaAtivo;
-    if (!nf && !np) return; // pelo menos um precisa ficar ativo
-    setFocoAtivo(nf);
-    setPausaAtivo(np);
+  // aplica uma nova seleção de tempos (não durante a contagem): recalcula a
+  // fase inicial (foco se houver foco; senão pausa) e zera o relógio.
+  function aplicarSelecao(f: number | null, p: number | null) {
+    setFocoMin(f);
+    setPausaMin(p);
     setAviso(null);
-    const faseInicial: Fase = nf ? "foco" : "pausa";
+    setRodando(false);
+    const faseInicial: Fase = f !== null ? "foco" : "pausa";
     setFase(faseInicial);
-    inicioFoco.current = null;
     fimEm.current = null;
-    const dur = faseInicial === "foco" ? focoMin : pausaMin;
+    inicioFoco.current = null;
+    const dur = (faseInicial === "foco" ? f : p) ?? settings.pomodoro_foco_min;
     setRestanteMs(dur * 60_000);
     salvarEstado({
-      focoAtivo: nf,
-      pausaAtivo: np,
+      focoMin: f,
+      pausaMin: p,
       fase: faseInicial,
       rodando: false,
       fimEm: null,
       inicioFoco: null,
       restanteMs: dur * 60_000,
     });
+  }
+
+  function precisaDeUm() {
+    setAviso("Selecione ao menos um tempo (foco ou pausa).");
   }
 
   // clicar na trilha seleciona; clicar de novo DESMARCA
@@ -412,31 +398,37 @@ export function Pomodoro({
     salvarEstado({ trilhaId: nova });
   }
 
+  // clicar num tempo de foco: seleciona; clicar no já selecionado DESMARCA
   function escolherFoco(min: number) {
     if (rodando) return;
-    setFocoMin(min);
-    if (fase === "foco") setRestanteMs(min * 60_000);
-    salvarEstado({
-      focoMin: min,
-      restanteMs: fase === "foco" ? min * 60_000 : restanteMs,
-    });
+    if (focoMin === min) {
+      if (pausaMin === null) return precisaDeUm();
+      aplicarSelecao(null, pausaMin);
+    } else {
+      aplicarSelecao(min, pausaMin);
+    }
   }
 
   function escolherFocoCustom() {
     if (rodando) return;
+    if (focoCustom) {
+      if (pausaMin === null) return precisaDeUm();
+      aplicarSelecao(null, pausaMin);
+      return;
+    }
     const valor = prompt("Minutos de foco:", "35");
     const min = valor ? parseInt(valor, 10) : NaN;
-    if (min > 0) escolherFoco(min);
+    if (min > 0) aplicarSelecao(min, pausaMin);
   }
 
   function escolherPausa(min: number) {
-    if (rodando && fase === "pausa") return;
-    setPausaMin(min);
-    if (fase === "pausa") setRestanteMs(min * 60_000);
-    salvarEstado({
-      pausaMin: min,
-      restanteMs: fase === "pausa" ? min * 60_000 : restanteMs,
-    });
+    if (rodando) return;
+    if (pausaMin === min) {
+      if (focoMin === null) return precisaDeUm();
+      aplicarSelecao(focoMin, null);
+    } else {
+      aplicarSelecao(focoMin, min);
+    }
   }
 
   const minutos = Math.floor(Math.ceil(restanteMs / 1000) / 60);
@@ -500,19 +492,15 @@ export function Pomodoro({
 
         <div className="flex w-full max-w-[400px] flex-col gap-[10px]">
           <div className="flex items-center gap-3">
-            <PillFase
-              qual="foco"
-              ativo={focoAtivo}
-              rodando={rodando}
-              onToggle={() => alternarModo("foco")}
-            />
-            <div
-              className={`${segFundo} flex-1 ${
-                focoAtivo ? "" : "pointer-events-none"
+            <span
+              className={`w-11 shrink-0 text-right text-[13px] ${
+                focoAtivo ? "font-medium text-tinta" : "text-tinta2"
               }`}
-              style={focoAtivo ? undefined : { opacity: 0.4 }}
             >
-              {[25, 50, 90].map((min) => (
+              foco
+            </span>
+            <div className={`${segFundo} flex-1`}>
+              {FOCO_FIXOS.map((min) => (
                 <button
                   key={min}
                   onClick={() => escolherFoco(min)}
@@ -524,27 +512,23 @@ export function Pomodoro({
               ))}
               <button
                 onClick={escolherFocoCustom}
-                className={`${segBotao} ${![25, 50, 90].includes(focoMin) ? segBotaoOn : ""}`}
-                style={![25, 50, 90].includes(focoMin) ? vidroBlur : undefined}
+                className={`${segBotao} ${focoCustom ? segBotaoOn : ""}`}
+                style={focoCustom ? vidroBlur : undefined}
                 title="Foco personalizado"
               >
-                {![25, 50, 90].includes(focoMin) ? focoMin : "✎"}
+                {focoCustom ? focoMin : "✎"}
               </button>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <PillFase
-              qual="pausa"
-              ativo={pausaAtivo}
-              rodando={rodando}
-              onToggle={() => alternarModo("pausa")}
-            />
-            <div
-              className={`${segFundo} flex-1 ${
-                pausaAtivo ? "" : "pointer-events-none"
+            <span
+              className={`w-11 shrink-0 text-right text-[13px] ${
+                pausaAtivo ? "font-medium text-tinta" : "text-tinta2"
               }`}
-              style={pausaAtivo ? undefined : { opacity: 0.4 }}
             >
+              pausa
+            </span>
+            <div className={`${segFundo} flex-1`}>
               {[5, 10, 15].map((min) => (
                 <button
                   key={min}

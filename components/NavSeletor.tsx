@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { Track } from "@/lib/types";
 
-// Seletor de navegação compacto que fica CENTRALIZADO no cabeçalho, entre o
-// título e o usuário. Mostra onde você está (Painel ou uma trilha, com o
-// pontinho da cor) e abre um menu com todos os destinos. Ocupa uma linha só,
-// curtinho — substitui a fileira de pílulas que tomava espaço.
+// Seletor de navegação compacto, CENTRALIZADO no cabeçalho. Formato de
+// retângulo arredondado (igual aos controles do pomodoro), sem bolinhas nem
+// emoji: "Home" para o painel e o nome da trilha NA COR dela quando é uma
+// trilha. Abre um menu com todos os destinos.
 export function NavSeletor({
   tracks,
   atual,
@@ -38,10 +38,8 @@ export function NavSeletor({
   }, [aberto]);
 
   const trilhaAtual = tracks.find((t) => t.slug === atual);
-  const rotuloAtual = trilhaAtual ? trilhaAtual.nome : "Painel";
-
   const item =
-    "flex items-center gap-2 rounded-lg px-3 py-2 text-[13px] transition-colors";
+    "flex items-center rounded-lg px-3 py-2 text-[13px] transition-colors";
 
   return (
     <div ref={caixa} className="relative">
@@ -49,22 +47,19 @@ export function NavSeletor({
         onClick={() => setAberto((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={aberto}
-        className="flex items-center gap-2 rounded-full bg-seg px-4 py-[7px] text-[13px] font-medium text-tinta transition-colors hover:brightness-95"
-      >
-        {trilhaAtual ? (
-          <span
-            className="com-cor h-2 w-2 rounded-full"
-            style={
-              {
+        className="com-cor flex items-center gap-2 rounded-[10px] bg-seg px-4 py-[7px] text-[13px] font-semibold transition-colors hover:brightness-95"
+        style={
+          trilhaAtual
+            ? ({
                 "--cor": trilhaAtual.cor,
-                background: "var(--cor-final)",
-              } as React.CSSProperties
-            }
-          />
-        ) : (
-          <span aria-hidden>🏠</span>
-        )}
-        {rotuloAtual}
+                color: "var(--cor-texto)",
+              } as React.CSSProperties)
+            : undefined
+        }
+      >
+        <span className={trilhaAtual ? "" : "text-tinta"}>
+          {trilhaAtual ? trilhaAtual.nome : "Home"}
+        </span>
         <span
           className={`text-tinta2 transition-transform ${aberto ? "rotate-180" : ""}`}
           aria-hidden
@@ -88,8 +83,7 @@ export function NavSeletor({
                 : "text-tinta2 hover:bg-seg hover:text-tinta"
             }`}
           >
-            <span aria-hidden>🏠</span>
-            Painel
+            Home
           </Link>
           {tracks.map((t) => {
             const ativa = atual === t.slug;
@@ -99,17 +93,11 @@ export function NavSeletor({
                 href={`/trilha/${t.slug}`}
                 role="menuitem"
                 onClick={() => setAberto(false)}
-                className={`com-cor ${item} ${
-                  ativa
-                    ? "bg-seg font-semibold text-tinta"
-                    : "text-tinta2 hover:bg-seg hover:text-tinta"
-                }`}
-                style={{ "--cor": t.cor } as React.CSSProperties}
+                className={`com-cor ${item} font-medium ${ativa ? "bg-seg" : "hover:bg-seg"}`}
+                style={
+                  { "--cor": t.cor, color: "var(--cor-texto)" } as React.CSSProperties
+                }
               >
-                <span
-                  className="h-2 w-2 rounded-full"
-                  style={{ background: "var(--cor-final)" }}
-                />
                 {t.nome}
               </Link>
             );

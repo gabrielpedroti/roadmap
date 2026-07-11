@@ -27,7 +27,7 @@ export function Cabecalho({
   atual: string;
 }) {
   return (
-    <header className="mb-5 flex items-center justify-between gap-3">
+    <header className="relative mb-5 flex items-center justify-between gap-3">
       <div className="min-w-0">
         <h1 className="text-[clamp(18px,2vw,22px)] font-semibold tracking-[-0.02em] text-tinta">
           Roadmap
@@ -37,8 +37,10 @@ export function Cabecalho({
         </div>
       </div>
 
+      {/* seletor absolutamente centralizado: fica no meio da tela, alinhado,
+          independente da largura do título e do usuário (inclusive no mobile) */}
       {tracks.length > 0 && (
-        <div className="flex flex-1 justify-center">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <NavSeletor tracks={tracks} atual={atual} />
         </div>
       )}

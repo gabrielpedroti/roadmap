@@ -65,17 +65,12 @@ export default async function Dashboard() {
               <div className="mt-4 flex flex-col gap-[clamp(12px,2.2vh,22px)]">
                 {trilhas.map((t) => (
                   <Link key={t.id} href={`/trilha/${t.slug}`} className="block">
-                    <div className="mb-2 flex items-center gap-2 text-[15px] font-medium text-tinta">
-                      <span
-                        className="com-cor h-[9px] w-[9px] shrink-0 rounded-full"
-                        style={
-                          {
-                            "--cor": t.cor,
-                            background: "var(--cor-final)",
-                          } as React.CSSProperties
-                        }
-                      />
-                      {t.nome} <span className="font-normal text-tinta2">›</span>
+                    <div
+                      className="com-cor mb-2 flex items-center gap-1 text-[15px] font-semibold"
+                      style={{ "--cor": t.cor } as React.CSSProperties}
+                    >
+                      <span style={{ color: "var(--cor-texto)" }}>{t.nome}</span>
+                      <span className="font-normal text-tinta2">›</span>
                       <span className="ml-auto text-[14px] font-normal tabular-nums text-tinta2">
                         {user ? `${Math.round(t.progresso * 100)}%` : "—"}
                       </span>

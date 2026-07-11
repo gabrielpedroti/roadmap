@@ -21,6 +21,16 @@ export const trilhaIa: SeedTrack = {
         "Fundamentos de web, APIs e webhooks + primeiros cursos da Anthropic Academy. Corre em paralelo com a Etapa 1.",
       grupos: [
         {
+          titulo: "🎓 DIO",
+          itens: [
+            {
+              titulo: "Formação Fundamentos de Inteligência Artificial",
+              descricao: "Em andamento — base de fundamentos de IA pela DIO.",
+              tipo: "concept",
+            },
+          ],
+        },
+        {
           titulo: "Cursos",
           itens: [
             {
