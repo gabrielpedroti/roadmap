@@ -20,18 +20,28 @@ Cada trilha é um `SeedTrack`: `slug`, `nome`, `descricao` (aparece no topo da t
 
 Cada `SeedBlock` tem `titulo`, `descricao` (resumo de 1 linha, SEM meta-comentários de planejamento), `semanas` (texto livre, opcional), `comecaAberto` (true = não exige o bloco anterior) e `grupos[]`.
 
-Cada `SeedGroup` tem `titulo` e `itens[]`. Cada `SeedItem` tem `titulo`, `descricao` (opcional — o "ao final você deve...") e `tipo`:
+Cada `SeedGroup` tem `titulo`, `itens[]` e, opcionalmente, **`fonte`** — de onde o conteúdo vem. A fonte vira a tag colorida na tela e é herdada por todos os itens do grupo (um item pode sobrescrever com a própria `fonte`):
+
+| `fonte` | tag exibida | cor |
+|---|---|---|
+| `"ads-pucpr"` | ADS-PUCPR | bordô |
+| `"dio"` | DIO | roxo |
+| `"alura"` | Alura | azul |
+| `"anthropic"` | Anthropic | laranja |
+| (omitido) | sem tag | — |
+
+Cada `SeedItem` tem `titulo`, `descricao` (opcional — o "ao final você deve...") e `tipo`:
 
 | tipo | efeito na regra de progresso | visual |
 |---|---|---|
 | `concept` | divide os 70% do bloco | checkbox normal |
-| `review` | divide os 70% (igual a concept) | tag "ADS PUC-PR" |
+| `review` | divide os 70% (igual a concept) | matéria de faculdade (use `fonte: "ads-pucpr"`) |
 | `optional` | NÃO conta no progresso | apagado + tag "opcional" |
 | `project` | vale 30% do bloco | destaque com 🏗️ |
 
 Regras derivadas que você precisa respeitar:
 - Bloco **sem** item `project`: os obrigatórios passam a valer 100% (automático, nada a configurar).
-- Itens dentro de grupo cujo título contém **"Anthropic"** ganham a tag "Anthropic" automaticamente na UI.
+- A tag da fonte vem de `fonte` (tabela acima), NÃO do título do grupo. Se criar um grupo de cursos de uma fonte nova, adicione o valor em `Fonte` (`lib/types.ts`), no mapa `TAGS_FONTE` (`components/ListaBlocos.tsx`) e no CHECK da coluna (`supabase/migrations/0004_fonte_dos_itens.sql`).
 - O pré-requisito cruzado (IA Etapa 2 ← Dev Bloco 2) é definido em `run.ts` por `ordem` dos blocos — se reordenar blocos dessas trilhas, ATUALIZE os números lá.
 
 ## O processo (siga na ordem)

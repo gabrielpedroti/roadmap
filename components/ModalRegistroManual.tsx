@@ -49,8 +49,13 @@ export function ModalRegistroManual({
         setErro("A hora de fim precisa ser depois da de início.");
         return;
       }
+    } else if (data === hojeSP()) {
+      // hoje: ancora na hora REAL (acabei de estudar) — o histórico mostra
+      // o horário de verdade, não um meio-dia fictício
+      fim = new Date();
+      inicio = new Date(fim.getTime() - duracaoMin * 60_000);
     } else {
-      // sem horário informado: marca ao meio-dia, só pra ter um ponto no dia
+      // data passada: não existe "agora" daquele dia, então marca ao meio-dia
       inicio = new Date(`${data}T12:00:00-03:00`);
       fim = new Date(inicio.getTime() + duracaoMin * 60_000);
     }

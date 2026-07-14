@@ -1,0 +1,15 @@
+# Normaliza finais de linha: tudo vira LF no repositório e no working tree.
+# Mata a poluição de CRLF↔LF que o Windows/OneDrive cria a cada save.
+# (o projeto roda em Linux na Vercel/CI, então LF é o padrão certo)
+* text=auto eol=lf
+
+# Arquivos binários — nunca mexer no conteúdo
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.ico  binary
+*.mp3  binary
+*.woff  binary
+*.woff2 binary

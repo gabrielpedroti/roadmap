@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { formatarHoras } from "@/lib/formato";
+import { diaDaSemana, hojeSP } from "@/lib/streak";
 import type { Track, UserSettings } from "@/lib/types";
 import { BarraProgresso } from "./BarraProgresso";
 import { ModalConfigConstancia } from "./ModalConfigConstancia";
@@ -55,7 +56,12 @@ export function Constancia({
     );
   }
 
-  const chamaAcesa = minutosHoje >= settings.streak_min_diario_min;
+  // Hoje é um dia que conta pro streak? Nos dias que NÃO contam (ex.: fim de
+  // semana desmarcado) a sequência não corre risco — então a chama fica acesa
+  // em vez de apagar e dar a impressão de que o streak sumiu.
+  const hojeConta = settings.dias_que_contam.includes(diaDaSemana(hojeSP()));
+  const chamaAcesa =
+    !hojeConta || minutosHoje >= settings.streak_min_diario_min;
   const metaSemanalMin = settings.meta_semanal_h * 60;
   const metaMensalMin = settings.meta_mensal_h * 60;
 
@@ -80,9 +86,11 @@ export function Constancia({
               chamaAcesa ? "" : "opacity-35 grayscale"
             }`}
             title={
-              chamaAcesa
-                ? "Mínimo de hoje cumprido!"
-                : "Estude o mínimo de hoje para acender a chama"
+              !hojeConta
+                ? "Hoje não conta pro streak — sua sequência está segura"
+                : chamaAcesa
+                  ? "Mínimo de hoje cumprido!"
+                  : "Estude o mínimo de hoje para acender a chama"
             }
           >
             🔥

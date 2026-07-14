@@ -2,6 +2,10 @@
 
 export type ItemTipo = "concept" | "review" | "optional" | "project";
 
+// De onde o item vem. Vira a tag colorida na tela da trilha.
+// Conceito que não aponta pra fonte específica fica sem (null).
+export type Fonte = "ads-pucpr" | "dio" | "alura" | "anthropic";
+
 export type Track = {
   id: string;
   slug: string;
@@ -36,6 +40,7 @@ export type Item = {
   descricao: string | null;
   ordem: number;
   tipo: ItemTipo;
+  fonte: Fonte | null;
 };
 
 export type Sessao = {

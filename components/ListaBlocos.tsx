@@ -9,8 +9,17 @@ import {
   progressoDoBloco,
   type ItemProgresso,
 } from "@/lib/progress";
-import type { Block, Item, ItemGroup } from "@/lib/types";
+import type { Block, Fonte, Item, ItemGroup } from "@/lib/types";
 import { BarraProgresso } from "./BarraProgresso";
+
+// A tag de cada item sai da FONTE dele (vem do banco) — nada de adivinhar
+// pelo título do grupo. Conceito sem fonte específica fica sem tag.
+const TAGS_FONTE: Record<Fonte, { texto: string; cor: string }> = {
+  "ads-pucpr": { texto: "ADS-PUCPR", cor: "#9D2235" }, // bordô PUCPR
+  dio: { texto: "DIO", cor: "#8E4DFF" }, // roxo DIO
+  alura: { texto: "Alura", cor: "#2A7AE2" }, // azul Alura
+  anthropic: { texto: "Anthropic", cor: "#D97757" }, // laranja Claude
+};
 
 export type BlocoTela = Block & {
   prereqRotulo: string | null;
@@ -153,7 +162,6 @@ export function ListaBlocos({
                       <LinhaItem
                         key={item.id}
                         item={item}
-                        grupoTitulo={grupo.titulo}
                         marcado={feitos.has(item.id)}
                         desabilitado={bloqueado || somenteLeitura}
                         cor={cor}
@@ -238,19 +246,17 @@ function Tag({ texto, cor }: { texto: string; cor?: string }) {
 }
 
 // Uma linha de item, com o visual do seu tipo:
-// concept = check normal · review = tag "ADS PUC-PR" ·
-// optional = apagado + tag "opcional" · project = destaque com 🏗️
-// Itens da Anthropic Academy (grupo com "Anthropic" no nome) ganham tag.
+// concept = check normal · optional = apagado + tag "opcional" ·
+// project = destaque com 🏗️. A tag da FONTE (Alura, DIO, ADS-PUCPR,
+// Anthropic) sai do campo `fonte` do item.
 function LinhaItem({
   item,
-  grupoTitulo,
   marcado,
   desabilitado,
   cor,
   onAlternar,
 }: {
   item: Item;
-  grupoTitulo: string;
   marcado: boolean;
   desabilitado: boolean;
   cor: string;
@@ -258,8 +264,10 @@ function LinhaItem({
 }) {
   const ehProjeto = item.tipo === "project";
   const ehOpcional = item.tipo === "optional";
-  const ehAnthropic = grupoTitulo.includes("Anthropic");
-  const ehDio = grupoTitulo.includes("DIO");
+  // fallback: matéria de faculdade sem fonte gravada ainda cai em ADS-PUCPR
+  const fonte: Fonte | null =
+    item.fonte ?? (item.tipo === "review" ? "ads-pucpr" : null);
+  const tagFonte = fonte ? TAGS_FONTE[fonte] : null;
 
   return (
     <label
@@ -289,9 +297,7 @@ function LinhaItem({
           {ehProjeto && "🏗️ "}
           {item.titulo}
         </span>
-        {item.tipo === "review" && <Tag texto="ADS PUC-PR" cor="#9D2235" />}
-        {ehAnthropic && <Tag texto="Anthropic" cor="#D97757" />}
-        {ehDio && <Tag texto="DIO" cor="#8E4DFF" />}
+        {tagFonte && <Tag texto={tagFonte.texto} cor={tagFonte.cor} />}
         {ehOpcional && <Tag texto="opcional" />}
         {item.descricao && (
           <span className="block text-[12px] text-tinta2">

@@ -95,6 +95,8 @@ async function inserirTrilha(trilha: SeedTrack) {
             descricao: item.descricao ?? null,
             ordem: k + 1,
             tipo: item.tipo,
+            // o item herda a fonte do grupo, salvo se declarar a própria
+            fonte: item.fonte ?? grupo.fonte ?? null,
           }))
         ),
         `itens do grupo "${grupo.titulo}"`

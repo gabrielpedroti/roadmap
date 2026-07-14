@@ -199,6 +199,7 @@ export const trilhaDev: SeedTrack = {
         },
         {
           titulo: "Matérias da faculdade",
+          fonte: "ads-pucpr",
           itens: [
             { titulo: "Raciocínio Computacional — Revisado", tipo: "review" },
             {
@@ -392,6 +393,7 @@ export const trilhaDev: SeedTrack = {
         },
         {
           titulo: "Matérias da faculdade",
+          fonte: "ads-pucpr",
           itens: [
             { titulo: "Fundamentos de POO — Revisado", tipo: "review" },
             { titulo: "Refiz o projeto — Fundamentos de POO", tipo: "optional" },
@@ -549,6 +551,7 @@ export const trilhaDev: SeedTrack = {
         },
         {
           titulo: "Matérias da faculdade",
+          fonte: "ads-pucpr",
           itens: [
             {
               titulo: "Fundamentos de Programação Web — Revisado",
@@ -710,6 +713,7 @@ export const trilhaDev: SeedTrack = {
         },
         {
           titulo: "Matérias da faculdade",
+          fonte: "ads-pucpr",
           itens: [
             {
               titulo:
@@ -864,6 +868,7 @@ export const trilhaDev: SeedTrack = {
         },
         {
           titulo: "Matérias da faculdade",
+          fonte: "ads-pucpr",
           itens: [
             { titulo: "Banco de Dados para TI — Revisado", tipo: "review" },
             {
@@ -1115,6 +1120,7 @@ export const trilhaDev: SeedTrack = {
         },
         {
           titulo: "Matérias da faculdade",
+          fonte: "ads-pucpr",
           itens: [
             {
               titulo: "Fundamentos de Engenharia de Software — Revisado",

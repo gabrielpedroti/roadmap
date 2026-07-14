@@ -22,6 +22,7 @@ export const trilhaIa: SeedTrack = {
       grupos: [
         {
           titulo: "🎓 DIO",
+          fonte: "dio",
           itens: [
             {
               titulo: "Formação Fundamentos de Inteligência Artificial",
@@ -32,6 +33,7 @@ export const trilhaIa: SeedTrack = {
         },
         {
           titulo: "Cursos",
+          fonte: "alura",
           itens: [
             {
               titulo: "HTTP: entendendo a web por baixo dos panos (Alura)",
@@ -50,6 +52,7 @@ export const trilhaIa: SeedTrack = {
         },
         {
           titulo: "🎓 Anthropic Academy",
+          fonte: "anthropic",
           itens: [
             {
               titulo: "AI Fluency — Framework & Foundations",
@@ -71,6 +74,7 @@ export const trilhaIa: SeedTrack = {
       grupos: [
         {
           titulo: "Base",
+          fonte: "alura",
           itens: [
             { titulo: "Letramento em IA", tipo: "concept" },
             { titulo: "Gestão de Processos (Lean/RPA)", tipo: "concept" },
@@ -79,6 +83,7 @@ export const trilhaIa: SeedTrack = {
         },
         {
           titulo: "Nível 1",
+          fonte: "alura",
           itens: [
             { titulo: "Prompt Engineering", tipo: "concept" },
             { titulo: "Power Automate (curso 1)", tipo: "concept" },
@@ -93,6 +98,7 @@ export const trilhaIa: SeedTrack = {
         },
         {
           titulo: "Nível 2",
+          fonte: "alura",
           itens: [
             { titulo: "Excel avançado com IA", tipo: "concept" },
             { titulo: "Agentes com Gemini (Workspace)", tipo: "concept" },
@@ -109,6 +115,7 @@ export const trilhaIa: SeedTrack = {
         },
         {
           titulo: "Extras",
+          fonte: "alura",
           itens: [
             {
               titulo: "pandas — manipulação de planilhas em Python",
@@ -123,6 +130,7 @@ export const trilhaIa: SeedTrack = {
         },
         {
           titulo: "Matérias da faculdade",
+          fonte: "ads-pucpr",
           itens: [
             {
               titulo:
@@ -142,6 +150,7 @@ export const trilhaIa: SeedTrack = {
       grupos: [
         {
           titulo: "Base",
+          fonte: "alura",
           itens: [
             { titulo: "Pensamento computacional", tipo: "concept" },
             { titulo: "Python — IA Aplicada", tipo: "concept" },
@@ -149,6 +158,7 @@ export const trilhaIa: SeedTrack = {
         },
         {
           titulo: "Nível 1",
+          fonte: "alura",
           itens: [
             {
               titulo: "Langflow",
@@ -159,6 +169,7 @@ export const trilhaIa: SeedTrack = {
         },
         {
           titulo: "Nível 2",
+          fonte: "alura",
           itens: [
             { titulo: "Arquiteturas RAG com LangChain", tipo: "concept" },
             { titulo: "LangChain RAG avançado", tipo: "concept" },
@@ -171,6 +182,7 @@ export const trilhaIa: SeedTrack = {
         },
         {
           titulo: "Nível 3",
+          fonte: "alura",
           itens: [
             {
               titulo: "Observabilidade de LLMs (LangFuse)",
@@ -188,6 +200,7 @@ export const trilhaIa: SeedTrack = {
         },
         {
           titulo: "🎓 Anthropic Academy",
+          fonte: "anthropic",
           itens: [
             { titulo: "Claude Platform 101", tipo: "concept" },
             {
@@ -224,6 +237,7 @@ export const trilhaIa: SeedTrack = {
       grupos: [
         {
           titulo: "Cursos",
+          fonte: "alura",
           itens: [
             { titulo: "LangChain e Python com OpenAI", tipo: "concept" },
             {
@@ -239,6 +253,7 @@ export const trilhaIa: SeedTrack = {
         },
         {
           titulo: "🎓 Anthropic Academy",
+          fonte: "anthropic",
           itens: [
             {
               titulo: "Claude Code 101",
@@ -252,6 +267,7 @@ export const trilhaIa: SeedTrack = {
         },
         {
           titulo: "Matérias da faculdade",
+          fonte: "ads-pucpr",
           itens: [
             {
               titulo: "Técnicas de Machine Learning — Revisado",
