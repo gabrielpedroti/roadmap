@@ -30,6 +30,21 @@ Cada `SeedGroup` tem `titulo`, `itens[]` e, opcionalmente, **`fonte`** — de on
 | `"anthropic"` | Anthropic | laranja |
 | (omitido) | sem tag | — |
 
+### Onde estudar cada conceito (os chips)
+
+Além da `fonte` (que diz que o item **é** um curso), um conceito pode apontar **onde estudá-lo** — vira os chips embaixo da descrição. Na trilha Dev isso vive num arquivo separado, `supabase/seed/onde-estudar-dev.ts`, com o título do conceito como chave:
+
+```ts
+"Variáveis e tipos": [alura("trilha", T_ZERO), puc(M_RACIOCINIO)],
+"CSV": [alura("trilha", T_PRATICANDO)],
+```
+
+Cada entrada é `{ plataforma, tipo, nome }`. O chip mostra `Plataforma · Nome`, e a palavra **"Trilha:"** aparece só quando `tipo` é `"trilha"` (curso e matéria mostram só o nome). Conceito sem entrada não mostra chip.
+
+⚠️ A chave é o **título exato** do conceito. Se mudar um título em `trilha-dev.ts`, atualize a chave — o `npm run seed` **falha de propósito** se achar uma chave órfã. Se mudar o mapa, **regere a migration** (o `0005_onde_estudar.sql` é gerado, não escrito à mão).
+
+### Tipos de item
+
 Cada `SeedItem` tem `titulo`, `descricao` (opcional — o "ao final você deve...") e `tipo`:
 
 | tipo | efeito na regra de progresso | visual |

@@ -10,6 +10,7 @@
 import { config } from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import type { SeedTrack } from "./tipos";
+import { ondeEstudarDev } from "./onde-estudar-dev";
 import { trilhaDev } from "./trilha-dev";
 import { trilhaIa } from "./trilha-ia";
 import { trilhaIngles } from "./trilha-ingles";
@@ -37,6 +38,25 @@ function ouFalha<T>(resultado: { data: T | null; error: { message: string } | nu
     process.exit(1);
   }
   return resultado.data as T;
+}
+
+// O mapa de "onde estudar" é keyed pelo título do conceito. Se algum título
+// da trilha Dev mudar, a chave vira órfã e o chip some sem ninguém perceber —
+// então conferimos antes de gravar qualquer coisa.
+function validarOndeEstudar() {
+  const titulosDev = new Set(
+    trilhaDev.blocos.flatMap((b) =>
+      b.grupos.flatMap((g) => g.itens.map((i) => i.titulo))
+    )
+  );
+  const orfas = Object.keys(ondeEstudarDev).filter((t) => !titulosDev.has(t));
+  if (orfas.length > 0) {
+    console.error(
+      "onde-estudar-dev.ts tem chaves que não existem na trilha Dev:\n  - " +
+        orfas.join("\n  - ")
+    );
+    process.exit(1);
+  }
 }
 
 async function inserirTrilha(trilha: SeedTrack) {
@@ -97,6 +117,10 @@ async function inserirTrilha(trilha: SeedTrack) {
             tipo: item.tipo,
             // o item herda a fonte do grupo, salvo se declarar a própria
             fonte: item.fonte ?? grupo.fonte ?? null,
+            // onde estudar: o do próprio item, ou o mapa da trilha Dev
+            onde_estudar:
+              item.ondeEstudar ??
+              (trilha.slug === "dev" ? (ondeEstudarDev[item.titulo] ?? []) : []),
           }))
         ),
         `itens do grupo "${grupo.titulo}"`
@@ -116,6 +140,8 @@ async function inserirTrilha(trilha: SeedTrack) {
 
 async function main() {
   const force = process.argv.includes("--force");
+
+  validarOndeEstudar();
 
   const existentes = ouFalha(
     await db.from("tracks").select("id"),

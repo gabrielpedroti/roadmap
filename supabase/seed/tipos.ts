@@ -2,13 +2,16 @@
 // painel-de-estudos-kit/conteudo/trilha-*.md (fora do git) — se a trilha
 // mudar lá, atualizar aqui e rodar `npm run seed -- --force`.
 
-import type { Fonte, ItemTipo } from "@/lib/types";
+import type { Fonte, ItemTipo, OndeEstudar } from "@/lib/types";
 
 export type SeedItem = {
   titulo: string;
   descricao?: string; // "ao final você deve entender/saber fazer..."
   tipo: ItemTipo;
   fonte?: Fonte; // sobrescreve a fonte do grupo, quando o item foge da regra
+  // onde estudar este conceito (chips). Na trilha Dev vem do mapa em
+  // onde-estudar-dev.ts; aqui fica pra casos pontuais.
+  ondeEstudar?: OndeEstudar[];
 };
 
 export type SeedGroup = {

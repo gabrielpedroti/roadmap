@@ -9,8 +9,23 @@ import {
   progressoDoBloco,
   type ItemProgresso,
 } from "@/lib/progress";
-import type { Block, Fonte, Item, ItemGroup } from "@/lib/types";
+import type {
+  Block,
+  Fonte,
+  Item,
+  ItemGroup,
+  OndeEstudar,
+  Plataforma,
+} from "@/lib/types";
 import { BarraProgresso } from "./BarraProgresso";
+
+// Nome e cor de cada plataforma nos chips de "onde estudar"
+const PLATAFORMAS: Record<Plataforma, { nome: string; cor: string }> = {
+  alura: { nome: "Alura", cor: "#2A7AE2" },
+  puc: { nome: "PUC", cor: "#9D2235" },
+  dio: { nome: "DIO", cor: "#8E4DFF" },
+  anthropic: { nome: "Anthropic", cor: "#D97757" },
+};
 
 // A tag de cada item sai da FONTE dele (vem do banco) — nada de adivinhar
 // pelo título do grupo. Conceito sem fonte específica fica sem tag.
@@ -245,6 +260,32 @@ function Tag({ texto, cor }: { texto: string; cor?: string }) {
   );
 }
 
+// Chip de "onde estudar": Alura · Trilha: Nome  |  Alura · Nome (curso)
+// |  PUC · Nome (matéria). A palavra "Trilha:" só aparece pra trilha —
+// curso e matéria mostram só o nome.
+function ChipOndeEstudar({ fonte }: { fonte: OndeEstudar }) {
+  const p = PLATAFORMAS[fonte.plataforma];
+  return (
+    <span
+      className="com-cor inline-flex items-center gap-[5px] rounded-full px-[10px] py-[3px] text-[11px]"
+      style={
+        {
+          "--cor": p.cor,
+          background: "var(--cor-fundo)",
+          color: "var(--cor-texto)",
+        } as React.CSSProperties
+      }
+    >
+      <span className="font-extrabold">{p.nome}</span>
+      <span className="opacity-50">·</span>
+      {fonte.tipo === "trilha" && (
+        <span className="font-medium opacity-80">Trilha:</span>
+      )}
+      <span className="font-semibold">{fonte.nome}</span>
+    </span>
+  );
+}
+
 // Uma linha de item, com o visual do seu tipo:
 // concept = check normal · optional = apagado + tag "opcional" ·
 // project = destaque com 🏗️. A tag da FONTE (Alura, DIO, ADS-PUCPR,
@@ -302,6 +343,13 @@ function LinhaItem({
         {item.descricao && (
           <span className="block text-[12px] text-tinta2">
             {item.descricao}
+          </span>
+        )}
+        {item.onde_estudar?.length > 0 && (
+          <span className="mt-[6px] flex flex-wrap gap-[5px]">
+            {item.onde_estudar.map((f, i) => (
+              <ChipOndeEstudar key={i} fonte={f} />
+            ))}
           </span>
         )}
       </span>

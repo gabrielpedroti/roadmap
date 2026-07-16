@@ -2,9 +2,20 @@
 
 export type ItemTipo = "concept" | "review" | "optional" | "project";
 
-// De onde o item vem. Vira a tag colorida na tela da trilha.
-// Conceito que não aponta pra fonte específica fica sem (null).
+// De onde o item vem — usado quando o item É um curso (ex.: os cursos da
+// trilha de IA). Vira a tag colorida ao lado do título.
 export type Fonte = "ads-pucpr" | "dio" | "alura" | "anthropic";
+
+// ONDE ESTUDAR um conceito. Diferente de `Fonte`: o conceito não é um curso,
+// ele aponta pra um ou mais lugares onde o conteúdo existe. Vira os chips
+// embaixo da descrição. Um conceito pode ter 0, 1 ou várias.
+export type Plataforma = "alura" | "puc" | "dio" | "anthropic";
+export type TipoFonte = "curso" | "trilha" | "materia";
+export type OndeEstudar = {
+  plataforma: Plataforma;
+  tipo: TipoFonte;
+  nome: string;
+};
 
 export type Track = {
   id: string;
@@ -41,6 +52,7 @@ export type Item = {
   ordem: number;
   tipo: ItemTipo;
   fonte: Fonte | null;
+  onde_estudar: OndeEstudar[];
 };
 
 export type Sessao = {
