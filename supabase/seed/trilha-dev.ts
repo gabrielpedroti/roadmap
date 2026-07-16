@@ -1,6 +1,10 @@
 import type { SeedTrack } from "./tipos";
 
-// Transcrição fiel de painel-de-estudos-kit/conteudo/trilha-dev.md
+// Trilha Dev — espinha de conceitos conforme o mapa do Gabriel
+// ("MAPA DA TRILHA DEV — CONCEITO x ONDE ESTUDAR", jul/2026).
+// Os conceitos são grossos de propósito: cada um casa com um curso/matéria.
+// Onde estudar cada um: supabase/seed/onde-estudar-dev.ts.
+//
 // Objetivo: rever as 20 matérias técnicas de ADS (PUC-PR) + chegar pronto
 // na Pós Tech Full Stack Development (FIAP), meta turma de agosto/2027.
 
@@ -21,63 +25,46 @@ export const trilhaDev: SeedTrack = {
         "A base de tudo: ambiente, terminal, Git e lógica de programação com Python.",
       grupos: [
         {
-          titulo: "Ambiente e ferramentas",
+          titulo: "Primeiros passos",
           itens: [
             {
-              titulo: "Instalar e configurar Python + VS Code",
+              titulo: "O que é programação, áreas, carreira e próximos passos",
               descricao:
-                "Entender: o que é interpretador, PATH, como rodar um script.",
-              tipo: "concept",
-            },
-            {
-              titulo: "VS Code proficiente",
-              descricao:
-                "Dominar: paleta de comandos (Ctrl+Shift+P), multi-cursor, busca no projeto (Ctrl+Shift+F), extensões (Python, depois ESLint/Prettier), terminal integrado, debugger básico (breakpoint, step over, inspecionar variável).",
-              tipo: "concept",
-            },
-            {
-              titulo: "Terminal básico",
-              descricao:
-                "Navegar entre pastas, criar/mover/apagar arquivos, rodar scripts, entender caminho relativo vs absoluto.",
+                "Front, back, mobile: o mapa da área, como o mercado funciona e por onde seguir.",
               tipo: "concept",
             },
           ],
         },
         {
-          titulo: "Git e GitHub — prioridade: usar em TODOS os projetos daqui pra frente",
+          titulo: "Ambiente e ferramentas",
           itens: [
             {
-              titulo: "O que é controle de versão",
-              descricao: "Explicar por que existe e o que é um commit.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Ciclo básico",
+              titulo: "VS Code (uso produtivo)",
               descricao:
-                "init, status, add, commit; escrever mensagens de commit claras e pequenas.",
+                "Paleta de comandos (Ctrl+Shift+P), multi-cursor, busca no projeto, extensões, terminal integrado e debugger básico.",
               tipo: "concept",
             },
             {
-              titulo: "Histórico",
-              descricao: "log, diff, voltar num arquivo (checkout/restore).",
-              tipo: "concept",
-            },
-            {
-              titulo: "Branches",
+              titulo: "Terminal",
               descricao:
-                "Criar branch, alternar, merge simples, resolver um conflito básico.",
+                "Navegar entre pastas, criar/mover/apagar arquivos, rodar scripts, caminho relativo vs absoluto.",
+              tipo: "concept",
+            },
+          ],
+        },
+        {
+          titulo: "Git e GitHub",
+          itens: [
+            {
+              titulo: "Controle de versão, ciclo (add/commit) e histórico",
+              descricao:
+                "Por que existe; init, status, add, commit com mensagens claras; log, diff e voltar num arquivo.",
               tipo: "concept",
             },
             {
-              titulo: "GitHub",
+              titulo: "Branches, conflito, GitHub e colaboração",
               descricao:
-                "Criar repositório, clonar, push/pull, README, .gitignore.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Fluxo diário",
-              descricao:
-                "Critério de saída: versionar qualquer projeto novo sem consultar tutorial.",
+                "Criar/alternar branch, merge, resolver conflito; repositório, clone, push/pull, README e .gitignore. Critério de saída: versionar qualquer projeto novo sem tutorial.",
               tipo: "concept",
             },
           ],
@@ -86,20 +73,9 @@ export const trilhaDev: SeedTrack = {
           titulo: "Lógica e fundamentos",
           itens: [
             {
-              titulo: "Variáveis e tipos",
+              titulo: "Variáveis, operadores, entrada/saída",
               descricao:
-                "int, float, str, bool; conversões; o que acontece na memória (intuição).",
-              tipo: "concept",
-            },
-            {
-              titulo: "Operadores",
-              descricao:
-                "Aritméticos, comparação, lógicos (and/or/not); precedência.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Entrada e saída",
-              descricao: "input(), print() formatado, f-strings.",
+                "int, float, str, bool e conversões; aritméticos, comparação e lógicos (and/or/not); input(), print() e f-strings.",
               tipo: "concept",
             },
             {
@@ -121,9 +97,15 @@ export const trilhaDev: SeedTrack = {
               tipo: "concept",
             },
             {
-              titulo: "Erros",
+              titulo: "Erros (try/except)",
               descricao:
                 "Ler um traceback sem pânico; try/except; levantar erros próprios (raise).",
+              tipo: "concept",
+            },
+            {
+              titulo: "Strings e Regex",
+              descricao:
+                "Manipular texto de verdade e reconhecer padrões com expressões regulares.",
               tipo: "concept",
             },
           ],
@@ -132,20 +114,15 @@ export const trilhaDev: SeedTrack = {
           titulo: "Coleções",
           itens: [
             {
-              titulo: "Listas",
+              titulo: "Listas e tuplas",
               descricao:
-                "Criar, indexar, fatiar (slicing), métodos principais, iterar.",
+                "Criar, indexar, fatiar (slicing), métodos principais, iterar; imutabilidade e quando cada uma faz sentido.",
               tipo: "concept",
             },
             {
-              titulo: "Dicionários",
+              titulo: "Dicionários e conjuntos",
               descricao:
-                "Chave/valor, quando usar em vez de lista, iterar chaves e valores.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Tuplas e sets",
-              descricao: "Imutabilidade; quando cada um faz sentido.",
+                "Chave/valor, quando usar em vez de lista, iterar chaves e valores; sets e operações de conjunto.",
               tipo: "concept",
             },
             {
@@ -159,40 +136,21 @@ export const trilhaDev: SeedTrack = {
           titulo: "Arquivos e dados",
           itens: [
             {
-              titulo: "Ler e escrever arquivos texto",
-              descricao: "with open, modos de abertura.",
-              tipo: "concept",
-            },
-            {
-              titulo: "CSV",
-              descricao: "Ler/escrever com o módulo csv.",
-              tipo: "concept",
-            },
-            {
-              titulo: "JSON",
+              titulo: "Ler/escrever texto, CSV e JSON",
               descricao:
-                "Entender o formato, dumps/loads; por que JSON é a língua das APIs.",
+                "with open e modos de abertura; módulo csv; dumps/loads — e por que JSON é a língua das APIs.",
               tipo: "concept",
             },
           ],
         },
         {
-          titulo: "Matemática aplicada (revisão dirigida)",
+          titulo: "Matemática aplicada",
           itens: [
             {
-              titulo: "Lógica proposicional",
-              descricao: "E/OU/NÃO, tabelas-verdade — a base dos seus ifs.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Bases numéricas",
-              descricao: "Binário/decimal/hexadecimal (intuição, não decoreba).",
-              tipo: "concept",
-            },
-            {
-              titulo: "Proporção e porcentagem aplicadas",
+              titulo:
+                "Lógica proposicional, bases numéricas, proporção/porcentagem",
               descricao:
-                "O suficiente pra barra de progresso, juros, métricas.",
+                "E/OU/NÃO e tabelas-verdade (a base dos seus ifs); binário/decimal/hex na intuição; o suficiente pra barra de progresso, juros e métricas.",
               tipo: "concept",
             },
           ],
@@ -240,43 +198,10 @@ export const trilhaDev: SeedTrack = {
           titulo: "Programação Orientada a Objetos",
           itens: [
             {
-              titulo: "Classes e objetos",
+              titulo:
+                "Classes, encapsulamento, herança, polimorfismo, composição e métodos especiais",
               descricao:
-                "Atributos, métodos, __init__, self; modelar algo do mundo real.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Encapsulamento",
-              descricao:
-                "Convenções público/privado, properties; por que esconder detalhes.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Herança",
-              descricao:
-                "Reaproveitar e especializar; super(); quando herança é má ideia.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Polimorfismo",
-              descricao:
-                "Mesmo método, comportamentos diferentes; duck typing.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Composição",
-              descricao: "“Tem um” vs “é um”; preferir composição a herança.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Métodos especiais",
-              descricao: "__str__, __repr__, __eq__ básicos.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Critério de saída de POO",
-              descricao:
-                "Decidir conscientemente quando usar classe e quando função resolve.",
+                "Modelar algo do mundo real com __init__ e self; esconder detalhes com properties; reaproveitar com super(); duck typing; “tem um” vs “é um”; __str__, __repr__, __eq__. Critério de saída: decidir quando usar classe e quando função resolve.",
               tipo: "concept",
             },
           ],
@@ -285,30 +210,24 @@ export const trilhaDev: SeedTrack = {
           titulo: "Estruturas de dados e algoritmos",
           itens: [
             {
-              titulo: "Pilha e fila",
+              titulo: "Pilha, fila e lista ligada",
               descricao:
-                "Conceito, operações, onde aparecem na vida real (undo, filas de tarefas).",
+                "Conceito, operações e onde aparecem na vida real (undo, filas de tarefas); diferença pra array.",
               tipo: "concept",
             },
             {
-              titulo: "Lista ligada",
+              titulo: "Busca (linear, binária)",
+              descricao: "Quando cada uma serve e por que ordenação importa.",
+              tipo: "concept",
+            },
+            {
+              titulo: "Ordenação (bubble, insertion, merge)",
               descricao:
-                "Conceito e diferença pra array (não precisa implementar de cor).",
+                "Entender bubble/insertion; merge sort na intuição de dividir pra conquistar.",
               tipo: "concept",
             },
             {
-              titulo: "Busca",
-              descricao: "Linear vs binária; por que ordenação importa.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Ordenação",
-              descricao:
-                "Bubble/insertion (entender), merge sort (intuição de dividir pra conquistar).",
-              tipo: "concept",
-            },
-            {
-              titulo: "Complexidade",
+              titulo: "Complexidade (Big-O)",
               descricao:
                 "Noção de O(1), O(n), O(n²), O(log n); comparar duas soluções.",
               tipo: "concept",
@@ -319,14 +238,9 @@ export const trilhaDev: SeedTrack = {
           titulo: "Organização de código",
           itens: [
             {
-              titulo: "Módulos e imports",
-              descricao: "Dividir um projeto em arquivos.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Ambientes virtuais",
+              titulo: "Módulos e imports, ambientes virtuais (venv, pip)",
               descricao:
-                "venv, pip, requirements.txt; por que isolar dependências.",
+                "Dividir um projeto em arquivos; isolar dependências com venv e requirements.txt.",
               tipo: "concept",
             },
           ],
@@ -335,26 +249,9 @@ export const trilhaDev: SeedTrack = {
           titulo: "Consumindo APIs",
           itens: [
             {
-              titulo: "HTTP essencial",
+              titulo: "HTTP, requests, autenticação (token), paginação",
               descricao:
-                "Requisição/resposta, métodos (GET/POST), códigos de status.",
-              tipo: "concept",
-            },
-            {
-              titulo: "requests",
-              descricao:
-                "Consumir uma API real, tratar erro de rede, parsear JSON.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Autenticação",
-              descricao:
-                "Token no header; guardar segredo em variável de ambiente.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Paginação",
-              descricao: "Consumir uma API paginada de ponta a ponta.",
+                "Requisição/resposta e status codes; consumir uma API real tratando erro de rede; token no header com segredo em variável de ambiente; consumir uma API paginada de ponta a ponta.",
               tipo: "concept",
             },
           ],
@@ -363,30 +260,20 @@ export const trilhaDev: SeedTrack = {
           titulo: "Testes",
           itens: [
             {
-              titulo: "pytest básico",
+              titulo: "pytest e casos de borda",
               descricao:
-                "Escrever testes pra funções puras; nomear bem; rodar no terminal.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Casos de borda",
-              descricao:
-                "Pensar no que quebra: vazio, zero, negativo, formato errado.",
+                "Escrever testes pra funções puras, nomear bem, rodar no terminal; pensar no que quebra: vazio, zero, negativo, formato errado.",
               tipo: "concept",
             },
           ],
         },
         {
-          titulo: "IoT (revisão dirigida)",
+          titulo: "IoT",
           itens: [
             {
-              titulo: "Conceito e arquitetura IoT",
-              descricao: "Sensor → gateway → nuvem; onde APIs entram nisso.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Protocolos",
-              descricao: "HTTP vs MQTT (visão geral de quando cada um serve).",
+              titulo: "Conceito e arquitetura, protocolos (HTTP vs MQTT)",
+              descricao:
+                "Sensor → gateway → nuvem; onde as APIs entram nisso e quando cada protocolo serve.",
               tipo: "concept",
             },
           ],
@@ -439,20 +326,9 @@ export const trilhaDev: SeedTrack = {
           titulo: "Como a web funciona",
           itens: [
             {
-              titulo: "Cliente/servidor",
+              titulo: "Cliente/servidor, HTTP na prática, DNS",
               descricao:
-                "O que acontece quando você digita uma URL e dá Enter (contar a história completa).",
-              tipo: "concept",
-            },
-            {
-              titulo: "HTTP na prática",
-              descricao:
-                "Métodos, status codes (200/301/404/500), headers; inspecionar na aba Network do DevTools.",
-              tipo: "concept",
-            },
-            {
-              titulo: "DNS e domínios",
-              descricao: "Como um nome vira IP.",
+                "Contar a história completa do que acontece ao digitar uma URL; métodos, status codes e headers na aba Network; como um nome vira IP.",
               tipo: "concept",
             },
           ],
@@ -461,19 +337,9 @@ export const trilhaDev: SeedTrack = {
           titulo: "HTML",
           itens: [
             {
-              titulo: "Estrutura e semântica",
+              titulo: "Estrutura/semântica, formulários, acessibilidade",
               descricao:
-                "header/main/section/article/footer; por que semântica importa.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Formulários",
-              descricao: "Inputs, labels, validação nativa.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Acessibilidade básica",
-              descricao: "alt, hierarquia de headings, contraste.",
+                "header/main/section/article/footer e por que semântica importa; inputs, labels e validação nativa; alt, hierarquia de headings e contraste.",
               tipo: "concept",
             },
           ],
@@ -482,69 +348,32 @@ export const trilhaDev: SeedTrack = {
           titulo: "CSS",
           itens: [
             {
-              titulo: "Box model",
+              titulo:
+                "Box model, flexbox, grid, responsivo (mobile-first), variáveis CSS",
               descricao:
-                "margin/border/padding/content; display block vs inline.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Flexbox",
-              descricao:
-                "Alinhar e distribuir qualquer coisa em uma dimensão.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Grid",
-              descricao: "Layouts em duas dimensões.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Responsivo",
-              descricao:
-                "Media queries, mobile-first, unidades relativas (rem, %).",
-              tipo: "concept",
-            },
-            {
-              titulo: "Variáveis CSS e organização",
-              descricao: "Manter um CSS que não vira espaguete.",
+                "margin/border/padding/content; alinhar em uma dimensão e layouts em duas; media queries e unidades relativas; manter um CSS que não vira espaguete.",
               tipo: "concept",
             },
           ],
         },
         {
-          titulo: "JavaScript no navegador (primeiro contato)",
+          titulo: "JavaScript no navegador",
           itens: [
             {
-              titulo: "Sintaxe básica",
+              titulo: "Sintaxe básica, DOM, eventos",
               descricao:
-                "Variáveis (let/const), funções, condicionais — mapear do Python.",
-              tipo: "concept",
-            },
-            {
-              titulo: "DOM",
-              descricao: "Selecionar, criar e modificar elementos.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Eventos",
-              descricao:
-                "click, submit, input; prevenir comportamento padrão.",
+                "Variáveis (let/const), funções e condicionais mapeando do Python; selecionar, criar e modificar elementos; click, submit, input e prevenir o comportamento padrão.",
               tipo: "concept",
             },
           ],
         },
         {
-          titulo: "UX/IHC (revisão dirigida)",
+          titulo: "UX / IHC",
           itens: [
             {
-              titulo: "Heurísticas de usabilidade",
+              titulo: "Heurísticas de usabilidade, hierarquia visual",
               descricao:
-                "Feedback, consistência, prevenção de erro (Nielsen, as 10).",
-              tipo: "concept",
-            },
-            {
-              titulo: "Hierarquia visual",
-              descricao: "Tamanho, contraste e espaço guiando o olho.",
+                "Feedback, consistência e prevenção de erro (as 10 de Nielsen); tamanho, contraste e espaço guiando o olho.",
               tipo: "concept",
             },
           ],
@@ -595,23 +424,10 @@ export const trilhaDev: SeedTrack = {
           titulo: "A linguagem a fundo",
           itens: [
             {
-              titulo: "Tipos e coerção",
-              descricao: "== vs ===, truthy/falsy, null vs undefined.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Escopo e hoisting",
-              descricao: "var/let/const, escopo de bloco vs função.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Arrow functions",
-              descricao: "Sintaxe e diferença de this.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Destructuring, spread, template literals",
-              descricao: "Ler e escrever JS moderno com naturalidade.",
+              titulo:
+                "Tipos e coerção (== vs ===), escopo, arrow functions, destructuring/spread",
+              descricao:
+                "truthy/falsy, null vs undefined; var/let/const e escopo de bloco; a diferença de this na arrow; ler e escrever JS moderno com naturalidade.",
               tipo: "concept",
             },
           ],
@@ -620,13 +436,9 @@ export const trilhaDev: SeedTrack = {
           titulo: "Funções avançadas",
           itens: [
             {
-              titulo: "Callbacks e higher-order functions",
-              descricao: "Funções que recebem/retornam funções.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Closures",
-              descricao: "Explicar com um exemplo próprio (contador, cache).",
+              titulo: "Callbacks, higher-order, closures",
+              descricao:
+                "Funções que recebem/retornam funções; explicar closure com um exemplo próprio (contador, cache).",
               tipo: "concept",
             },
           ],
@@ -635,19 +447,9 @@ export const trilhaDev: SeedTrack = {
           titulo: "Objetos e protótipos",
           itens: [
             {
-              titulo: "this",
-              descricao: "Nos 4 contextos principais.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Protótipos",
-              descricao: "Como herança funciona por baixo do capô.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Classes ES6",
+              titulo: "this, protótipos, classes ES6",
               descricao:
-                "Sintaxe e relação com protótipos; mapear da POO do Python.",
+                "this nos 4 contextos; como herança funciona por baixo do capô; sintaxe de classe mapeando da POO do Python.",
               tipo: "concept",
             },
           ],
@@ -656,41 +458,20 @@ export const trilhaDev: SeedTrack = {
           titulo: "Arrays de verdade",
           itens: [
             {
-              titulo: "map / filter / reduce",
-              descricao: "Transformar dados sem for; encadear operações.",
-              tipo: "concept",
-            },
-            {
-              titulo: "find, some, every, sort",
-              descricao: "Escolher o método certo.",
+              titulo: "map/filter/reduce, find/some/every/sort",
+              descricao:
+                "Transformar dados sem for e encadear operações; escolher o método certo pro problema.",
               tipo: "concept",
             },
           ],
         },
         {
-          titulo: "Assincronia (o coração do bloco)",
+          titulo: "Assincronia",
           itens: [
             {
-              titulo: "Event loop",
+              titulo: "Event loop, promises, async/await, fetch",
               descricao:
-                "Intuição: por que JS não trava esperando; call stack e fila.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Promises",
-              descricao: "Estados, then/catch, criar uma promise.",
-              tipo: "concept",
-            },
-            {
-              titulo: "async/await",
-              descricao:
-                "Reescrever then-chains; tratamento de erro com try/catch.",
-              tipo: "concept",
-            },
-            {
-              titulo: "fetch",
-              descricao:
-                "Consumir APIs com loading e erro tratados; Promise.all pra chamadas paralelas.",
+                "Por que o JS não trava esperando; estados e then/catch; reescrever then-chains com try/catch; consumir APIs com loading e erro tratados e Promise.all.",
               tipo: "concept",
             },
           ],
@@ -699,14 +480,9 @@ export const trilhaDev: SeedTrack = {
           titulo: "Módulos e qualidade",
           itens: [
             {
-              titulo: "import/export",
-              descricao: "Organizar um projeto em módulos ES.",
-              tipo: "concept",
-            },
-            {
-              titulo: "ESLint + Prettier",
+              titulo: "import/export, ESLint + Prettier",
               descricao:
-                "Configurar uma vez, nunca mais discutir formatação.",
+                "Organizar um projeto em módulos ES; configurar uma vez e nunca mais discutir formatação.",
               tipo: "concept",
             },
           ],
@@ -750,14 +526,9 @@ export const trilhaDev: SeedTrack = {
           titulo: "Node.js",
           itens: [
             {
-              titulo: "Runtime e npm",
+              titulo: "Runtime, npm, assincronia no servidor",
               descricao:
-                "O que é o Node, package.json, scripts, node_modules.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Assincronia no servidor",
-              descricao: "Por que o modelo do Node escala.",
+                "O que é o Node, package.json, scripts e node_modules; por que o modelo do Node escala.",
               tipo: "concept",
             },
           ],
@@ -766,58 +537,22 @@ export const trilhaDev: SeedTrack = {
           titulo: "Express e APIs REST",
           itens: [
             {
-              titulo: "Rotas e verbos",
+              titulo:
+                "Rotas e verbos, middlewares, status codes/erros, validação",
               descricao:
-                "Desenhar uma API REST semântica (recursos, plural, aninhamento).",
-              tipo: "concept",
-            },
-            {
-              titulo: "Middlewares",
-              descricao:
-                "Entender a cadeia; criar um middleware próprio (log, auth).",
-              tipo: "concept",
-            },
-            {
-              titulo: "Status codes e erros",
-              descricao:
-                "Responder certo: 201, 400, 401, 404, 500; handler central de erros.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Validação de entrada",
-              descricao: "Nunca confiar no cliente; validar body/params.",
+                "Desenhar uma API REST semântica; entender a cadeia e criar um middleware próprio; responder certo (201/400/401/404/500) com handler central; nunca confiar no cliente.",
               tipo: "concept",
             },
           ],
         },
         {
-          titulo: "PostgreSQL e SQL de verdade",
+          titulo: "PostgreSQL e SQL",
           itens: [
             {
-              titulo: "Modelagem",
+              titulo:
+                "Modelagem (PK/FK, 1-N, N-N), CRUD, JOINs, agregações, índices/transações",
               descricao:
-                "Tabelas, chaves primárias/estrangeiras, relacionamentos 1-N e N-N.",
-              tipo: "concept",
-            },
-            {
-              titulo: "CRUD em SQL",
-              descricao:
-                "INSERT/SELECT/UPDATE/DELETE, WHERE, ORDER BY, LIMIT.",
-              tipo: "concept",
-            },
-            {
-              titulo: "JOINs",
-              descricao: "INNER/LEFT; quando cada um.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Agregações",
-              descricao: "GROUP BY, COUNT/SUM/AVG.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Índices e transações",
-              descricao: "Intuição de performance; ACID em uma frase.",
+                "Tabelas e relacionamentos; INSERT/SELECT/UPDATE/DELETE com WHERE e ORDER BY; INNER vs LEFT; GROUP BY com COUNT/SUM/AVG; intuição de performance e ACID em uma frase.",
               tipo: "concept",
             },
           ],
@@ -826,15 +561,10 @@ export const trilhaDev: SeedTrack = {
           titulo: "Integrando app e banco",
           itens: [
             {
-              titulo: "Conexão Node ↔ Postgres",
+              titulo:
+                "Conexão Node ↔ Postgres (pg/Prisma), variáveis de ambiente (.env)",
               descricao:
-                "Driver pg ou ORM leve (Prisma); prós e contras de ORM.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Variáveis de ambiente",
-              descricao:
-                ".env, segredos fora do código, exemplo versionado (.env.example).",
+                "Driver pg ou ORM leve e os prós e contras; segredos fora do código com .env.example versionado.",
               tipo: "concept",
             },
           ],
@@ -843,25 +573,9 @@ export const trilhaDev: SeedTrack = {
           titulo: "Autenticação e segurança",
           itens: [
             {
-              titulo: "Hash de senha",
-              descricao: "bcrypt; por que nunca guardar senha em texto.",
-              tipo: "concept",
-            },
-            {
-              titulo: "JWT vs sessão",
+              titulo: "Hash de senha (bcrypt), JWT vs sessão, OWASP, HTTPS/CORS",
               descricao:
-                "Como funciona um token, expiração, refresh (noção).",
-              tipo: "concept",
-            },
-            {
-              titulo: "OWASP essencial",
-              descricao:
-                "SQL injection, XSS, auth quebrada — reconhecer e prevenir os 3.",
-              tipo: "concept",
-            },
-            {
-              titulo: "HTTPS e CORS",
-              descricao: "O que são e por que o navegador reclama.",
+                "Por que nunca guardar senha em texto; como funciona um token, expiração e refresh; reconhecer e prevenir SQL injection, XSS e auth quebrada; por que o navegador reclama.",
               tipo: "concept",
             },
           ],
@@ -884,10 +598,7 @@ export const trilhaDev: SeedTrack = {
               titulo: "Segurança da Tecnologia da Informação — Revisado",
               tipo: "review",
             },
-            {
-              titulo: "Refiz o projeto — Segurança da TI",
-              tipo: "optional",
-            },
+            { titulo: "Refiz o projeto — Segurança da TI", tipo: "optional" },
             {
               titulo:
                 "Tecnologias para Desenvolvimento Web (parte 2) — Revisado",
@@ -923,28 +634,9 @@ export const trilhaDev: SeedTrack = {
           titulo: "TypeScript",
           itens: [
             {
-              titulo: "Tipos básicos",
-              descricao: "Anotar variáveis, parâmetros e retornos.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Interfaces e types",
-              descricao: "Modelar objetos e respostas de API.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Unions e narrowing",
-              descricao: "string | null e como o TS te protege.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Generics básicos",
-              descricao: "Ler e usar (Array<T>, Promise<T>).",
-              tipo: "concept",
-            },
-            {
-              titulo: "tsconfig",
-              descricao: "Entender strict e o processo de compilação.",
+              titulo: "Tipos, interfaces, unions/narrowing, generics, tsconfig",
+              descricao:
+                "Anotar variáveis, parâmetros e retornos; modelar objetos e respostas de API; string | null e como o TS te protege; ler e usar Array<T>/Promise<T>; entender strict e a compilação.",
               tipo: "concept",
             },
           ],
@@ -953,42 +645,10 @@ export const trilhaDev: SeedTrack = {
           titulo: "React",
           itens: [
             {
-              titulo: "Componentes e JSX",
-              descricao: "Pensar em componentes; props.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Estado",
+              titulo:
+                "Componentes/JSX, estado, efeitos, listas/formulários, API, roteamento, context",
               descricao:
-                "useState; fluxo de dados unidirecional; lifting state up.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Efeitos",
-              descricao:
-                "useEffect sem tiro no pé (dependências, cleanup).",
-              tipo: "concept",
-            },
-            {
-              titulo: "Listas e formulários",
-              descricao: "Keys, inputs controlados.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Consumo de API",
-              descricao:
-                "fetch em React com loading/erro; custom hook simples.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Roteamento",
-              descricao:
-                "React Router ou file-based (Next); navegação e parâmetros.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Context",
-              descricao: "Noção: quando prop drilling doeu demais.",
+                "Pensar em componentes e props; useState e lifting state up; useEffect sem tiro no pé; keys e inputs controlados; fetch com loading/erro; navegação e parâmetros; context quando o prop drilling doeu.",
               tipo: "concept",
             },
           ],
@@ -997,15 +657,9 @@ export const trilhaDev: SeedTrack = {
           titulo: "Ecossistema e deploy",
           itens: [
             {
-              titulo: "Vite/Next",
+              titulo: "Vite/Next, deploy na Vercel",
               descricao:
-                "Criar projeto moderno; entender o que o framework resolve.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Deploy na Vercel",
-              descricao:
-                "Conectar repo, preview deployments, variáveis de ambiente.",
+                "Criar projeto moderno e entender o que o framework resolve; conectar repo, preview deployments e variáveis de ambiente.",
               tipo: "concept",
             },
           ],
@@ -1034,20 +688,10 @@ export const trilhaDev: SeedTrack = {
           titulo: "Engenharia de software",
           itens: [
             {
-              titulo: "Ciclo de vida",
-              descricao: "Da ideia ao deploy; cascata vs iterativo.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Requisitos",
+              titulo:
+                "Ciclo de vida, requisitos (user stories), especificação e modelagem",
               descricao:
-                "Funcionais vs não-funcionais; escrever user stories com critérios de aceite.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Especificação e modelagem",
-              descricao:
-                "Caso de uso e diagrama de classes em nível de leitura.",
+                "Da ideia ao deploy, cascata vs iterativo; funcionais vs não-funcionais e user stories com critérios de aceite; caso de uso e diagrama de classes em nível de leitura.",
               tipo: "concept",
             },
           ],
@@ -1056,64 +700,47 @@ export const trilhaDev: SeedTrack = {
           titulo: "Métodos ágeis e gestão",
           itens: [
             {
-              titulo: "Scrum",
+              titulo: "Scrum e Kanban",
               descricao:
-                "Papéis, cerimônias, artefatos; o que é (e o que não é) ágil.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Kanban",
-              descricao: "Fluxo, WIP limitado; montar um board de verdade.",
+                "Papéis, cerimônias e artefatos; o que é (e o que não é) ágil; fluxo, WIP limitado e montar um board de verdade.",
               tipo: "concept",
             },
             {
               titulo: "Gestão de projetos",
-              descricao: "Escopo/prazo/custo, riscos (noção aplicada).",
+              descricao: "Escopo/prazo/custo e riscos (noção aplicada).",
               tipo: "concept",
             },
             {
-              titulo: "Gestão de serviços",
+              titulo: "Gestão de serviços (ITIL)",
               descricao:
-                "ITIL em visão geral: incidente vs problema, SLA.",
+                "Visão geral: incidente vs problema, SLA.",
               tipo: "concept",
             },
           ],
         },
         {
-          titulo: "DevOps e Cloud (fundamentos — aprofundamento é a pós)",
+          titulo: "DevOps e Cloud",
           itens: [
             {
-              titulo: "Docker",
+              titulo: "Docker, CI/CD (GitHub Actions), Linux",
               descricao:
-                "Imagem vs container, Dockerfile, docker compose; containerizar um app seu.",
+                "Imagem vs container, Dockerfile e compose; pipeline com lint + testes a cada push; o básico de Linux que todo deploy cobra.",
               tipo: "concept",
             },
             {
-              titulo: "CI/CD",
-              descricao:
-                "Pipeline no GitHub Actions: lint + testes a cada push.",
-              tipo: "concept",
-            },
-            {
-              titulo: "Cloud",
-              descricao:
-                "IaaS/PaaS/SaaS; onde Vercel/Railway/AWS se encaixam.",
+              titulo: "Cloud (IaaS/PaaS/SaaS)",
+              descricao: "Onde Vercel, Railway e AWS se encaixam.",
               tipo: "concept",
             },
           ],
         },
         {
-          titulo: "Mobile (fundamentos — aprofundamento é a pós)",
+          titulo: "Mobile",
           itens: [
             {
-              titulo: "Nativo vs híbrido",
-              descricao: "Trade-offs; onde React Native e Flutter entram.",
-              tipo: "concept",
-            },
-            {
-              titulo: "React Native primeiro contato",
+              titulo: "Nativo vs híbrido, React Native primeiro contato",
               descricao:
-                "Criar um app simples (Expo), componentes básicos, navegação.",
+                "Trade-offs e onde React Native e Flutter entram; criar um app simples (Expo) com componentes básicos e navegação.",
               tipo: "concept",
             },
           ],
@@ -1136,8 +763,7 @@ export const trilhaDev: SeedTrack = {
               tipo: "optional",
             },
             {
-              titulo:
-                "Especificação de Sistemas de Informação — Revisado",
+              titulo: "Especificação de Sistemas de Informação — Revisado",
               tipo: "review",
             },
             {
@@ -1148,10 +774,7 @@ export const trilhaDev: SeedTrack = {
               titulo: "Projeto de Sistemas de Informação — Revisado",
               tipo: "review",
             },
-            {
-              titulo: "Refiz o projeto — Projeto de SI",
-              tipo: "optional",
-            },
+            { titulo: "Refiz o projeto — Projeto de SI", tipo: "optional" },
             {
               titulo: "Gestão de Projetos em Computação — Revisado",
               tipo: "review",
@@ -1160,10 +783,7 @@ export const trilhaDev: SeedTrack = {
               titulo: "Refiz o projeto — Gestão de Projetos",
               tipo: "optional",
             },
-            {
-              titulo: "Gestão de Serviços de TI — Revisado",
-              tipo: "review",
-            },
+            { titulo: "Gestão de Serviços de TI — Revisado", tipo: "review" },
             {
               titulo: "Refiz o projeto — Gestão de Serviços de TI",
               tipo: "optional",
@@ -1171,13 +791,9 @@ export const trilhaDev: SeedTrack = {
             { titulo: "DevOps — Revisado", tipo: "review" },
             { titulo: "Refiz o projeto — DevOps", tipo: "optional" },
             { titulo: "Cloud Computing — Revisado", tipo: "review" },
+            { titulo: "Refiz o projeto — Cloud Computing", tipo: "optional" },
             {
-              titulo: "Refiz o projeto — Cloud Computing",
-              tipo: "optional",
-            },
-            {
-              titulo:
-                "Desenvolvimento para Dispositivos Móveis — Revisado",
+              titulo: "Desenvolvimento para Dispositivos Móveis — Revisado",
               tipo: "review",
             },
             {
