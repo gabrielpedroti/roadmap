@@ -34,6 +34,8 @@ const TAGS_FONTE: Record<Fonte, { texto: string; cor: string }> = {
   dio: { texto: "DIO", cor: "#8E4DFF" }, // roxo DIO
   alura: { texto: "Alura", cor: "#2A7AE2" }, // azul Alura
   anthropic: { texto: "Anthropic", cor: "#D97757" }, // laranja Claude
+  coursera: { texto: "Coursera", cor: "#0056D2" }, // azul Coursera
+  deeplearning: { texto: "DeepLearning.AI", cor: "#0E9488" }, // teal
 };
 
 export type BlocoTela = Block & {

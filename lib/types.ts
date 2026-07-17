@@ -4,7 +4,13 @@ export type ItemTipo = "concept" | "review" | "optional" | "project";
 
 // De onde o item vem — usado quando o item É um curso (ex.: os cursos da
 // trilha de IA). Vira a tag colorida ao lado do título.
-export type Fonte = "ads-pucpr" | "dio" | "alura" | "anthropic";
+export type Fonte =
+  | "ads-pucpr"
+  | "dio"
+  | "alura"
+  | "anthropic"
+  | "coursera"
+  | "deeplearning";
 
 // ONDE ESTUDAR um conceito. Diferente de `Fonte`: o conceito não é um curso,
 // ele aponta pra um ou mais lugares onde o conteúdo existe. Vira os chips

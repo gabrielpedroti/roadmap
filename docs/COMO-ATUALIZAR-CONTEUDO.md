@@ -28,7 +28,11 @@ Cada `SeedGroup` tem `titulo`, `itens[]` e, opcionalmente, **`fonte`** — de on
 | `"dio"` | DIO | roxo |
 | `"alura"` | Alura | azul |
 | `"anthropic"` | Anthropic | laranja |
+| `"coursera"` | Coursera | azul escuro |
+| `"deeplearning"` | DeepLearning.AI | teal |
 | (omitido) | sem tag | — |
+
+Uma fonte nova precisa ser adicionada em 3 lugares: o tipo `Fonte` (`lib/types.ts`), o mapa `TAGS_FONTE` (`components/ListaBlocos.tsx`) e o CHECK da coluna (numa migration, ex. a 0007 liberou coursera/deeplearning).
 
 ### Onde estudar cada conceito (os chips)
 
