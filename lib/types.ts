@@ -71,9 +71,15 @@ export type Sessao = {
   origem: "pomodoro" | "manual";
 };
 
+// Uma "era" do mínimo de streak: a partir do dia `desde`, o mínimo passou a
+// ser `min`. Guardar o histórico é o que torna a mudança de mínimo NÃO
+// retroativa — cada dia é julgado pelo mínimo que valia nele.
+export type EraMinStreak = { desde: string; min: number }; // desde = YYYY-MM-DD
+
 export type UserSettings = {
   user_id: string;
-  streak_min_diario_min: number;
+  streak_min_diario_min: number; // o mínimo ATUAL (mostrado na tela)
+  streak_min_historico: EraMinStreak[]; // a linha do tempo do mínimo
   dias_que_contam: number[]; // 1=seg ... 7=dom
   meta_semanal_h: number;
   meta_mensal_h: number;
@@ -86,6 +92,7 @@ export type UserSettings = {
 // Valores padrão da SPEC — usados até o usuário salvar os próprios
 export const SETTINGS_PADRAO: Omit<UserSettings, "user_id"> = {
   streak_min_diario_min: 30,
+  streak_min_historico: [], // vazio = usa o mínimo atual pra todos os dias
   dias_que_contam: [1, 2, 3, 4, 5, 6, 7],
   meta_semanal_h: 10,
   meta_mensal_h: 40,

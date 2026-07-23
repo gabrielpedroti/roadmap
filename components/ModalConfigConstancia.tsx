@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { UserSettings } from "@/lib/types";
+import { historicoAoMudarMin, hojeSP } from "@/lib/streak";
 import { Modal } from "./Modal";
 
 const DIAS = [
@@ -53,12 +54,24 @@ export function ModalConfigConstancia({
     setSalvando(true);
     setErro(null);
 
+    // Se o mínimo do streak mudou, atualiza o histórico pra que a mudança
+    // NÃO seja retroativa: o passado fica congelado no mínimo antigo e o novo
+    // vale a partir de hoje.
+    const historico = historicoAoMudarMin(
+      settings.streak_min_historico,
+      settings.streak_min_diario_min,
+      form.streak_min_diario_min,
+      hojeSP()
+    );
+
     const supabase = createClient();
     // manda o objeto inteiro (settings + edições) pra não perder os campos
     // do pomodoro na mesma linha
-    const { error } = await supabase
-      .from("user_settings")
-      .upsert({ ...form, user_id: userId });
+    const { error } = await supabase.from("user_settings").upsert({
+      ...form,
+      streak_min_historico: historico,
+      user_id: userId,
+    });
 
     setSalvando(false);
     if (error) {

@@ -16,7 +16,8 @@ App pessoal de acompanhamento de estudos: 3 trilhas (Dev, IA · Automação, Ing
 
 - **Dono é dev iniciante**: código simples e didático > código esperto; comentários curtos em PT-BR explicando decisões não-óbvias.
 - **Progresso**: projeto 30% / concept+review dividem 70% / optional fora. Bloco sem projeto: obrigatórios valem 100%. Tudo em `lib/progress.ts` (funções puras + testes).
-- **Streak ≠ metas** (constância vs volume). Fuso fixo America/Sao_Paulo (`lib/streak.ts`). A chama 🔥 só acende se o mínimo de HOJE foi cumprido.
+- **Streak ≠ metas** (constância vs volume). Fuso fixo America/Sao_Paulo (`lib/streak.ts`). A chama 🔥 só acende se o mínimo de HOJE foi cumprido (ou se hoje não é dia que conta).
+- **Mínimo de streak é NÃO-retroativo:** cada dia é julgado pelo mínimo que valia NELE, via `user_settings.streak_min_historico` (linha do tempo `[{desde, min}]`). Mudar o mínimo só vale de hoje pra frente — não rejulga o passado. `calcularStreak` usa `minDoDia`; o histórico é atualizado no salvar via `historicoAoMudarMin`. Histórico vazio `[]` = usa o mínimo atual pra tudo (compat). `dias_que_contam` ainda é retroativo (caso menor, não tratado).
 - **Acesso público**: visualizar roadmaps e usar pomodoro NÃO exige login; salvar (checks, sessões, settings) exige. RLS: conteúdo legível por `anon`, dados de usuário só do dono.
 - **Sessão persistente por meses**: cookies via `@supabase/ssr` + refresh no `proxy.ts`. Nunca trocar `getUser()` por `getSession()` no middleware.
 - **Tema segue o SISTEMA** (prefers-color-scheme); sem botão de tema. Tokens em `app/globals.css`; cores por trilha vêm do banco (`tracks.cor`) e são clareadas no escuro via `.com-cor`/`color-mix`. Visual aprovado: `docs/mockups/proposta-final.html`.

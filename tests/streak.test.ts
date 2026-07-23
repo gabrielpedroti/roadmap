@@ -3,7 +3,9 @@ import {
   calcularStreak,
   diaDaSemana,
   diaLocalSP,
+  historicoAoMudarMin,
   inicioDaSemana,
+  minDoDia,
   minutosNaSemana,
   minutosNoMes,
   minutosPorDia,
@@ -111,5 +113,66 @@ describe("metas — semana e mês", () => {
       ["2026-06-30", 999], // junho — fora
     ]);
     expect(minutosNoMes(porDia, "2026-07-09")).toBe(120);
+  });
+});
+
+describe("mínimo NÃO-retroativo (histórico do mínimo)", () => {
+  it("minDoDia usa o mínimo da época de cada dia", () => {
+    const hist = [
+      { desde: "1970-01-01", min: 15 },
+      { desde: "2026-07-08", min: 30 },
+    ];
+    expect(minDoDia("2026-07-05", hist)).toBe(15); // antes da mudança
+    expect(minDoDia("2026-07-08", hist)).toBe(30); // no dia da mudança
+    expect(minDoDia("2026-07-20", hist)).toBe(30); // depois
+  });
+
+  it("historicoAoMudarMin congela o passado no mínimo antigo", () => {
+    // primeira mudança 15 → 30 hoje: registra que até hoje era 15
+    expect(historicoAoMudarMin([], 15, 30, "2026-07-08")).toEqual([
+      { desde: "1970-01-01", min: 15 },
+      { desde: "2026-07-08", min: 30 },
+    ]);
+    // mudar de novo no MESMO dia substitui a era de hoje (não acumula)
+    const hist = historicoAoMudarMin([], 15, 30, "2026-07-08");
+    expect(historicoAoMudarMin(hist, 30, 50, "2026-07-08")).toEqual([
+      { desde: "1970-01-01", min: 15 },
+      { desde: "2026-07-08", min: 50 },
+    ]);
+    // sem mudança de valor, nada acontece
+    expect(historicoAoMudarMin(hist, 30, 30, "2026-07-09")).toEqual(hist);
+  });
+
+  it("subir o mínimo NÃO derruba os dias antigos (o bug do Gabriel)", () => {
+    // estudou 20 min seg/ter/qua; hoje (qua) subiu o mínimo de 15 → 30
+    const porDia = new Map([
+      ["2026-07-08", 20], // qua = hoje
+      ["2026-07-07", 20], // ter
+      ["2026-07-06", 20], // seg
+    ]);
+    const historicoMin = [
+      { desde: "1970-01-01", min: 15 },
+      { desde: "2026-07-08", min: 30 },
+    ];
+    const opts = { diasQueContam: TODOS_OS_DIAS, hoje: "2026-07-08" };
+    // com histórico: seg/ter valem 15 (contam); hoje 20<30 não quebra → 2
+    expect(calcularStreak(porDia, { ...opts, historicoMin })).toBe(2);
+    // sem histórico (retroativo), o mesmo 30 mataria tudo → era o bug
+    expect(calcularStreak(porDia, { ...opts, minDiario: 30 })).toBe(0);
+  });
+
+  it("baixar o mínimo passa a valer só de hoje (não reescreve o passado)", () => {
+    // ontem fez 10 min quando o mínimo era 30 (não contou); hoje baixou pra 5
+    const porDia = new Map([
+      ["2026-07-08", 10], // hoje
+      ["2026-07-07", 10], // ontem, sob o mínimo 30
+    ]);
+    const historicoMin = [
+      { desde: "1970-01-01", min: 30 },
+      { desde: "2026-07-08", min: 5 },
+    ];
+    const opts = { diasQueContam: TODOS_OS_DIAS, hoje: "2026-07-08" };
+    // ontem usa 30 (10<30, quebra); hoje usa 5 (10>=5, conta) → 1
+    expect(calcularStreak(porDia, { ...opts, historicoMin })).toBe(1);
   });
 });

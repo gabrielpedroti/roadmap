@@ -5,6 +5,41 @@
 // Timestamps ficam em UTC no banco; o "dia" de uma sessão é calculado no
 // fuso de São Paulo (UTC-3 fixo — o Brasil aboliu o horário de verão em 2019).
 
+import type { EraMinStreak } from "./types";
+
+// Qual mínimo valia num dia? Percorre o histórico (ordenado por data) e pega
+// a última era que já tinha começado naquele dia. É isso que torna a mudança
+// de mínimo NÃO retroativa: um dia antigo é julgado pelo mínimo da época dele.
+export function minDoDia(dia: string, historico: EraMinStreak[]): number {
+  let m = historico[0]?.min ?? 30;
+  for (const era of historico) {
+    if (era.desde <= dia) m = era.min;
+    else break;
+  }
+  return m;
+}
+
+// Monta o histórico atualizado quando o usuário muda o mínimo. O passado fica
+// congelado no mínimo antigo; o novo vale a partir de HOJE.
+export function historicoAoMudarMin(
+  historicoAtual: EraMinStreak[] | undefined,
+  minAntigo: number,
+  minNovo: number,
+  hoje: string
+): EraMinStreak[] {
+  const base = historicoAtual ?? [];
+  if (minNovo === minAntigo) return base;
+  const hist = [...base];
+  // primeira mudança: registra que ATÉ hoje o mínimo era o antigo
+  if (hist.length === 0) hist.push({ desde: "1970-01-01", min: minAntigo });
+  // define/atualiza a era que começa hoje
+  const i = hist.findIndex((e) => e.desde === hoje);
+  if (i >= 0) hist[i] = { desde: hoje, min: minNovo };
+  else hist.push({ desde: hoje, min: minNovo });
+  hist.sort((a, b) => a.desde.localeCompare(b.desde));
+  return hist;
+}
+
 export function diaLocalSP(isoUtc: string): string {
   // "en-CA" formata como YYYY-MM-DD, que ordena certo como string
   return new Date(isoUtc).toLocaleDateString("en-CA", {
@@ -45,8 +80,22 @@ function diaAnterior(dia: string): string {
 
 export function calcularStreak(
   porDia: Map<string, number>,
-  opts: { minDiario: number; diasQueContam: number[]; hoje: string }
+  opts: {
+    // um mínimo único (retroativo) OU o histórico de mínimos (não-retroativo).
+    // Se `historicoMin` vier preenchido, ele manda; senão cai no `minDiario`.
+    minDiario?: number;
+    historicoMin?: EraMinStreak[];
+    diasQueContam: number[];
+    hoje: string;
+  }
 ): number {
+  // histórico efetivo: vazio → uma única era com o mínimo atual (comportamento
+  // antigo, retroativo). Preenchido → cada dia usa o mínimo da sua época.
+  const hist =
+    opts.historicoMin && opts.historicoMin.length
+      ? [...opts.historicoMin].sort((a, b) => a.desde.localeCompare(b.desde))
+      : [{ desde: "1970-01-01", min: opts.minDiario ?? 30 }];
+
   let streak = 0;
   let dia = opts.hoje;
 
@@ -54,7 +103,7 @@ export function calcularStreak(
   for (let i = 0; i < 3660; i++) {
     const diaConta = opts.diasQueContam.includes(diaDaSemana(dia));
     if (diaConta) {
-      const atingiu = (porDia.get(dia) ?? 0) >= opts.minDiario;
+      const atingiu = (porDia.get(dia) ?? 0) >= minDoDia(dia, hist);
       if (atingiu) {
         streak++;
       } else if (dia !== opts.hoje) {

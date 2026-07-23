@@ -36,6 +36,7 @@ export default async function Dashboard() {
   const porDia = minutosPorDia(sessoes);
   const streak = calcularStreak(porDia, {
     minDiario: settings.streak_min_diario_min,
+    historicoMin: settings.streak_min_historico, // mínimo não-retroativo
     diasQueContam: settings.dias_que_contam,
     hoje,
   });
