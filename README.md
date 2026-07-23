@@ -38,7 +38,7 @@ Cada trilha é dividida em blocos com desbloqueio sequencial: o próximo só abr
 
 ## Stack
 
-**Next.js** (App Router) · **TypeScript** · **Tailwind CSS v4** · **Supabase** (Postgres + Auth + RLS) · **Vercel** · **Vitest** (28 testes nas regras de negócio) · **GitHub Actions**
+**Next.js** (App Router) · **TypeScript** · **Tailwind CSS v4** · **Supabase** (Postgres + Auth + RLS) · **Vercel** · **Vitest** (32 testes nas regras de negócio) · **GitHub Actions**
 
 Este app também é parte do próprio plano: refatorá-lo com as próprias mãos é um dos projetos da trilha Dev.
 

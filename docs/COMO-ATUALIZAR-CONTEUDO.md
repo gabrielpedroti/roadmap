@@ -76,4 +76,4 @@ Regras derivadas que você precisa respeitar:
 
 ## Limitação conhecida (não tente contornar por conta própria)
 
-O seed não é idempotente — não há chave estável por item, então qualquer atualização recria tudo e perde os checks. A correção planejada (v2) é usar slugs estáveis + upsert (item O6 em [AUDITORIA-V1.md](AUDITORIA-V1.md)). Até lá, o fluxo acima com aviso ao usuário é o oficial.
+O seed não é idempotente — não há chave estável por item, então re-seedar do zero recria tudo e perde os checks marcados. A correção planejada é usar slugs estáveis + upsert. Até lá, o caminho para mudar conteúdo **sem perder progresso** é uma migration pontual (veja `supabase/migrations/`, ex. `0003_curso_dio.sql`), e o `seed --force` fica só para começar do zero.
