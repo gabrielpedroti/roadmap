@@ -8,14 +8,17 @@ export function BarraProgresso({
   fracao: number; // 0..1
   cor?: string;
 }) {
-  const largura = `${Math.round(Math.min(1, Math.max(0, fracao)) * 100)}%`;
+  const parte = Math.min(1, Math.max(0, fracao));
 
+  // Anima `transform`, não `width`: largura recalcula layout a cada frame,
+  // transform roda no compositor. As pontas arredondadas ficam por conta do
+  // recorte do trilho (overflow-hidden), senão a escala achataria o raio.
   return (
-    <div className="h-[5px] rounded-[3px] bg-trilho">
+    <div className="h-[5px] overflow-hidden rounded-[3px] bg-trilho">
       <div
-        className="com-cor h-full rounded-[3px] transition-[width] duration-300"
+        className="com-cor h-full w-full origin-left transition-transform duration-300"
         style={{
-          width: largura,
+          transform: `scaleX(${parte})`,
           background: cor ? "var(--cor-final)" : "var(--ink)",
           ...(cor ? ({ "--cor": cor } as React.CSSProperties) : {}),
         }}
