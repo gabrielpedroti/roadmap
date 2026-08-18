@@ -327,7 +327,10 @@ function LinhaItem({
         className="mt-[3px] shrink-0"
         style={{ accentColor: "var(--cor-final)" }}
       />
-      <span className="min-w-0">
+      {/* Coluna de leitura limitada: sem isto a descrição de um item corre a
+          largura toda do card (~175 caracteres por linha em tela cheia), o
+          que é o dobro do confortável para ler. */}
+      <span className="min-w-0 max-w-[44rem]">
         <span
           className={`text-[13.5px] ${
             ehOpcional

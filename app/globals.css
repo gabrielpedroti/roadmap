@@ -15,8 +15,12 @@
   --seg: rgba(120, 120, 128, 0.12); /* fundo dos segmented controls */
   --seg-on: #ffffff; /* segmento selecionado */
   --trilho: rgba(120, 120, 128, 0.16); /* barra de progresso vazia */
-  --acao: #0071e3; /* azul de ação (Iniciar, links) */
-  --acao-tinta: rgba(0, 113, 227, 0.1); /* fundo de botão secundário */
+  /* Azul de ação. Era #0071E3 (o azul da Apple), mas no tema claro ele dava
+     4.31:1 sobre o fundo e 4.10:1 sobre --acao-tinta — abaixo do piso de
+     4.5:1 que o próprio PRODUCT.md define. Escurecido o mínimo necessário
+     para passar nos três fundos (pior caso agora 4.66:1). */
+  --acao: #0068d2; /* azul de ação (Iniciar, links) */
+  --acao-tinta: rgba(0, 104, 210, 0.1); /* fundo de botão secundário */
   --sombra: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.05);
   /* O blur do vidro mora numa VARIAVEL porque o Lightning CSS remove
      `backdrop-filter` das folhas — o valor e' aplicado inline (vidroBlur em
