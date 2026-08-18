@@ -47,3 +47,6 @@ next-env.d.ts
 
 # Contexto interno de trabalho (Claude) — nao versionar
 .agents/
+
+# material interno de revisao de design (snapshots do impeccable)
+.impeccable/
