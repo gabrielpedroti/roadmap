@@ -80,10 +80,13 @@ const segBotao =
 // selecionado = vidro fosco iOS. A classe .vidro (globals.css) dá o fundo
 // translúcido e a sombra; o blur vai INLINE porque o Lightning CSS (build do
 // Tailwind v4) remove `backdrop-filter` das folhas de estilo.
+// O VALOR vem da var --vidro-blur (globals.css) em vez de escrito aqui: assim
+// `prefers-reduced-transparency: reduce` consegue desligar o blur trocando a
+// variável, coisa que uma regra de folha não faria contra um estilo inline.
 const segBotaoOn = "vidro font-semibold text-tinta";
 const vidroBlur: React.CSSProperties = {
-  backdropFilter: "blur(16px) saturate(180%)",
-  WebkitBackdropFilter: "blur(16px) saturate(180%)",
+  backdropFilter: "var(--vidro-blur)",
+  WebkitBackdropFilter: "var(--vidro-blur)",
 };
 
 const btnPrimario =
