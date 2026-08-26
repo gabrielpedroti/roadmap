@@ -95,14 +95,16 @@ begin
     select ordem into v_ordem
     from item_groups where block_id = v_block and titulo = 'PostgreSQL e SQL';
 
-    -- sem o vizinho de referência, entra no fim
+    -- Sem o vizinho de referência, o bloco não tem a estrutura que esta
+    -- migration espera. Inserir "no fim" arriscaria duplicar conteúdo que
+    -- já existe com outro nome — melhor não fazer nada e avisar.
     if v_ordem is null then
-      select coalesce(max(ordem), 0) + 1 into v_ordem
-      from item_groups where block_id = v_block;
-    else
-      update item_groups set ordem = ordem + 1
-      where block_id = v_block and ordem >= v_ordem;
+      raise notice 'Bloco 5 da Dev sem o grupo "PostgreSQL e SQL" — grupo "Testes" NAO criado.';
+      return;
     end if;
+
+    update item_groups set ordem = ordem + 1
+    where block_id = v_block and ordem >= v_ordem;
 
     insert into item_groups (block_id, titulo, ordem)
     values (v_block, 'Testes', v_ordem)
@@ -266,13 +268,17 @@ begin
     from item_groups
     where block_id = v_block and titulo = 'Mindset (grátis + certificado)';
 
+    -- ⚠️ Guarda importante: se a Etapa 0 ainda estiver na estrutura ANTIGA
+    -- (grupos "Cursos"/"🎓 DIO", de antes da 0007), ela já tem HTTP, APIs
+    -- REST e Webhooks dentro de "Cursos" — inserir aqui duplicaria tudo.
+    -- Então só cria o grupo se a estrutura esperada estiver no lugar.
     if v_ordem is null then
-      select coalesce(max(ordem), 0) + 1 into v_ordem
-      from item_groups where block_id = v_block;
-    else
-      update item_groups set ordem = ordem + 1
-      where block_id = v_block and ordem >= v_ordem;
+      raise notice 'Etapa 0 da IA ainda na estrutura antiga — grupo "HTTP e webhooks" NAO criado (o conteudo ja existe em "Cursos"). Aplique a 0007 primeiro.';
+      return;
     end if;
+
+    update item_groups set ordem = ordem + 1
+    where block_id = v_block and ordem >= v_ordem;
 
     insert into item_groups (block_id, titulo, ordem)
     values (v_block, 'HTTP e webhooks', v_ordem)
