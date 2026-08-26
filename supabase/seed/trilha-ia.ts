@@ -2,8 +2,9 @@ import type { SeedTrack } from "./tipos";
 
 // Trilha IA · Automação — guiada por CARREIRA / CURSO (mapa do Gabriel, jul/2026)
 // Contexto: BPO financeiro. Precisão > velocidade.
-// Espinha: 3 carreiras Alura (3 certificados) + Anthropic Academy (grátis, com
-// cert) + reforço Coursera/DIO/DeepLearning. Regra de ouro: curso compartilhado
+// Espinha: 3 carreiras Alura (2 certificados — a Carreira 3 perde o dela ao
+// cortar o Nível 2 de PyTorch) + Anthropic Academy (grátis, com cert) +
+// reforço Coursera/DIO/DeepLearning. Regra de ouro: curso compartilhado
 // entre carreiras é feito UMA vez — por isso cada carreira lista SÓ os cursos
 // novos dela (os "[já feito]" não se repetem).
 //
@@ -13,7 +14,7 @@ export const trilhaIa: SeedTrack = {
   slug: "ia",
   nome: "IA · Automação",
   descricao:
-    "IA e automação aplicadas ao BPO financeiro: 3 carreiras Alura (3 certificados) + Anthropic Academy, das ferramentas no-code até agentes com a API do Claude — sempre com precisão acima de velocidade.",
+    "IA e automação aplicadas ao BPO financeiro: 3 carreiras Alura (2 certificados — a Carreira 3 vai só até onde serve ao trabalho) + Anthropic Academy, das ferramentas no-code até agentes com a API do Claude — sempre com precisão acima de velocidade.",
   cor: "#D97757", // laranja Claude
   ordem: 2,
   blocos: [
@@ -52,6 +53,26 @@ export const trilhaIa: SeedTrack = {
               titulo: "Python: Inteligência Artificial Aplicada",
               descricao:
                 "12h. Porta de entrada Python→IA (precisa do seu Python dos Blocos 1-2 do Dev). Não é exigido pela Carreira 1 (low-code); é base das Carreiras 2 e 3.",
+              tipo: "concept",
+            },
+          ],
+        },
+        {
+          // A Carreira 1 já começa aberta e pede "n8n: integração de APIs
+          // REST" sem nenhum HTTP antes. Estes dois vêm antes de tudo.
+          titulo: "HTTP e webhooks",
+          fonte: "alura",
+          itens: [
+            {
+              titulo: "HTTP na prática",
+              descricao:
+                "Requisição e resposta, verbos, status codes e headers: a base de qualquer integração no n8n.",
+              tipo: "concept",
+            },
+            {
+              titulo: "Webhooks com n8n",
+              descricao:
+                "Uma API ao contrário: em vez de você perguntar, o sistema te avisa. É o gatilho da maioria dos fluxos.",
               tipo: "concept",
             },
           ],
@@ -147,6 +168,12 @@ export const trilhaIa: SeedTrack = {
           itens: [
             {
               titulo: "Excel: manipulação avançada de dados e automação com IA",
+              tipo: "concept",
+            },
+            {
+              titulo: "pandas — manipulação de planilhas em Python",
+              descricao:
+                "Essencial pro conversor de planilhas do BPO (o projeto-âncora). Alura: “Pandas: conhecendo a biblioteca” (2º passo opcional: “Pandas: transformação e manipulação de dados”).",
               tipo: "concept",
             },
             {
@@ -356,7 +383,7 @@ export const trilhaIa: SeedTrack = {
     {
       titulo: "Carreira 3 — Engenharia de Agentes de IA",
       descricao:
-        "Carreira Alura Engenharia de Agentes — cobre a matéria Técnicas de Machine Learning da PUC. A base e o Nível 1 já vêm da Carreira 2. A parte pesada (Deep Learning com PyTorch) roda junto da pós FIAP. Ao concluir: 🎓 certificado da Carreira 3.",
+        "Carreira Alura Engenharia de Agentes — cobre a matéria Técnicas de Machine Learning da PUC. A base e o Nível 1 já vêm da Carreira 2. O Nível 2 (Deep Learning com PyTorch, 72h) foi CORTADO de propósito: é especialização em ML, fora do escopo do BPO — a consequência assumida é que o certificado desta carreira não fecha.",
       grupos: [
         {
           titulo: "Base + Nível 1 — novidades",
@@ -373,36 +400,6 @@ export const trilhaIa: SeedTrack = {
             {
               titulo:
                 "NLP: aplicando processamento de linguagem natural para análise de sentimentos",
-              tipo: "concept",
-            },
-          ],
-        },
-        {
-          titulo: "Nível 2 — Machine Learning, Deep Learning e Fine Tuning (72h)",
-          fonte: "alura",
-          itens: [
-            {
-              titulo: "Redes Neurais: Deep Learning com PyTorch",
-              tipo: "concept",
-            },
-            {
-              titulo: "Treinando uma Rede Neural: Deep Learning com PyTorch",
-              tipo: "concept",
-            },
-            {
-              titulo: "Redes Neurais Recorrentes (RNN) com PyTorch",
-              tipo: "concept",
-            },
-            {
-              titulo: "Redes Neurais Convolucionais (CNN) com PyTorch",
-              tipo: "concept",
-            },
-            {
-              titulo: "Modelos de Difusão: fundamentos e aplicações avançadas",
-              tipo: "concept",
-            },
-            {
-              titulo: "Transformers: fundamentos e prática com PyTorch",
               tipo: "concept",
             },
           ],
@@ -456,8 +453,15 @@ export const trilhaIa: SeedTrack = {
             {
               titulo: "Técnicas de Machine Learning — Revisado",
               descricao:
-                "Coberta pelos cursos de ML e Deep Learning desta carreira.",
+                "Revisada pelo Nano Course INTELIGÊNCIA ARTIFICIAL E COMPUTACIONAL da FIAP (80h, 8 capítulos): básico de IA, sistemas especialistas e hands-on de ML. É revisão da matéria, não especialização em ML.",
               tipo: "review",
+              ondeEstudar: [
+                {
+                  plataforma: "fiap",
+                  tipo: "curso",
+                  nome: "Nano INTELIGÊNCIA ARTIFICIAL E COMPUTACIONAL",
+                },
+              ],
             },
           ],
         },

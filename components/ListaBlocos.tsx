@@ -25,6 +25,7 @@ const PLATAFORMAS: Record<Plataforma, { nome: string; cor: string }> = {
   puc: { nome: "PUC", cor: "#9D2235" },
   dio: { nome: "DIO", cor: "#8E4DFF" },
   anthropic: { nome: "Anthropic", cor: "#D97757" },
+  fiap: { nome: "FIAP", cor: "#ED145B" }, // magenta FIAP
 };
 
 // A tag de cada item sai da FONTE dele (vem do banco) — nada de adivinhar

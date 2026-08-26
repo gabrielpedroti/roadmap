@@ -50,3 +50,7 @@ next-env.d.ts
 
 # material interno de revisao de design (snapshots do impeccable)
 .impeccable/
+
+# planos de mudanca do conteudo das trilhas — material de trabalho, nao doc
+# de visitante (as REGRAS que sairam deles ficam em docs/REGRAS-DO-ROADMAP.md)
+/docs/PLANO-DE-MUDANCA-*.md

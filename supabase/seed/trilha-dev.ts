@@ -6,7 +6,8 @@ import type { SeedTrack } from "./tipos";
 // Onde estudar cada um: supabase/seed/onde-estudar-dev.ts.
 //
 // Objetivo: rever as 20 matérias técnicas de ADS (PUC-PR) + chegar pronto
-// na Pós Tech Full Stack Development (FIAP), meta turma de agosto/2027.
+// na Pós Tech Full Stack Development (FIAP). Sem data-prazo: quem governa o
+// plano é a constância (streak/metas), não o calendário.
 
 export const trilhaDev: SeedTrack = {
   slug: "dev",
@@ -546,6 +547,19 @@ export const trilhaDev: SeedTrack = {
           ],
         },
         {
+          // Espelha o grupo "Testes" do Bloco 2 (pytest): aqui é a mesma
+          // ideia, agora do lado do Node.
+          titulo: "Testes",
+          itens: [
+            {
+              titulo: "Testes na API (Jest)",
+              descricao:
+                "Testar a API do projeto deste bloco como você testou com pytest no Bloco 2: rotas felizes e de erro, o que quebra quando o cliente manda lixo.",
+              tipo: "concept",
+            },
+          ],
+        },
+        {
           titulo: "PostgreSQL e SQL",
           itens: [
             {
@@ -554,6 +568,12 @@ export const trilhaDev: SeedTrack = {
               descricao:
                 "Tabelas e relacionamentos; INSERT/SELECT/UPDATE/DELETE com WHERE e ORDER BY; INNER vs LEFT; GROUP BY com COUNT/SUM/AVG; intuição de performance e ACID em uma frase.",
               tipo: "concept",
+            },
+            {
+              titulo: "NoSQL na prática — noção de banco de documentos",
+              descricao:
+                "Documento vs tabela e quando cada um serve. Só a noção: a Fase 2 da pós usa Postgres E MongoDB.",
+              tipo: "optional",
             },
           ],
         },
@@ -639,6 +659,12 @@ export const trilhaDev: SeedTrack = {
                 "Anotar variáveis, parâmetros e retornos; modelar objetos e respostas de API; string | null e como o TS te protege; ler e usar Array<T>/Promise<T>; entender strict e a compilação.",
               tipo: "concept",
             },
+            {
+              titulo: "Princípios SOLID e código limpo — noção",
+              descricao:
+                "Os 5 princípios em exemplos de TS, sem decoreba: reconhecer a classe que faz coisa demais e a dependência apertada. A Fase 1 da pós já assume isso.",
+              tipo: "concept",
+            },
           ],
         },
         {
@@ -650,6 +676,12 @@ export const trilhaDev: SeedTrack = {
               descricao:
                 "Pensar em componentes e props; useState e lifting state up; useEffect sem tiro no pé; keys e inputs controlados; fetch com loading/erro; navegação e parâmetros; context quando o prop drilling doeu.",
               tipo: "concept",
+            },
+            {
+              titulo: "Testes de componente (Jest + Testing Library)",
+              descricao:
+                "Testar o que o usuário vê, não o estado interno: renderizar, procurar por texto/label e simular clique.",
+              tipo: "optional",
             },
           ],
         },
@@ -691,7 +723,7 @@ export const trilhaDev: SeedTrack = {
               titulo:
                 "Ciclo de vida, requisitos (user stories), especificação e modelagem",
               descricao:
-                "Da ideia ao deploy, cascata vs iterativo; funcionais vs não-funcionais e user stories com critérios de aceite; caso de uso e diagrama de classes em nível de leitura.",
+                "Da ideia ao deploy, cascata vs iterativo; funcionais vs não-funcionais e user stories com critérios de aceite; caso de uso e diagrama de classes em nível de leitura. No Nano da FIAP: capítulo que não mapeia nas matérias Eng. de Software, Especificação de SI ou Projeto de SI — pular (é material de revisão, não de especialização).",
               tipo: "concept",
             },
           ],

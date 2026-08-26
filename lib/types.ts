@@ -15,7 +15,9 @@ export type Fonte =
 // ONDE ESTUDAR um conceito. Diferente de `Fonte`: o conceito não é um curso,
 // ele aponta pra um ou mais lugares onde o conteúdo existe. Vira os chips
 // embaixo da descrição. Um conceito pode ter 0, 1 ou várias.
-export type Plataforma = "alura" | "puc" | "dio" | "anthropic";
+// "fiap" = os Nano Courses gratuitos da FIAP (on.fiap.com.br/nano-courses),
+// que entram como ONDE ESTUDAR de conceitos da trilha Dev.
+export type Plataforma = "alura" | "puc" | "dio" | "anthropic" | "fiap";
 export type TipoFonte = "curso" | "trilha" | "materia";
 export type OndeEstudar = {
   plataforma: Plataforma;

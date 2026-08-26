@@ -19,9 +19,16 @@ const puc = (nome: string): OndeEstudar => ({
   tipo: "materia",
   nome,
 });
+// Nano Courses gratuitos da FIAP (on.fiap.com.br/nano-courses). Como cada Nano
+// é longo e só uma parte dele mapeia no conceito, o nome do chip carrega os
+// capítulos que valem.
+const fiap = (nome: string): OndeEstudar => ({
+  plataforma: "fiap",
+  tipo: "curso",
+  nome,
+});
 
 // nomes repetidos — declarados uma vez pra não errar a grafia
-const T_INICIANTE = "Iniciante em programação";
 const T_PRATICANDO = "Praticando Python";
 const T_FRONT = "Desenvolvimento Front-end HTML/CSS/JS";
 const T_HTML_CSS = "HTML e CSS para projetos web";
@@ -31,8 +38,11 @@ const T_REACT = "React com JavaScript";
 const T_AGIL = "Gestão Ágil de Projetos";
 const T_DEVOPS = "Começando em DevOps";
 const T_RN = "Desenvolva seu primeiro app com React Native";
-const C_PY_PRIMEIRA = "Python: crie a sua primeira aplicação";
 const C_PY_API = "Python: avance na OO e consuma API";
+// Nano PYTHON da FIAP (80h, 8 capítulos): 1-5 são a base da linguagem —
+// fonte principal do Bloco 1; 7-8 são protocolos e IoT, usados no Bloco 2.
+const N_PYTHON_BASE = "Nano PYTHON (cap. 1-5)";
+const N_PYTHON_IOT = "Nano PYTHON (cap. 7-8)";
 const C_ALGO_2 = "Algoritmos II";
 const C_JS_LING = "JavaScript: explorando a linguagem";
 const C_NODE_API = "Node.js: crie sua primeira API com Express";
@@ -60,42 +70,25 @@ export const ondeEstudarDev: Record<string, OndeEstudar[]> = {
     alura("curso", "Git e GitHub: compartilhando e colaborando"),
   ],
 
+  // Base da linguagem: a fonte principal é o Nano PYTHON da FIAP (cap. 1-5).
+  // A Alura sobrou só em Strings e Regex e List comprehensions, que o Nano
+  // não cobre.
   "Variáveis, operadores, entrada/saída": [
-    alura("curso", C_PY_PRIMEIRA),
-    alura("trilha", T_INICIANTE),
+    fiap(N_PYTHON_BASE),
     puc(M_RACIOCINIO),
   ],
-  Condicionais: [
-    alura("curso", C_PY_PRIMEIRA),
-    alura("curso", "Praticando Python: condicionais if, elif e else"),
-    puc(M_RACIOCINIO),
-  ],
-  Laços: [
-    alura("curso", C_PY_PRIMEIRA),
-    alura("curso", "Praticando Python: laços for e while"),
-    puc(M_RACIOCINIO),
-  ],
-  Funções: [
-    alura("curso", C_PY_PRIMEIRA),
-    alura("curso", "Praticando Python: funções"),
-    puc(M_RACIOCINIO),
-  ],
-  "Erros (try/except)": [alura("curso", C_PY_PRIMEIRA), puc(M_RACIOCINIO)],
+  Condicionais: [fiap(N_PYTHON_BASE), puc(M_RACIOCINIO)],
+  Laços: [fiap(N_PYTHON_BASE), puc(M_RACIOCINIO)],
+  Funções: [fiap(N_PYTHON_BASE), puc(M_RACIOCINIO)],
+  "Erros (try/except)": [fiap(N_PYTHON_BASE), puc(M_RACIOCINIO)],
   "Strings e Regex": [alura("curso", "Praticando Python: Strings e Regex")],
 
-  "Listas e tuplas": [
-    alura("curso", "Praticando Python: listas e tuplas"),
-    puc(M_RACIOCINIO),
-  ],
-  "Dicionários e conjuntos": [
-    alura("curso", "Praticando Python: conjuntos e dicionários"),
-    puc(M_RACIOCINIO),
-  ],
+  "Listas e tuplas": [fiap(N_PYTHON_BASE), puc(M_RACIOCINIO)],
+  "Dicionários e conjuntos": [fiap(N_PYTHON_BASE), puc(M_RACIOCINIO)],
   "List comprehensions": [alura("trilha", T_PRATICANDO)],
 
-  "Ler/escrever texto, CSV e JSON": [alura("curso", C_PY_API)],
+  "Ler/escrever texto, CSV e JSON": [fiap(N_PYTHON_BASE)],
 
-  // (DIO a confirmar)
   "Lógica proposicional, bases numéricas, proporção/porcentagem": [
     puc("Matemática Aplicada à Computação"),
   ],
@@ -138,6 +131,7 @@ export const ondeEstudarDev: Record<string, OndeEstudar[]> = {
   ],
 
   "Conceito e arquitetura, protocolos (HTTP vs MQTT)": [
+    fiap(N_PYTHON_IOT), // "Protocolos de Comunicação e Python" + "Python x IoT"
     puc(M_IOT),
     puc("IoT em um Mundo Conectado"),
   ],
@@ -201,9 +195,16 @@ export const ondeEstudarDev: Record<string, OndeEstudar[]> = {
     alura("curso", "Node.js: buscas, filtros e paginação"),
     puc(M_TEC_WEB_2),
   ],
+  "Testes na API (Jest)": [
+    alura("curso", "Node.js: testando API's REST e scripts assíncronos"),
+  ],
   "Modelagem (PK/FK, 1-N, N-N), CRUD, JOINs, agregações, índices/transações": [
     alura("trilha", T_SQL),
     puc(M_BD),
+  ],
+  "NoSQL na prática — noção de banco de documentos": [
+    alura("curso", "MongoDB: Modelagem de dados"),
+    alura("curso", "MongoDB: realizando consultas"),
   ],
   "Conexão Node ↔ Postgres (pg/Prisma), variáveis de ambiente (.env)": [
     alura("trilha", T_NODE),
@@ -222,12 +223,25 @@ export const ondeEstudarDev: Record<string, OndeEstudar[]> = {
     alura("curso", "TypeScript parte 2: avançando na linguagem"),
     alura("curso", "React: migrando para TypeScript"),
   ],
+  "Princípios SOLID e código limpo — noção": [
+    alura(
+      "curso",
+      "SOLID com TypeScript: aplicando boas práticas em orientação a objetos"
+    ),
+  ],
   "Componentes/JSX, estado, efeitos, listas/formulários, API, roteamento, context":
     [alura("trilha", T_REACT), alura("trilha", "Full Stack: React com Node.js")],
+  "Testes de componente (Jest + Testing Library)": [
+    alura(
+      "curso",
+      "React: escrevendo seus primeiros testes com Jest e Testing Library"
+    ),
+  ],
   "Vite/Next, deploy na Vercel": [alura("trilha", T_REACT)],
 
   // ---------- BLOCO 7 ----------
   "Ciclo de vida, requisitos (user stories), especificação e modelagem": [
+    fiap("Nano ENGENHARIA DE SOFTWARE"),
     puc("Fundamentos de Engenharia de Software"),
     puc("Especificação de Sistemas de Informação"),
     puc("Projeto de Sistemas de Informação"),
