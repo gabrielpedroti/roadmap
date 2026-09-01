@@ -40,10 +40,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# SPEC original do projeto (material de trabalho, fora do git)
 /painel-de-estudos-kit
 
-# Claude Code (worktrees e cache local)
+# Claude Code (worktrees, cache local e guia interno do projeto)
 .claude/
+CLAUDE.md
 
 # Contexto interno de trabalho (Claude) — nao versionar
 .agents/

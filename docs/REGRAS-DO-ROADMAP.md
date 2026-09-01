@@ -3,8 +3,8 @@
 As decisões que governam o **conteúdo** das trilhas: o que entra, o que fica de fora
 e em que ordem. Quando bater a dúvida "esse curso entra?", a resposta está aqui.
 
-> Isto é sobre conteúdo, não sobre código. As regras de código do projeto ficam no
-> `CLAUDE.md`; como mexer no conteúdo na prática, em [COMO-ATUALIZAR-CONTEUDO.md](COMO-ATUALIZAR-CONTEUDO.md).
+> Isto é sobre conteúdo, não sobre código. Como mexer no conteúdo na prática:
+> [COMO-ATUALIZAR-CONTEUDO.md](COMO-ATUALIZAR-CONTEUDO.md).
 
 ---
 
