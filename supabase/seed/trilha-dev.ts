@@ -193,7 +193,7 @@ export const trilhaDev: SeedTrack = {
       titulo: "Bloco 2 — POO e Estruturas de Dados (Python)",
       semanas: "~8-10 semanas",
       descricao:
-        "Orientação a objetos, estruturas de dados e o primeiro contato sério com APIs e testes. 🔓 Concluir aqui desbloqueia a Etapa 2 da trilha de IA.",
+        "Orientação a objetos, estruturas de dados e o primeiro contato sério com APIs e testes. 🔓 Concluir aqui desbloqueia a Carreira 2 da trilha de IA.",
       grupos: [
         {
           titulo: "Programação Orientada a Objetos",
