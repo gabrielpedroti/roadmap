@@ -4,10 +4,6 @@
 
 **Plano de estudos interativo para me tornar desenvolvedor full stack.**
 
-**[→ Ver o app no ar](https://roadmap-kappa-mauve.vercel.app)** — entre sem conta e navegue pelas trilhas.
-
-![Dashboard do Roadmap — trilhas, constância e pomodoro](docs/img/dashboard.png)
-
 Era para ser apenas uma revisão da faculdade (ADS · PUC-PR), mas acabou evoluindo para algo maior: um plano que cobre tudo o que ainda preciso desenvolver para me tornar um bom desenvolvedor full stack, com IA e inglês correndo na mesma esteira. Em vez de uma planilha, virou um web app com trilhas de aprendizado, progresso ponderado, pomodoro integrado, streak de constância e metas de estudo.
 
 ## Objetivo
@@ -36,7 +32,7 @@ Cada trilha é dividida em blocos com desbloqueio sequencial: o próximo só abr
 
 ## Quer usar?
 
-**Vai estudar o mesmo que eu?** O app está no ar — o link está no topo deste README. Entra, navega pelas trilhas sem conta e, se quiser salvar seu progresso, faz login com e-mail.
+**Vai estudar o mesmo que eu?** O app está no ar em [roadmap-kappa-mauve.vercel.app](https://roadmap-kappa-mauve.vercel.app). Entra, navega pelas trilhas sem conta e, se quiser salvar seu progresso, faz login com e-mail.
 
 **Vai estudar outra coisa?** O motor é genérico — serve pra qualquer plano de estudos, de medicina a música. O passo a passo pra montar o seu com este projeto como base está em **[docs/COMO-CRIAR-SUA-TRILHA.md](docs/COMO-CRIAR-SUA-TRILHA.md)**.
 
