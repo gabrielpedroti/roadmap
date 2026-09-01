@@ -39,10 +39,10 @@ const T_AGIL = "Gestão Ágil de Projetos";
 const T_DEVOPS = "Começando em DevOps";
 const T_RN = "Desenvolva seu primeiro app com React Native";
 const C_PY_API = "Python: avance na OO e consuma API";
-// Nano PYTHON da FIAP (80h, 8 capítulos): 1-5 são a base da linguagem —
-// fonte principal do Bloco 1; 7-8 são protocolos e IoT, usados no Bloco 2.
-const N_PYTHON_BASE = "Nano PYTHON (cap. 1-5)";
-const N_PYTHON_IOT = "Nano PYTHON (cap. 7-8)";
+// Nano PYTHON DEVELOPMENT da FIAP (80h, 6 capítulos) — a versão ATUAL do
+// curso de Python (o Nano "PYTHON" de 2018 saiu do plano, adendo de 26/08).
+// É a fonte principal da base da linguagem no Bloco 1.
+const N_PYTHON_DEV = "Nano PYTHON DEVELOPMENT";
 const C_ALGO_2 = "Algoritmos II";
 const C_JS_LING = "JavaScript: explorando a linguagem";
 const C_NODE_API = "Node.js: crie sua primeira API com Express";
@@ -70,24 +70,24 @@ export const ondeEstudarDev: Record<string, OndeEstudar[]> = {
     alura("curso", "Git e GitHub: compartilhando e colaborando"),
   ],
 
-  // Base da linguagem: a fonte principal é o Nano PYTHON da FIAP (cap. 1-5).
-  // A Alura sobrou só em Strings e Regex e List comprehensions, que o Nano
-  // não cobre.
+  // Base da linguagem: a fonte principal é o Nano PYTHON DEVELOPMENT da FIAP.
+  // A Alura sobrou onde o Nano não cobre: Strings e Regex, List
+  // comprehensions e arquivos/CSV/JSON.
   "Variáveis, operadores, entrada/saída": [
-    fiap(N_PYTHON_BASE),
+    fiap(N_PYTHON_DEV),
     puc(M_RACIOCINIO),
   ],
-  Condicionais: [fiap(N_PYTHON_BASE), puc(M_RACIOCINIO)],
-  Laços: [fiap(N_PYTHON_BASE), puc(M_RACIOCINIO)],
-  Funções: [fiap(N_PYTHON_BASE), puc(M_RACIOCINIO)],
-  "Erros (try/except)": [fiap(N_PYTHON_BASE), puc(M_RACIOCINIO)],
+  Condicionais: [fiap(N_PYTHON_DEV), puc(M_RACIOCINIO)],
+  Laços: [fiap(N_PYTHON_DEV), puc(M_RACIOCINIO)],
+  Funções: [fiap(N_PYTHON_DEV), puc(M_RACIOCINIO)],
+  "Erros (try/except)": [fiap(N_PYTHON_DEV), puc(M_RACIOCINIO)],
   "Strings e Regex": [alura("curso", "Praticando Python: Strings e Regex")],
 
-  "Listas e tuplas": [fiap(N_PYTHON_BASE), puc(M_RACIOCINIO)],
-  "Dicionários e conjuntos": [fiap(N_PYTHON_BASE), puc(M_RACIOCINIO)],
+  "Listas e tuplas": [fiap(N_PYTHON_DEV), puc(M_RACIOCINIO)],
+  "Dicionários e conjuntos": [fiap(N_PYTHON_DEV), puc(M_RACIOCINIO)],
   "List comprehensions": [alura("trilha", T_PRATICANDO)],
 
-  "Ler/escrever texto, CSV e JSON": [fiap(N_PYTHON_BASE)],
+  "Ler/escrever texto, CSV e JSON": [alura("curso", C_PY_API)],
 
   "Lógica proposicional, bases numéricas, proporção/porcentagem": [
     puc("Matemática Aplicada à Computação"),
@@ -131,7 +131,6 @@ export const ondeEstudarDev: Record<string, OndeEstudar[]> = {
   ],
 
   "Conceito e arquitetura, protocolos (HTTP vs MQTT)": [
-    fiap(N_PYTHON_IOT), // "Protocolos de Comunicação e Python" + "Python x IoT"
     puc(M_IOT),
     puc("IoT em um Mundo Conectado"),
   ],
