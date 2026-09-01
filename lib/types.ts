@@ -78,11 +78,15 @@ export type Sessao = {
 // retroativa — cada dia é julgado pelo mínimo que valia nele.
 export type EraMinStreak = { desde: string; min: number }; // desde = YYYY-MM-DD
 
+// Primeiro dia da semana pras metas (barra "Semana" do card de Constância)
+export type InicioSemana = "dom" | "seg";
+
 export type UserSettings = {
   user_id: string;
   streak_min_diario_min: number; // o mínimo ATUAL (mostrado na tela)
   streak_min_historico: EraMinStreak[]; // a linha do tempo do mínimo
   dias_que_contam: number[]; // 1=seg ... 7=dom
+  inicio_semana: InicioSemana; // primeiro dia da semana nas metas
   meta_semanal_h: number;
   meta_mensal_h: number;
   pomodoro_foco_min: number;
@@ -96,6 +100,7 @@ export const SETTINGS_PADRAO: Omit<UserSettings, "user_id"> = {
   streak_min_diario_min: 30,
   streak_min_historico: [], // vazio = usa o mínimo atual pra todos os dias
   dias_que_contam: [1, 2, 3, 4, 5, 6, 7],
+  inicio_semana: "seg",
   meta_semanal_h: 10,
   meta_mensal_h: 40,
   pomodoro_foco_min: 25,

@@ -18,15 +18,20 @@ Roteiro completo, sem pressupor que você conhece Supabase ou Vercel. Tempo tota
 ### 1.2 Criar as tabelas (migrations)
 1. No menu lateral do projeto: **SQL Editor** → **New query**.
 2. Abra o arquivo `supabase/migrations/0001_schema.sql` do repositório, copie TUDO, cole no editor e clique **Run**.
-3. Repita com `supabase/migrations/0002_publico_e_descricoes.sql` (roda os arquivos da pasta `migrations/` SEMPRE em ordem numérica).
+3. Repita com **TODOS os outros arquivos** da pasta `supabase/migrations/`, SEMPRE em ordem numérica (0002, 0003, ... até o último). O app e o seed dependem de colunas criadas nas migrations mais novas — parar no meio quebra o passo 1.5.
 4. Deve aparecer "Success. No rows returned". Confira em **Table Editor**: as tabelas `tracks`, `blocks`, `item_groups`, `items`, `user_checks`, `sessions`, `user_settings` devem existir.
 
 ### 1.3 Pegar as chaves
-1. Menu lateral: **Project Settings** (engrenagem) → **API Keys**.
+1. Menu lateral: **Project Settings** (engrenagem) → **API Keys** → aba **Publishable and secret API keys**.
 2. Você vai usar três coisas:
    - **Project URL** (algo como `https://abcdefgh.supabase.co`)
-   - **anon public** key (pode ser exposta no navegador — o RLS protege os dados)
-   - **service_role** key (⚠️ SECRETA — só pro seed, nunca no git nem na Vercel)
+   - **Publishable key** (`sb_publishable_...` — pode ser exposta no navegador, o RLS protege os dados)
+   - **Secret key** (`sb_secret_...` — ⚠️ SECRETA — só pro seed, nunca no git nem na Vercel)
+
+> As chaves antigas ("anon public" e "service_role", na aba Legacy) ainda funcionam,
+> mas o Supabase vai desativá-las até o fim de 2026 — use as novas. Nos nomes das
+> variáveis do projeto: publishable → `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+> secret → `SUPABASE_SERVICE_ROLE_KEY` (os nomes ficaram os históricos).
 
 ### 1.4 Configurar o `.env.local`
 1. Na raiz do projeto, copie o arquivo `.env.local.example` e renomeie a cópia para `.env.local`.
@@ -67,12 +72,12 @@ Abra http://localhost:3000 e confira:
 3. Em **Branch**, se estiver publicando antes do merge, selecione `v1` (senão `main`).
 
 ### 2.2 Variáveis de ambiente
-Ainda na tela de import, abra **Environment Variables** e adicione DUAS (a service_role NÃO vai):
+Ainda na tela de import, abra **Environment Variables** e adicione DUAS (a secret key NÃO vai):
 
 | Nome | Valor |
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | a Project URL do passo 1.3 |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | a anon key do passo 1.3 |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | a publishable key (`sb_publishable_...`) do passo 1.3 |
 
 ### 2.3 Deploy
 Clique **Deploy** e aguarde (~2 min). No final a Vercel mostra a URL do site (ex.: `https://roadmap-xxxx.vercel.app`).
@@ -92,9 +97,13 @@ Clique **Deploy** e aguarde (~2 min). No final a Vercel mostra a URL do site (ex
 ## Já tinha instalado e chegou uma atualização?
 
 Quando o código ganhar uma migration nova (`supabase/migrations/000X_*.sql`):
-1. Rode o(s) arquivo(s) novo(s) no **SQL Editor**, em ordem numérica.
-2. Se a atualização mudou o CONTEÚDO das trilhas, rode `npm run seed -- --force` — ⚠️ isso apaga os checks marcados de todos os usuários (sessões e streak ficam intactos).
-3. `git pull` na sua máquina; a Vercel redeploya sozinha a cada push na branch conectada.
+1. Rode o(s) arquivo(s) novo(s) no **SQL Editor**, em ordem numérica. As atualizações de conteúdo das trilhas também chegam como migration (ex.: `0009`, `0010`) — basta rodá-las, o progresso marcado é preservado.
+2. `git pull` na sua máquina; a Vercel redeploya sozinha a cada push na branch conectada.
+
+> ⚠️ NÃO use `npm run seed -- --force` para atualizar um banco em uso: ele apaga
+> os checks de todos os usuários e, se houver sessões de estudo gravadas, nem
+> chega a rodar (a tabela `sessions` referencia `tracks` sem cascade — o delete
+> falha com erro de foreign key). O `--force` serve só pra começar do zero.
 
 ## Problemas comuns
 

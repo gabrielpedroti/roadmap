@@ -87,7 +87,9 @@ export function Constancia({
             }`}
             title={
               !hojeConta
-                ? "Hoje não conta pro streak — sua sequência está segura"
+                ? minutosHoje >= settings.streak_min_diario_min
+                  ? "Dia bônus cumprido — hoje somou +1 no streak!"
+                  : "Hoje não é obrigatório — sua sequência está segura (cumpra o mínimo e vira dia bônus)"
                 : chamaAcesa
                   ? "Mínimo de hoje cumprido!"
                   : "Estude o mínimo de hoje para acender a chama"

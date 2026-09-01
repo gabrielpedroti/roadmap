@@ -1,11 +1,12 @@
 // Streak (constância) e metas (volume) — coisas INDEPENDENTES na SPEC:
 // - streak: atingiu o mínimo diário nos dias que contam, em sequência
-// - metas: total de horas na semana (seg-dom) e no mês civil
+//   (dia fora de dias_que_contam nunca quebra; cumprido, vira dia bônus e soma +1)
+// - metas: total de horas na semana (início configurável: seg ou dom) e no mês civil
 //
 // Timestamps ficam em UTC no banco; o "dia" de uma sessão é calculado no
 // fuso de São Paulo (UTC-3 fixo — o Brasil aboliu o horário de verão em 2019).
 
-import type { EraMinStreak } from "./types";
+import type { EraMinStreak, InicioSemana } from "./types";
 
 // Qual mínimo valia num dia? Percorre o histórico (ordenado por data) e pega
 // a última era que já tinha começado naquele dia. É isso que torna a mudança
@@ -101,36 +102,46 @@ export function calcularStreak(
 
   // anda pra trás a partir de hoje; limite de ~10 anos só por segurança
   for (let i = 0; i < 3660; i++) {
+    const atingiu = (porDia.get(dia) ?? 0) >= minDoDia(dia, hist);
     const diaConta = opts.diasQueContam.includes(diaDaSemana(dia));
     if (diaConta) {
-      const atingiu = (porDia.get(dia) ?? 0) >= minDoDia(dia, hist);
       if (atingiu) {
         streak++;
       } else if (dia !== opts.hoje) {
         break; // dia que contava e não atingiu → quebra a sequência
       }
       // hoje ainda não atingiu → não quebra, o dia não acabou
+    } else if (atingiu) {
+      // DIA BÔNUS: fora de dias_que_contam nunca quebra a sequência, mas
+      // estudo que cumpriu o mínimo nele conta +1 (ex.: estudou no domingo
+      // com o streak configurado seg-sex).
+      streak++;
     }
-    // dia que não conta (ex.: domingo desativado) é simplesmente pulado
+    // dia que não conta e sem estudo é simplesmente pulado
     dia = diaAnterior(dia);
   }
 
   return streak;
 }
 
-// Segunda-feira da semana do dia informado
-export function inicioDaSemana(dia: string): string {
+// Primeiro dia da semana do dia informado — segunda (padrão) ou domingo,
+// conforme user_settings.inicio_semana.
+export function inicioDaSemana(
+  dia: string,
+  inicio: InicioSemana = "seg"
+): string {
+  const alvo = inicio === "dom" ? 7 : 1; // 7=dom, 1=seg
   let d = dia;
-  const posicao = diaDaSemana(dia); // 1=seg
-  for (let i = 1; i < posicao; i++) d = diaAnterior(d);
+  while (diaDaSemana(d) !== alvo) d = diaAnterior(d);
   return d;
 }
 
 export function minutosNaSemana(
   porDia: Map<string, number>,
-  hoje: string
+  hoje: string,
+  inicioSemana: InicioSemana = "seg"
 ): number {
-  const inicio = inicioDaSemana(hoje);
+  const inicio = inicioDaSemana(hoje, inicioSemana);
   let total = 0;
   for (const [dia, min] of porDia) {
     if (dia >= inicio && dia <= hoje) total += min;

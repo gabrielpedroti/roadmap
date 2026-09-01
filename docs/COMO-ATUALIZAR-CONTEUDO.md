@@ -60,20 +60,24 @@ Cada `SeedItem` tem `titulo`, `descricao` (opcional — o "ao final você deve..
 
 Regras derivadas que você precisa respeitar:
 - Bloco **sem** item `project`: os obrigatórios passam a valer 100% (automático, nada a configurar).
-- A tag da fonte vem de `fonte` (tabela acima), NÃO do título do grupo. Se criar um grupo de cursos de uma fonte nova, adicione o valor em `Fonte` (`lib/types.ts`), no mapa `TAGS_FONTE` (`components/ListaBlocos.tsx`) e no CHECK da coluna (`supabase/migrations/0004_fonte_dos_itens.sql`).
-- O pré-requisito cruzado (IA Etapa 2 ← Dev Bloco 2) é definido em `run.ts` por `ordem` dos blocos — se reordenar blocos dessas trilhas, ATUALIZE os números lá.
+- A tag da fonte vem de `fonte` (tabela acima), NÃO do título do grupo. Se criar um grupo de cursos de uma fonte nova, adicione o valor em `Fonte` (`lib/types.ts`), no mapa `TAGS_FONTE` (`components/ListaBlocos.tsx`) e recrie o CHECK da coluna numa migration NOVA (o vigente foi recriado pela `0007_ia_reestruturada.sql` — editar a `0004` não tem efeito em bancos existentes).
+- O pré-requisito cruzado (IA Carreira 2 ← Dev Bloco 2) é definido em `run.ts` por `ordem` dos blocos — se reordenar blocos dessas trilhas, ATUALIZE os números lá.
 
 ## O processo (siga na ordem)
 
-1. Edite o(s) arquivo(s) `trilha-*.ts` conforme pedido.
+1. Edite o(s) arquivo(s) `trilha-*.ts` conforme pedido — e o `.md` correspondente do kit junto (regra 9 de `docs/REGRAS-DO-ROADMAP.md`: as duas fontes nunca divergem).
 2. Rode `npx tsc --noEmit` — precisa passar sem erros.
-3. **AVISE O USUÁRIO ANTES DO PASSO 4:** re-seedar com `--force` apaga TODO o conteúdo e, por cascata, **os checks de TODOS os usuários** (o progresso marcado). As sessões de estudo e o streak NÃO são perdidos (ficam em `sessions`). Peça confirmação explícita.
-4. Com o `.env.local` preenchido (URL + SUPABASE_SERVICE_ROLE_KEY):
-   `npm run seed -- --force`
-5. Confira a saída do script: contagens de blocos/grupos/itens por trilha devem bater com o que você editou.
+3. **Num banco em uso, o caminho é SEMPRE uma migration idempotente** (ex.: `0009_plano_ago_2026.sql`): ela aplica só os deltas e preserva os checks. Escreva-a ancorando posições por TÍTULO de grupo/item vizinho, não por número de ordem.
+4. `npm run seed -- --force` fica SÓ para banco zerado (instalação nova). Além de apagar os checks de todos, com sessões gravadas ele nem roda (veja "Limitação conhecida" abaixo). Se for o caso de usá-lo, avise o usuário e peça confirmação explícita antes.
+5. Confira o resultado: contagens de blocos/grupos/itens por trilha devem bater com o que você editou.
 6. Abra o app e confira visualmente a tela da trilha alterada.
-7. Commit + push na branch em uso (hoje: `v1`).
+7. Commit + push na `main` (a Vercel deploya a cada push).
 
 ## Limitação conhecida (não tente contornar por conta própria)
 
 O seed não é idempotente — não há chave estável por item, então re-seedar do zero recria tudo e perde os checks marcados. A correção planejada é usar slugs estáveis + upsert. Até lá, o caminho para mudar conteúdo **sem perder progresso** é uma migration pontual (veja `supabase/migrations/`, ex. `0003_curso_dio.sql`), e o `seed --force` fica só para começar do zero.
+
+**Descoberto em ago/2026:** com sessões de estudo gravadas, o `seed --force` nem
+chega a rodar — `sessions.track_id` referencia `tracks` **sem** `on delete cascade`,
+então o delete das trilhas falha com erro de foreign key. Na prática, num banco em
+uso o caminho é SEMPRE migration; o `--force` só funciona em banco sem sessões.

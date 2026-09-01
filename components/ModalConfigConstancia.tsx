@@ -36,7 +36,11 @@ export function ModalConfigConstancia({
   userId: string;
 }) {
   const router = useRouter();
-  const [form, setForm] = useState({ ...settings });
+  const [form, setForm] = useState({
+    ...settings,
+    // linha antiga no banco pode não ter a coluna ainda → segunda
+    inicio_semana: settings.inicio_semana ?? "seg",
+  });
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -119,6 +123,31 @@ export function ModalConfigConstancia({
                 }`}
               >
                 {d.rotulo}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className={rotulo}>Semana das metas começa no(a)</label>
+          <div className="flex gap-1">
+            {(
+              [
+                { valor: "dom", texto: "domingo" },
+                { valor: "seg", texto: "segunda" },
+              ] as const
+            ).map((op) => (
+              <button
+                key={op.valor}
+                type="button"
+                onClick={() => setForm({ ...form, inicio_semana: op.valor })}
+                className={`cursor-pointer rounded-full border border-hairline px-[10px] py-1 text-[12px] ${
+                  form.inicio_semana === op.valor
+                    ? "bg-seg font-semibold text-tinta"
+                    : "bg-transparent text-tinta2"
+                }`}
+              >
+                {op.texto}
               </button>
             ))}
           </div>

@@ -168,7 +168,7 @@ async function main() {
   await inserirTrilha(trilhaIngles);
 
   // Pré-requisito cruzado (único caso da SPEC):
-  // IA "Etapa 2" só abre depois do "Bloco 2" da trilha Dev.
+  // IA "Carreira 2" só abre depois do "Bloco 2" da trilha Dev.
   const devBloco2 = ouFalha(
     await db
       .from("blocks")
@@ -179,25 +179,25 @@ async function main() {
     "busca Dev Bloco 2"
   ) as { id: string };
 
-  const iaEtapa2 = ouFalha(
+  const iaCarreira2 = ouFalha(
     await db
       .from("blocks")
       .select("id, tracks!inner(slug)")
       .eq("tracks.slug", "ia")
-      .eq("ordem", 3) // Etapa 0 é ordem 1, então Etapa 2 = ordem 3
+      .eq("ordem", 3) // Etapa 0 é ordem 1, então Carreira 2 = ordem 3
       .single(),
-    "busca IA Etapa 2"
+    "busca IA Carreira 2"
   ) as { id: string };
 
   ouFalha(
     await db
       .from("blocks")
       .update({ cross_prereq_block_id: devBloco2.id })
-      .eq("id", iaEtapa2.id),
+      .eq("id", iaCarreira2.id),
     "pré-requisito cruzado"
   );
 
-  console.log("✔ Pré-requisito cruzado: IA Etapa 2 ← Dev Bloco 2");
+  console.log("✔ Pré-requisito cruzado: IA Carreira 2 ← Dev Bloco 2");
   console.log("\nSeed concluído! Confira as contagens acima contra os .md do kit.");
 }
 

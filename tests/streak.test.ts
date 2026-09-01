@@ -81,6 +81,63 @@ describe("calcularStreak", () => {
     expect(calcularStreak(porDia, segASexta)).toBe(3);
   });
 
+  it("DIA BÔNUS: estudo que cumpriu o mínimo num dia que não conta soma +1", () => {
+    // config seg-sex; estudou no domingo mesmo assim (o caso do Gabriel:
+    // 7h no domingo + mínimo batido na segunda = streak 2, não 1)
+    const segASexta = { minDiario: 30, diasQueContam: [1, 2, 3, 4, 5], hoje: "2026-07-14" };
+    const porDia = new Map([
+      ["2026-07-13", 31], // seg — conta
+      ["2026-07-12", 420], // dom — bônus (não é obrigatório, mas estudou)
+      ["2026-07-10", 30], // sex — conta (sáb vazio só é pulado)
+      ["2026-07-09", 30], // qui — conta
+    ]);
+    // hoje (ter) ainda sem estudo não quebra → seg + dom + sex + qui = 4
+    expect(calcularStreak(porDia, segASexta)).toBe(4);
+  });
+
+  it("dia que não conta com estudo ABAIXO do mínimo não soma nem quebra", () => {
+    const segASexta = { minDiario: 30, diasQueContam: [1, 2, 3, 4, 5], hoje: "2026-07-13" };
+    const porDia = new Map([
+      ["2026-07-13", 30], // seg
+      ["2026-07-12", 10], // dom, 10 < 30 → nem bônus, nem quebra
+      ["2026-07-10", 30], // sex
+    ]);
+    expect(calcularStreak(porDia, segASexta)).toBe(2);
+  });
+
+  it("bônus vale mesmo com a sequência anterior quebrada (regra literal — decisão)", () => {
+    // Perdeu a sexta (dia obrigatório), mas estudou sáb+dom: a regra literal
+    // ("dia bônus nunca quebra e soma se cumprido") mostra streak 2 no domingo.
+    // Se a segunda passar em branco, aí sim tudo zera (a sexta perdida cobra).
+    // Alternativa NÃO adotada: bônus só contar com a sequência "viva".
+    const segASexta = { minDiario: 30, diasQueContam: [1, 2, 3, 4, 5], hoje: "2026-07-12" };
+    const porDia = new Map([
+      ["2026-07-12", 60], // dom (hoje) — bônus
+      ["2026-07-11", 60], // sáb — bônus
+      // sex 10 vazia: dia obrigatório perdido
+      ["2026-07-09", 30], // qui
+    ]);
+    expect(calcularStreak(porDia, segASexta)).toBe(2);
+    // na terça, com a segunda vazia, a sexta perdida derruba tudo
+    expect(
+      calcularStreak(porDia, { ...segASexta, hoje: "2026-07-14" })
+    ).toBe(0);
+  });
+
+  it("dia bônus respeita o mínimo da época (histórico não-retroativo)", () => {
+    const historicoMin = [
+      { desde: "1970-01-01", min: 15 },
+      { desde: "2026-07-13", min: 30 },
+    ];
+    const opts2 = { diasQueContam: [1, 2, 3, 4, 5], hoje: "2026-07-13", historicoMin };
+    const porDia = new Map([
+      ["2026-07-13", 30], // seg, sob mínimo 30
+      ["2026-07-12", 20], // dom bônus: na época o mínimo era 15 → 20 conta
+      ["2026-07-10", 15], // sex, sob mínimo 15
+    ]);
+    expect(calcularStreak(porDia, opts2)).toBe(3);
+  });
+
   it("registro manual de ontem mantém o streak (critério de aceite nº 5)", () => {
     const porDia = minutosPorDia([
       // manual de 30 min ontem (08/07, 10:00 SP = 13:00 UTC)
@@ -91,10 +148,16 @@ describe("calcularStreak", () => {
 });
 
 describe("metas — semana e mês", () => {
-  it("inicioDaSemana acha a segunda-feira", () => {
+  it("inicioDaSemana acha a segunda-feira (padrão)", () => {
     expect(inicioDaSemana("2026-07-09")).toBe("2026-07-06"); // qui → seg
     expect(inicioDaSemana("2026-07-06")).toBe("2026-07-06"); // seg → seg
     expect(inicioDaSemana("2026-07-12")).toBe("2026-07-06"); // dom → seg
+  });
+
+  it("inicioDaSemana acha o domingo quando configurado", () => {
+    expect(inicioDaSemana("2026-07-09", "dom")).toBe("2026-07-05"); // qui → dom
+    expect(inicioDaSemana("2026-07-12", "dom")).toBe("2026-07-12"); // dom → ele mesmo
+    expect(inicioDaSemana("2026-07-06", "dom")).toBe("2026-07-05"); // seg → dom anterior
   });
 
   it("meta semanal soma só a semana atual (seg-dom)", () => {
@@ -104,6 +167,17 @@ describe("metas — semana e mês", () => {
       ["2026-07-05", 999], // domingo passado — fora
     ]);
     expect(minutosNaSemana(porDia, "2026-07-09")).toBe(150);
+  });
+
+  it("semana começando no domingo puxa o domingo pra dentro da conta", () => {
+    const porDia = new Map([
+      ["2026-07-09", 60], // qui
+      ["2026-07-06", 90], // seg
+      ["2026-07-05", 100], // dom — dentro com 'dom', fora com 'seg'
+      ["2026-07-04", 999], // sáb passado — fora nos dois modos
+    ]);
+    expect(minutosNaSemana(porDia, "2026-07-09", "dom")).toBe(250);
+    expect(minutosNaSemana(porDia, "2026-07-09", "seg")).toBe(150);
   });
 
   it("meta mensal soma só o mês civil", () => {

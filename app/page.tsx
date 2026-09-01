@@ -97,7 +97,12 @@ export default async function Dashboard() {
               logado={!!user}
               streakDias={streak}
               minutosHoje={porDia.get(hoje) ?? 0}
-              minutosSemana={minutosNaSemana(porDia, hoje)}
+              minutosSemana={minutosNaSemana(
+                porDia,
+                hoje,
+                // linha antiga no banco pode não ter a coluna ainda → segunda
+                settings.inicio_semana ?? "seg"
+              )}
               minutosMes={minutosNoMes(porDia, hoje)}
               settings={settings}
               trilhas={tracks}
