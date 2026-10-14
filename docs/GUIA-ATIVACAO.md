@@ -97,7 +97,11 @@ Clique **Deploy** e aguarde (~2 min). No final a Vercel mostra a URL do site (ex
 ## Já tinha instalado e chegou uma atualização?
 
 Quando o código ganhar uma migration nova (`supabase/migrations/000X_*.sql`):
-1. Rode o(s) arquivo(s) novo(s) no **SQL Editor**, em ordem numérica. As atualizações de conteúdo das trilhas também chegam como migration (ex.: `0009`, `0010`) — basta rodá-las, o progresso marcado é preservado.
+1. Aplique a(s) migration(s) nova(s), em ordem numérica — de um destes jeitos:
+   - **Pelo terminal (recomendado):** com o `DATABASE_URL` no `.env.local` (Supabase → botão **Connect** → **Session pooler** → URI, com a senha do banco), rode `npm run migrar`. Ele aplica só as que faltam e registra cada uma na tabela `migracoes_aplicadas`. Num banco onde você já aplicou migrations à mão, rode uma vez antes `npm run migrar -- --baseline 00XX` (o número da última que você aplicou) — sem isso o comando se recusa a rodar, de propósito.
+   - **Pelo painel:** cole o arquivo no **SQL Editor** e clique **Run**.
+
+   As atualizações de conteúdo das trilhas também chegam como migration (ex.: `0009`, `0010`) — basta aplicá-las, o progresso marcado é preservado. Se a migration usar algo novo do código (ex.: uma plataforma de chip nova), aplique só DEPOIS que o deploy estiver no ar.
 2. `git pull` na sua máquina; a Vercel redeploya sozinha a cada push na branch conectada.
 
 > ⚠️ NÃO use `npm run seed -- --force` para atualizar um banco em uso: ele apaga

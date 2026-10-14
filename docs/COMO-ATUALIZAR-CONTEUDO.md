@@ -69,9 +69,9 @@ Regras derivadas que você precisa respeitar:
 2. Rode `npx tsc --noEmit` — precisa passar sem erros.
 3. **Num banco em uso, o caminho é SEMPRE uma migration idempotente** (ex.: `0009_plano_ago_2026.sql`): ela aplica só os deltas e preserva os checks. Escreva-a ancorando posições por TÍTULO de grupo/item vizinho, não por número de ordem.
 4. `npm run seed -- --force` fica SÓ para banco zerado (instalação nova). Além de apagar os checks de todos, com sessões gravadas ele nem roda (veja "Limitação conhecida" abaixo). Se for o caso de usá-lo, avise o usuário e peça confirmação explícita antes.
-5. Confira o resultado: contagens de blocos/grupos/itens por trilha devem bater com o que você editou.
-6. Abra o app e confira visualmente a tela da trilha alterada.
-7. Commit + push na `main` (a Vercel deploya a cada push).
+5. Commit + push na `main` (a Vercel deploya a cada push) e **espere o deploy ficar verde**.
+6. Aplique a migration com `npm run migrar` (precisa do `DATABASE_URL` no `.env.local`) — sempre DEPOIS do deploy, porque a migration pode gravar algo que só o código novo conhece (foi assim que a página quebrou em ago/2026).
+7. Confira o resultado: contagens de blocos/grupos/itens por trilha devem bater com o que você editou, e abra o app na tela da trilha alterada.
 
 ## Limitação conhecida (não tente contornar por conta própria)
 
