@@ -68,6 +68,12 @@ export const trilhaDev: SeedTrack = {
                 "Criar/alternar branch, merge, resolver conflito; repositório, clone, push/pull, README e .gitignore. Critério de saída: versionar qualquer projeto novo sem tutorial.",
               tipo: "concept",
             },
+            {
+              titulo: "Repositório hackerrank no GitHub",
+              descricao:
+                "Uma pasta por problema, um commit por solução, README explicando a organização. Git treinado todo dia sem item extra — até o fim do Bloco 1 são ~200 commits reais.",
+              tipo: "optional",
+            },
           ],
         },
         {
@@ -153,6 +159,50 @@ export const trilhaDev: SeedTrack = {
               descricao:
                 "E/OU/NÃO e tabelas-verdade (a base dos seus ifs); binário/decimal/hex na intuição; o suficiente pra barra de progresso, juros e métricas.",
               tipo: "concept",
+            },
+          ],
+        },
+        {
+          // Camada de prática (regra 12 do REGRAS-DO-ROADMAP): certificação e
+          // prática com juiz (HackerRank) = concept; prática gerada com IA = optional.
+          titulo: "Prática e certificações",
+          itens: [
+            {
+              titulo: "Prática HackerRank — Python Development (94 exercícios)",
+              descricao:
+                "Fazer após fechar o Nano PYTHON DEVELOPMENT (FIAP), refazendo do zero inclusive os já resolvidos. No HackerRank › Python: Introduction (7), Basic Data Types (6), Strings — os 12 Easy, Sets (13), Math — Mod Divmod, Power - Mod Power, Integers Come In All Sizes, Triangle Quest, Triangle Quest 2, Built-Ins (6), Python Functionals (3), Errors and Exceptions — Exceptions, Debugging (2). No HackerRank › Algorithms, em Python: Warmup (10) e Implementation Easy — os 25 primeiros (Grading Students até Sequence Equation). Data Structures › Arrays — os 4 Easy. Critério: faixa completa + fluência (3 problemas do tema em menos de 20 min cada, sem consultar nada).",
+              tipo: "concept",
+            },
+            {
+              titulo: "Certificação HackerRank — Problem Solving (Basic)",
+              descricao:
+                "Prova gratuita, 90 min, 2 questões (arrays e strings), em Python. Fazer logo após o item anterior, antes dos próximos cursos. Retake é livre: reprovar vira diagnóstico, não derrota. Publicar o certificado no LinkedIn.",
+              tipo: "concept",
+            },
+            {
+              titulo: "Prática HackerRank — Strings e Regex (36 exercícios)",
+              descricao:
+                "Fazer após o curso Alura “Praticando Python: Strings e Regex”. HackerRank › Python: Regex and Parsing — os 12 Easy/Medium (Detect Floating Point Number até Validating Credit Card Numbers; pular Validating Postal Codes e Matrix Script), Errors — Incorrect Regex, Strings — The Minion Game e Merge the Tools!. HackerRank › Algorithms › Strings Easy (21), em Python. Critério: faixa completa + fluência.",
+              tipo: "concept",
+            },
+            {
+              titulo: "Prática HackerRank — lógica e coleções (55 exercícios)",
+              descricao:
+                "Fazer após a trilha Alura “Praticando Python”. HackerRank › Algorithms, em Python: Implementation Easy — do 26º ao 49º (Jumping on the Clouds: Revisited até Strange Counter) e Greedy Easy (12). Interview Preparation Kit: Warm-up (4), Arrays (5), Dictionaries and Hashmaps (5), String Manipulation (5). Critério: faixa completa + fluência.",
+              tipo: "concept",
+            },
+            {
+              titulo: "Prática HackerRank — módulos e arquivos (20 exercícios)",
+              descricao:
+                "Fazer após o curso Alura “Python: avance na OO e consuma API”. HackerRank › Python: Date and Time (2), Collections (8), Itertools — os 6 Easy/Medium (pular Maximize It!), Math — Polar Coordinates e Find Angle MBC, XML (2). Critério: faixa completa.",
+              tipo: "concept",
+            },
+            {
+              titulo:
+                "Matemática aplicada — Databases › Basics of Sets and Relations #1 a #7",
+              descricao:
+                "Questões curtas de lógica de conjuntos no HackerRank › Databases. Revisão leve da matéria Matemática Aplicada à Computação. Não conta no progresso.",
+              tipo: "optional",
             },
           ],
         },
@@ -280,6 +330,64 @@ export const trilhaDev: SeedTrack = {
           ],
         },
         {
+          titulo: "Prática e certificações",
+          itens: [
+            {
+              titulo: "Prática HackerRank — POO (2 exercícios)",
+              descricao:
+                "Fazer após o curso Alura “Python: aplicando a Orientação a Objetos”. HackerRank › Python › Classes: Classes: Dealing with Complex Numbers (métodos especiais __add__, __str__…) e Class 2 - Find the Torsional Angle. Critério: explicar em voz alta por que cada método especial existe.",
+              tipo: "concept",
+            },
+            {
+              titulo:
+                "Prática HackerRank — pilhas, filas e listas ligadas (~38 exercícios)",
+              descricao:
+                "Fazer após o curso Alura “Estrutura de dados: pilhas, filas e listas com Python”. HackerRank › Data Structures: Linked Lists (15), Stacks — Maximum Element, Equal Stacks, Balanced Brackets, Game of Two Stacks, Largest Rectangle, Simple Text Editor, Waiter; Queues — Queue using Two Stacks, Down to Zero II; Arrays — Sparse Arrays. Interview Preparation Kit: Stacks and Queues (6), Linked Lists (5). Critério: faixa completa + fluência nos Easy.",
+              tipo: "concept",
+            },
+            {
+              titulo:
+                "Prática HackerRank — Algoritmos I: ordenação (10 exercícios)",
+              descricao:
+                "Fazer após o curso Alura “Algoritmos I: Selection, Insertion”. HackerRank › Algorithms › Sorting: Intro to Tutorial Challenges, Insertion Sort - Part 1, Insertion Sort - Part 2, Correctness and the Loop Invariant, Running Time of Algorithms, Counting Sort 1, Counting Sort 2, Big Sorting, Closest Numbers, Find the Median. Critério: faixa completa.",
+              tipo: "concept",
+            },
+            {
+              titulo:
+                "Prática HackerRank — Algoritmos II: busca e ordenação (23 exercícios)",
+              descricao:
+                "Fazer após o curso Alura “Algoritmos II: MergeSort, QuickSort, Busca Binária”. HackerRank › Algorithms: Sorting — Quicksort 1 - Partition e The Full Counting Sort; Search Easy — Ice Cream Parlor, Missing Numbers, Sherlock and Array. Interview Preparation Kit: Sorting (5), Search (7), Greedy Algorithms (5). Critério: faixa completa + explicar Big-O de cada solução.",
+              tipo: "concept",
+            },
+            {
+              titulo: "pytest nas próprias soluções",
+              descricao:
+                "Após o curso Alura “Python: testes automatizados”, escrever testes pytest para 10 soluções suas do Interview Preparation Kit (casos de borda: vazio, zero, negativo, formato errado). Teste de verdade em código seu.",
+              tipo: "optional",
+            },
+            {
+              titulo: "Árvores e heap (HackerRank, 10) — além do roadmap",
+              descricao:
+                "Data Structures › Trees Easy (8) e Heap — QHEAP1, Jesse and Cookies. * Não está no plano de estudo; faça se sobrar fôlego. Closures and Decorators (Python, 2) idem — o conceito volta em JS no Bloco 4.",
+              tipo: "optional",
+            },
+            {
+              titulo:
+                "Certificação HackerRank — Problem Solving (Intermediate)",
+              descricao:
+                "Prova gratuita, 90 min, em Python. Fazer após os itens de prática deste bloco. Publicar no LinkedIn.",
+              tipo: "concept",
+            },
+            {
+              titulo:
+                "Certificação HackerRank — Software Engineer Intern (role)",
+              descricao:
+                "Certificação de papel (problem solving + estruturas de dados). Fazer após a anterior. Publicar no LinkedIn.",
+              tipo: "concept",
+            },
+          ],
+        },
+        {
           titulo: "Matérias da faculdade",
           fonte: "ads-pucpr",
           itens: [
@@ -376,6 +484,35 @@ export const trilhaDev: SeedTrack = {
               descricao:
                 "Feedback, consistência e prevenção de erro (as 10 de Nielsen); tamanho, contraste e espaço guiando o olho.",
               tipo: "concept",
+            },
+          ],
+        },
+        {
+          titulo: "Prática e certificações",
+          itens: [
+            {
+              titulo: "HTML por dentro (HackerRank, 3)",
+              descricao:
+                "HackerRank › Python › Regex and Parsing: HTML Parser - Part 1, HTML Parser - Part 2, Detect HTML Tags, Attributes and Attribute Values — em Python. Serve para enxergar a estrutura do HTML como dado.",
+              tipo: "optional",
+            },
+            {
+              titulo: "Certificação HackerRank — CSS (Basic)",
+              descricao:
+                "Prova gratuita. Fazer após a trilha Alura “HTML e CSS para projetos web”. Publicar no LinkedIn.",
+              tipo: "concept",
+            },
+            {
+              titulo: "Prática (gerar com IA) — sintaxe JavaScript básica",
+              descricao:
+                "Após o curso Alura “JavaScript: construindo páginas dinâmicas”, pedir a uma IA 10 exercícios de lógica que você já resolveu em Python (contagem de vogais, inversão, soma de array, FizzBuzz etc.) para reescrever em JavaScript usando let/const, template strings, arrow functions e split/join. Sem consultar nada. Critério: 8 de 10 corretos de primeira.",
+              tipo: "optional",
+            },
+            {
+              titulo: "Prática (gerar com IA) — DOM e eventos",
+              descricao:
+                "Pedir a uma IA 5 mini-tarefas numa página estática: renderizar uma lista a partir de um array, formulário com validação e preventDefault, toggle de classe no clique, contador com input, filtro de lista ao digitar. Só MDN como consulta. Critério: as 5 funcionando sem copiar código.",
+              tipo: "optional",
             },
           ],
         },
@@ -484,6 +621,47 @@ export const trilhaDev: SeedTrack = {
               titulo: "import/export, ESLint + Prettier",
               descricao:
                 "Organizar um projeto em módulos ES; configurar uma vez e nunca mais discutir formatação.",
+              tipo: "concept",
+            },
+          ],
+        },
+        {
+          titulo: "Prática e certificações",
+          itens: [
+            {
+              titulo: "Prática (gerar com IA) — strings em JavaScript",
+              descricao:
+                "Após o curso Alura “JavaScript: explorando a linguagem”, pedir a uma IA 10 problemas de manipulação de string (palíndromo, anagrama, contagem de caracteres, capitalize, caesar cipher, camelCase) para resolver só com a API de String e Array do JS (slice, split, join, charCodeAt, includes). Critério: 8 de 10 sem consultar.",
+              tipo: "optional",
+            },
+            {
+              titulo: "Certificação HackerRank — JavaScript (Basic)",
+              descricao:
+                "Prova gratuita, 90 min, 2 questões (hoisting, escopo, sintaxe). Fazer após o curso “JavaScript: explorando a linguagem”. Retake livre. Publicar no LinkedIn.",
+              tipo: "concept",
+            },
+            {
+              titulo: "Prática (gerar com IA) — ES6+",
+              descricao:
+                "Após o curso Alura “JavaScript: evoluindo a aplicação com ES6+”, pedir a uma IA 10 exercícios que exijam destructuring, spread/rest, arrow functions, template literals, classes ES6 e módulos import/export. Critério: 8 de 10 sem consultar.",
+              tipo: "optional",
+            },
+            {
+              titulo: "Prática (gerar com IA) — métodos de array sem for",
+              descricao:
+                "Após o curso Alura “JavaScript: métodos de array”, pedir a uma IA 10 problemas de transformação de dados (somar, filtrar, agrupar, ordenar objetos, achar máximo, verificar condição) para resolver SÓ com map/filter/reduce/find/some/every/sort — proibido for e while. Critério: 8 de 10 sem consultar, e explicar o que reduce está acumulando em cada um.",
+              tipo: "optional",
+            },
+            {
+              titulo: "Prática (gerar com IA) — assincronia",
+              descricao:
+                "Após os cursos Alura “promises e async/await” e “JS na web: CRUD assíncrono”, pedir a uma IA 5 exercícios com Promise, async/await e fetch numa API pública (loading, erro, Promise.all, retry simples, cancelamento com AbortController). Critério: os 5 funcionando e explicar em voz alta o que o event loop faz em cada um.",
+              tipo: "optional",
+            },
+            {
+              titulo: "Certificação HackerRank — JavaScript (Intermediate)",
+              descricao:
+                "Prova gratuita, 90 min (closures, prototypes, async, ES6 — a ementa deste bloco). Fazer ao fechar o bloco, antes do projeto ou junto. Publicar no LinkedIn.",
               tipo: "concept",
             },
           ],
@@ -601,6 +779,80 @@ export const trilhaDev: SeedTrack = {
           ],
         },
         {
+          titulo: "Prática e certificações",
+          itens: [
+            {
+              titulo: "Prática (gerar com IA) — Express",
+              descricao:
+                "Após os cursos Alura de Node.js/Express, pedir a uma IA 5 endpoints para implementar num recurso simples (listar com paginação, buscar por id, criar com validação, atualizar, deletar), cada um com status code correto (200/201/400/404) e handler central de erro, com testes Jest cobrindo sucesso e erro. Critério: todos os testes verdes sem consultar o curso.",
+              tipo: "optional",
+            },
+            {
+              titulo: "Certificação HackerRank — Node (Basic)",
+              descricao:
+                "Prova gratuita. Fazer após os cursos de Node.js/Express. Publicar no LinkedIn.",
+              tipo: "concept",
+            },
+            {
+              titulo: "Certificação HackerRank — Node.js (Intermediate)",
+              descricao:
+                "Prova gratuita. Fazer após a anterior e o curso “testando API's REST”. Publicar no LinkedIn.",
+              tipo: "concept",
+            },
+            {
+              titulo:
+                "Prática HackerRank — SQL básico e agregação (37 exercícios)",
+              descricao:
+                "Fazer durante/após a trilha Alura “SQL com PostgreSQL”. HackerRank › SQL: Basic Select (20) e Aggregation (17). Critério: faixa completa + fluência.",
+              tipo: "concept",
+            },
+            {
+              titulo: "Certificação HackerRank — SQL (Basic)",
+              descricao:
+                "Prova gratuita. Fazer após o item anterior. Publicar no LinkedIn.",
+              tipo: "concept",
+            },
+            {
+              titulo:
+                "Prática HackerRank — JOINs e select avançado (13 exercícios)",
+              descricao:
+                "HackerRank › SQL: Basic Join (8) e Advanced Select (5). Critério: faixa completa + explicar a diferença INNER/LEFT em voz alta com um exemplo seu.",
+              tipo: "concept",
+            },
+            {
+              titulo: "Certificação HackerRank — SQL (Intermediate)",
+              descricao:
+                "Prova gratuita. Fazer após o item anterior. Publicar no LinkedIn.",
+              tipo: "concept",
+            },
+            {
+              titulo:
+                "Databases (múltipla escolha) — revisão da matéria Banco de Dados",
+              descricao:
+                "HackerRank › Databases: subdomínios Relational Algebra, Indexes, Database Normalization, OLAP. Questões curtas; usar como revisão dirigida da matéria “Banco de Dados para TI”. O subdomínio NoSQL - XML, MapReduce cobre a noção do item opcional de MongoDB.",
+              tipo: "optional",
+            },
+            {
+              titulo: "SQL avançado (HackerRank, 8) — além do roadmap",
+              descricao:
+                "SQL › Advanced Join (5) e Alternative Queries (3) → prepara SQL (Advanced). Fora do escopo atual; faça se quiser.",
+              tipo: "optional",
+            },
+            {
+              titulo: "Certificação HackerRank — Rest API (Intermediate)",
+              descricao:
+                "Prova gratuita. Fazer após a trilha Alura “APIs com Node.js e Express”. Publicar no LinkedIn.",
+              tipo: "concept",
+            },
+            {
+              titulo: "Certificação HackerRank — Software Engineer (role)",
+              descricao:
+                "Certificação de papel (estruturas de dados + SQL + REST API). Fazer ao fechar o bloco. Publicar no LinkedIn.",
+              tipo: "concept",
+            },
+          ],
+        },
+        {
           titulo: "Matérias da faculdade",
           fonte: "ads-pucpr",
           itens: [
@@ -697,6 +949,36 @@ export const trilhaDev: SeedTrack = {
           ],
         },
         {
+          titulo: "Prática e certificações",
+          itens: [
+            {
+              titulo: "Prática (gerar com IA) — TypeScript",
+              descricao:
+                "Após os cursos Alura de TypeScript, pegar 10 problemas que você já resolveu em JS (ou pedir 10 novos a uma IA) e reescrever em TypeScript com tipos explícitos, interfaces para os dados, uma union com narrowing e um generic. Critério: compila em strict com zero any.",
+              tipo: "optional",
+            },
+            {
+              titulo: "Prática HackerRank — React (10 desafios)",
+              descricao:
+                "Fazer após as trilhas Alura de React. HackerRank › React: Item List Manager, Contact Form (Basic); Patient Medical Records, Blog Post, Slideshow, CryptoRank Exchange (Intermediate); Code Review Feedback, Employee Validation, Article Sorting, Word Omitter (Advanced — podem ficar para depois do projeto). Critério: os 6 Basic/Intermediate passando no judge.",
+              tipo: "concept",
+            },
+            {
+              titulo: "Certificação HackerRank — React (Basic)",
+              descricao:
+                "Prova gratuita. Fazer após o item anterior. Publicar no LinkedIn.",
+              tipo: "concept",
+            },
+            {
+              titulo:
+                "Certificação HackerRank — Frontend Developer (React) (role)",
+              descricao:
+                "Certificação de papel (React + JavaScript + CSS). Fazer ao fechar o bloco. Publicar no LinkedIn.",
+              tipo: "concept",
+            },
+          ],
+        },
+        {
           titulo: "🏗️ Projeto do bloco (30%)",
           itens: [
             {
@@ -773,6 +1055,17 @@ export const trilhaDev: SeedTrack = {
               titulo: "Nativo vs híbrido, React Native primeiro contato",
               descricao:
                 "Trade-offs e onde React Native e Flutter entram; criar um app simples (Expo) com componentes básicos e navegação.",
+              tipo: "concept",
+            },
+          ],
+        },
+        {
+          titulo: "Prática e certificações",
+          itens: [
+            {
+              titulo: "Prática HackerRank — Linux Shell (~60 exercícios)",
+              descricao:
+                "Fazer após a trilha Alura “Começando em DevOps”. HackerRank › Linux Shell: Bash — os 10 Easy/Medium (pular Functions and Fractals), Text Processing (30), Arrays in Bash — os 7 Easy/Medium (pular Lonely Integer), Grep Sed Awk (14). Critério: faixa completa — é o único lugar do roadmap com juiz para terminal.",
               tipo: "concept",
             },
           ],

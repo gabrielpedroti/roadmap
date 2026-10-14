@@ -19,24 +19,61 @@ import type {
 } from "@/lib/types";
 import { BarraProgresso } from "./BarraProgresso";
 
-// Nome e cor de cada plataforma nos chips de "onde estudar"
-const PLATAFORMAS: Record<Plataforma, { nome: string; cor: string }> = {
-  alura: { nome: "Alura", cor: "#2A7AE2" },
-  puc: { nome: "PUC", cor: "#9D2235" },
-  dio: { nome: "DIO", cor: "#8E4DFF" },
-  anthropic: { nome: "Anthropic", cor: "#D97757" },
-  fiap: { nome: "FIAP", cor: "#ED145B" }, // magenta FIAP
+// Cores OFICIAIS de cada marca (conferidas em out/2026 no Simple Icons ou no
+// site/logo da própria marca). A mesma marca tem a mesma cor nos dois mapas.
+const COR = {
+  pucpr: "#9D2235", // bordô PUCPR (Pantone 201)
+  alura: "#052FD3", // azul primário do alura.com.br
+  dio: "#7F28B5", // roxo primário do dio.me
+  claude: "#D97757", // laranja Claude (Anthropic Academy)
+  fiap: "#ED145B", // magenta FIAP
+  hackerrank: "#00EA64", // verde HackerRank
+  coursera: "#0056D2", // azul Coursera
+  deeplearning: "#FD4A61", // coral do logo DeepLearning.AI
+};
+type Marca = keyof typeof COR;
+
+// Tom da LETRA ajustado, só onde a cor oficial (escurecida no claro /
+// clareada no escuro pelo .com-cor) fica abaixo de 4.5:1 sobre o fundo do
+// chip. Mesmo matiz da marca; o fundo do chip continua na cor oficial.
+const LETRA: Partial<Record<Marca, { claro?: string; escuro?: string }>> = {
+  pucpr: { escuro: "#C37884" },
+  alura: { escuro: "#6E86E5" },
+  dio: { escuro: "#B07AD1" },
+  claude: { claro: "#A15840" },
+  hackerrank: { claro: "#008137" },
+  deeplearning: { claro: "#C0384A" },
+};
+
+// Variáveis CSS da marca para um elemento .com-cor (ver app/globals.css)
+function varsDaMarca(marca: Marca) {
+  const letra = LETRA[marca];
+  return {
+    "--cor": COR[marca],
+    ...(letra?.claro && { "--cor-texto-claro": letra.claro }),
+    ...(letra?.escuro && { "--cor-texto-escuro": letra.escuro }),
+  };
+}
+
+// Nome e marca de cada plataforma nos chips de "onde estudar"
+const PLATAFORMAS: Record<Plataforma, { nome: string; marca: Marca }> = {
+  alura: { nome: "Alura", marca: "alura" },
+  puc: { nome: "PUC", marca: "pucpr" },
+  dio: { nome: "DIO", marca: "dio" },
+  anthropic: { nome: "Anthropic", marca: "claude" },
+  fiap: { nome: "FIAP", marca: "fiap" },
+  hackerrank: { nome: "HackerRank", marca: "hackerrank" },
 };
 
 // A tag de cada item sai da FONTE dele (vem do banco) — nada de adivinhar
 // pelo título do grupo. Conceito sem fonte específica fica sem tag.
-const TAGS_FONTE: Record<Fonte, { texto: string; cor: string }> = {
-  "ads-pucpr": { texto: "ADS-PUCPR", cor: "#9D2235" }, // bordô PUCPR
-  dio: { texto: "DIO", cor: "#8E4DFF" }, // roxo DIO
-  alura: { texto: "Alura", cor: "#2A7AE2" }, // azul Alura
-  anthropic: { texto: "Anthropic", cor: "#D97757" }, // laranja Claude
-  coursera: { texto: "Coursera", cor: "#0056D2" }, // azul Coursera
-  deeplearning: { texto: "DeepLearning.AI", cor: "#0E9488" }, // teal
+const TAGS_FONTE: Record<Fonte, { texto: string; marca: Marca }> = {
+  "ads-pucpr": { texto: "ADS-PUCPR", marca: "pucpr" },
+  dio: { texto: "DIO", marca: "dio" },
+  alura: { texto: "Alura", marca: "alura" },
+  anthropic: { texto: "Anthropic", marca: "claude" },
+  coursera: { texto: "Coursera", marca: "coursera" },
+  deeplearning: { texto: "DeepLearning.AI", marca: "deeplearning" },
 };
 
 export type BlocoTela = Block & {
@@ -239,8 +276,8 @@ function calcularEstado(
 }
 
 // Tag colorida (bg suave + texto na cor) ou neutra (borda fina)
-function Tag({ texto, cor }: { texto: string; cor?: string }) {
-  if (!cor) {
+function Tag({ texto, marca }: { texto: string; marca?: Marca }) {
+  if (!marca) {
     return (
       <span className="ml-2 rounded-full border border-hairline px-2 py-[2px] align-middle text-[10px] font-medium text-tinta2">
         {texto}
@@ -252,7 +289,7 @@ function Tag({ texto, cor }: { texto: string; cor?: string }) {
       className="com-cor ml-2 rounded-full px-2 py-[2px] align-middle text-[10px] font-semibold"
       style={
         {
-          "--cor": cor,
+          ...varsDaMarca(marca),
           background: "var(--cor-fundo)",
           color: "var(--cor-texto)",
         } as React.CSSProperties
@@ -268,12 +305,15 @@ function Tag({ texto, cor }: { texto: string; cor?: string }) {
 // curso e matéria mostram só o nome.
 function ChipOndeEstudar({ fonte }: { fonte: OndeEstudar }) {
   const p = PLATAFORMAS[fonte.plataforma];
+  // plataforma que o banco já tem mas este código ainda não conhece (migration
+  // rodada antes do deploy): esconde o chip em vez de derrubar a página
+  if (!p) return null;
   return (
     <span
       className="com-cor inline-flex items-center gap-[5px] rounded-full px-[10px] py-[3px] text-[11px]"
       style={
         {
-          "--cor": p.cor,
+          ...varsDaMarca(p.marca),
           background: "var(--cor-fundo)",
           color: "var(--cor-texto)",
         } as React.CSSProperties
@@ -344,7 +384,7 @@ function LinhaItem({
           {ehProjeto && "🏗️ "}
           {item.titulo}
         </span>
-        {tagFonte && <Tag texto={tagFonte.texto} cor={tagFonte.cor} />}
+        {tagFonte && <Tag texto={tagFonte.texto} marca={tagFonte.marca} />}
         {ehOpcional && <Tag texto="opcional" />}
         {item.descricao && (
           <span className="block text-[12px] text-tinta2">

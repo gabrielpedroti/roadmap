@@ -41,3 +41,9 @@ e em que ordem. Quando bater a dúvida "esse curso entra?", a resposta está aqu
 
 11. **Sem data-prazo:** o plano é governado por constância (streak/metas do app).
     Pós é direção, não calendário.
+
+12. **Camada de prática.** Certificação externa (HackerRank) = `concept` obrigatório
+    e gate de saída do bloco. Prática com juiz = `concept` obrigatório, um item por
+    curso/faixa. Prática sem juiz (gerada com IA) = `optional`, com tema, quantidade,
+    restrição e critério no próprio texto. Fluência = 3 problemas do tema em menos de
+    20 min cada, sem consultar nada.

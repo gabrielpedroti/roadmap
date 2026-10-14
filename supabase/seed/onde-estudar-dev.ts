@@ -27,6 +27,13 @@ const fiap = (nome: string): OndeEstudar => ({
   tipo: "curso",
   nome,
 });
+// HackerRank: exercícios com juiz e certificações gratuitas. O nome do chip
+// diz em que domínio do site estão os exercícios (ou "Certificação").
+const hackerrank = (nome: string): OndeEstudar => ({
+  plataforma: "hackerrank",
+  tipo: "curso",
+  nome,
+});
 
 // nomes repetidos — declarados uma vez pra não errar a grafia
 const T_PRATICANDO = "Praticando Python";
@@ -268,5 +275,87 @@ export const ondeEstudarDev: Record<string, OndeEstudar[]> = {
   "Nativo vs híbrido, React Native primeiro contato": [
     alura("trilha", T_RN),
     puc("Desenvolvimento para Dispositivos Móveis"),
+  ],
+
+  // ---------- CAMADA DE PRÁTICA (HackerRank) ----------
+  // Bloco 1
+  "Prática HackerRank — Python Development (94 exercícios)": [
+    hackerrank("Python, Algorithms, Data Structures"),
+  ],
+  "Certificação HackerRank — Problem Solving (Basic)": [
+    hackerrank("Certificação"),
+  ],
+  "Prática HackerRank — Strings e Regex (36 exercícios)": [
+    hackerrank("Python, Algorithms"),
+  ],
+  "Prática HackerRank — lógica e coleções (55 exercícios)": [
+    hackerrank("Algorithms, Interview Preparation Kit"),
+  ],
+  "Prática HackerRank — módulos e arquivos (20 exercícios)": [
+    hackerrank("Python"),
+  ],
+  "Matemática aplicada — Databases › Basics of Sets and Relations #1 a #7": [
+    hackerrank("Databases"),
+  ],
+  // Bloco 2
+  "Prática HackerRank — POO (2 exercícios)": [hackerrank("Python")],
+  "Prática HackerRank — pilhas, filas e listas ligadas (~38 exercícios)": [
+    hackerrank("Data Structures, Interview Preparation Kit"),
+  ],
+  "Prática HackerRank — Algoritmos I: ordenação (10 exercícios)": [
+    hackerrank("Algorithms"),
+  ],
+  "Prática HackerRank — Algoritmos II: busca e ordenação (23 exercícios)": [
+    hackerrank("Algorithms, Interview Preparation Kit"),
+  ],
+  "Árvores e heap (HackerRank, 10) — além do roadmap": [
+    hackerrank("Data Structures, Python"),
+  ],
+  "Certificação HackerRank — Problem Solving (Intermediate)": [
+    hackerrank("Certificação"),
+  ],
+  "Certificação HackerRank — Software Engineer Intern (role)": [
+    hackerrank("Certificação"),
+  ],
+  // Bloco 3
+  "HTML por dentro (HackerRank, 3)": [hackerrank("Python")],
+  "Certificação HackerRank — CSS (Basic)": [hackerrank("Certificação")],
+  // Bloco 4
+  "Certificação HackerRank — JavaScript (Basic)": [hackerrank("Certificação")],
+  "Certificação HackerRank — JavaScript (Intermediate)": [
+    hackerrank("Certificação"),
+  ],
+  // Bloco 5
+  "Certificação HackerRank — Node (Basic)": [hackerrank("Certificação")],
+  "Certificação HackerRank — Node.js (Intermediate)": [
+    hackerrank("Certificação"),
+  ],
+  "Prática HackerRank — SQL básico e agregação (37 exercícios)": [
+    hackerrank("SQL"),
+  ],
+  "Certificação HackerRank — SQL (Basic)": [hackerrank("Certificação")],
+  "Prática HackerRank — JOINs e select avançado (13 exercícios)": [
+    hackerrank("SQL"),
+  ],
+  "Certificação HackerRank — SQL (Intermediate)": [hackerrank("Certificação")],
+  "Databases (múltipla escolha) — revisão da matéria Banco de Dados": [
+    hackerrank("Databases"),
+  ],
+  "SQL avançado (HackerRank, 8) — além do roadmap": [hackerrank("SQL")],
+  "Certificação HackerRank — Rest API (Intermediate)": [
+    hackerrank("Certificação"),
+  ],
+  "Certificação HackerRank — Software Engineer (role)": [
+    hackerrank("Certificação"),
+  ],
+  // Bloco 6
+  "Prática HackerRank — React (10 desafios)": [hackerrank("React")],
+  "Certificação HackerRank — React (Basic)": [hackerrank("Certificação")],
+  "Certificação HackerRank — Frontend Developer (React) (role)": [
+    hackerrank("Certificação"),
+  ],
+  // Bloco 7
+  "Prática HackerRank — Linux Shell (~60 exercícios)": [
+    hackerrank("Linux Shell"),
   ],
 };

@@ -16,8 +16,15 @@ export type Fonte =
 // ele aponta pra um ou mais lugares onde o conteúdo existe. Vira os chips
 // embaixo da descrição. Um conceito pode ter 0, 1 ou várias.
 // "fiap" = os Nano Courses gratuitos da FIAP (on.fiap.com.br/nano-courses),
-// que entram como ONDE ESTUDAR de conceitos da trilha Dev.
-export type Plataforma = "alura" | "puc" | "dio" | "anthropic" | "fiap";
+// que entram como ONDE ESTUDAR de conceitos da trilha Dev. "hackerrank" =
+// exercícios com juiz e certificações da camada de prática (regra 12).
+export type Plataforma =
+  | "alura"
+  | "puc"
+  | "dio"
+  | "anthropic"
+  | "fiap"
+  | "hackerrank";
 export type TipoFonte = "curso" | "trilha" | "materia";
 export type OndeEstudar = {
   plataforma: Plataforma;

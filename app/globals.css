@@ -81,15 +81,22 @@ body {
    do elemento, usar var(--cor-final). */
 .com-cor {
   --cor-final: var(--cor);
-  /* versão para TEXTO: escurecida no claro (contraste no branco)… */
-  --cor-texto: color-mix(in srgb, var(--cor) 78%, black);
+  /* versão para TEXTO: escurecida no claro (contraste no branco)… — ou o tom
+     ajustado da marca, quando o elemento define --cor-texto-claro (chips) */
+  --cor-texto: var(
+    --cor-texto-claro,
+    color-mix(in srgb, var(--cor) 78%, black)
+  );
   /* …e um fundo bem suave para tags coloridas */
   --cor-fundo: color-mix(in srgb, var(--cor) 12%, transparent);
 }
 @media (prefers-color-scheme: dark) {
   .com-cor {
     --cor-final: color-mix(in srgb, var(--cor) 72%, white);
-    --cor-texto: color-mix(in srgb, var(--cor) 65%, white);
+    --cor-texto: var(
+      --cor-texto-escuro,
+      color-mix(in srgb, var(--cor) 65%, white)
+    );
     --cor-fundo: color-mix(in srgb, var(--cor) 22%, transparent);
   }
 }

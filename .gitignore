@@ -54,6 +54,8 @@ CLAUDE.md
 # material interno de revisao de design (snapshots do impeccable)
 .impeccable/
 
-# planos de mudanca do conteudo das trilhas — material de trabalho, nao doc
-# de visitante (as REGRAS que sairam deles ficam em docs/REGRAS-DO-ROADMAP.md)
-/docs/PLANO-DE-MUDANCA-*.md
+# planos e levantamentos do conteudo das trilhas — material de trabalho, nao
+# doc de visitante (as REGRAS que sairam deles ficam em docs/REGRAS-DO-ROADMAP.md)
+/docs/PLANO-*.md
+/docs/MUNICAO-*.md
+/Claude outputs/
