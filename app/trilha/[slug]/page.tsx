@@ -110,7 +110,7 @@ export default async function TelaTrilha({
               {trilha.descricao}
             </p>
           )}
-          <BarraProgresso fracao={user ? progressoTotal : 0} cor={trilha.cor} />
+          <BarraProgresso fracao={user ? progressoTotal : 0} />
           {!user && (
             <p className="mt-3 text-[12px] text-tinta2">
               Você está no modo visualização.{" "}

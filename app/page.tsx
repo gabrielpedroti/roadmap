@@ -76,10 +76,7 @@ export default async function Dashboard() {
                         {user ? `${Math.round(t.progresso * 100)}%` : "—"}
                       </span>
                     </div>
-                    <BarraProgresso
-                      fracao={user ? t.progresso : 0}
-                      cor={t.cor}
-                    />
+                    <BarraProgresso fracao={user ? t.progresso : 0} />
                   </Link>
                 ))}
               </div>

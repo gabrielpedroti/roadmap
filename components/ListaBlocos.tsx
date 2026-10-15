@@ -184,10 +184,7 @@ export function ListaBlocos({
                   {somenteLeitura ? "—" : `${Math.round(info.progresso * 100)}%`}
                 </span>
               </div>
-              <BarraProgresso
-                fracao={somenteLeitura ? 0 : info.progresso}
-                cor={cor}
-              />
+              <BarraProgresso fracao={somenteLeitura ? 0 : info.progresso} />
               {bloco.semanas_estimadas && (
                 <div className="mt-2 text-[12px] text-tinta2">
                   {bloco.semanas_estimadas}
