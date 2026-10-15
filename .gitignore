@@ -47,6 +47,8 @@ next-env.d.ts
 # Claude Code (worktrees, cache local e guia interno do projeto)
 .claude/
 CLAUDE.md
+# o next dev (16.4+) recria este guia para agentes a cada start; nao versionar
+/AGENTS.md
 
 # Contexto interno de trabalho (Claude) — nao versionar
 .agents/
