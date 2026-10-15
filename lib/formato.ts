@@ -26,20 +26,29 @@ export function horaLocalSP(isoUtc: string): string {
   });
 }
 
-// "Hoje 21:10", "Ontem 20:00" ou "05/07 14:00"
+// "Hoje, 21:10", "Ontem, 20:00" ou "05/07, 14:00" (com vírgula, como no
+// mockup aprovado)
 export function rotuloDataHora(isoUtc: string, hoje: string): string {
   const dia = diaLocalSP(isoUtc);
   const hora = horaLocalSP(isoUtc);
 
-  if (dia === hoje) return `Hoje ${hora}`;
+  if (dia === hoje) return `Hoje, ${hora}`;
 
   const [ano, mes, d] = hoje.split("-").map(Number);
   const ontem = new Date(ano, mes - 1, d - 1);
   const diaOntem = `${ontem.getFullYear()}-${String(
     ontem.getMonth() + 1
   ).padStart(2, "0")}-${String(ontem.getDate()).padStart(2, "0")}`;
-  if (dia === diaOntem) return `Ontem ${hora}`;
+  if (dia === diaOntem) return `Ontem, ${hora}`;
 
   const [, m, dd] = dia.split("-");
-  return `${dd}/${m} ${hora}`;
+  return `${dd}/${m}, ${hora}`;
+}
+
+// Fração de 0 a 1 para barras e anel. Conta que deu errado (meta zerada,
+// divisão por zero) vira 0 ou 1, nunca NaN: CSS e leitor de tela recebem
+// sempre um número válido.
+export function limitarFracao(x: number): number {
+  if (Number.isNaN(x)) return 0;
+  return Math.min(1, Math.max(0, x));
 }
