@@ -1,14 +1,27 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  baseAoEstender,
+  baseAoRestaurar,
+  offDoAnel,
+  rotuloDaFase,
+} from "@/lib/anel";
 import { createClient } from "@/lib/supabase/client";
+import { semEmoji } from "@/lib/texto";
 import type { Track, UserSettings } from "@/lib/types";
+import { Icone } from "./Icone";
 import { ModalConfigPomodoro } from "./ModalConfigPomodoro";
+import { Segmentado, type OpcaoSeg } from "./Segmentado";
+import { usePopover } from "./usePopover";
+import { Anel } from "./pomodoro/Anel";
+import { BotaoEstender } from "./pomodoro/BotaoEstender";
+import { PopoverFocoCustom } from "./pomodoro/PopoverFocoCustom";
 
-// Card "Foco" (pomodoro):
-// - seletor de trilha; a selecionada fica com vidro fosco + nome na cor da
-//   trilha; clicar de novo DESMARCA (foco sem registrar em trilha nenhuma)
+// Card "Pomodoro":
+// - segmentado de trilha (desmarcável): clicar na escolhida DESMARCA (foco
+//   sem registrar em trilha nenhuma)
 // - O MODO é definido por quais TEMPOS estão selecionados (clicar no tempo
 //   selecionado o DESMARCA, igual a trilha):
 //     · foco e pausa selecionados → automático (foco → pausa → ...)
@@ -16,13 +29,15 @@ import { ModalConfigPomodoro } from "./ModalConfigPomodoro";
 //     · só um tempo de pausa → conta só a pausa e para
 //   (pelo menos um tempo precisa ficar selecionado)
 // - BOTÕES por estado:
-//     · parado          → [▶ Iniciar]
-//     · rodando (foco)  → [⏸ Pausar] [+🕐]  ← o + estende SEM quebrar o ciclo
-//     · rodando (pausa) → [⏸ Pausar]
-//     · pausado         → [▶ Retomar] [⏹ Concluir]
-//   O ⏹ Concluir salva o tempo decorrido e encerra. Se foi < 2 min, PERGUNTA
+//     · parado          → [Iniciar]
+//     · rodando (foco)  → [Pausar] [+ tempo]  ← estende SEM quebrar o ciclo
+//     · rodando (pausa) → [Pausar]
+//     · pausado         → [Retomar] [Concluir]
+//   Concluir salva o tempo decorrido e encerra. Se foi < 2 min, PERGUNTA
 //   antes de registrar (evita lixo no histórico por start/stop acidental).
 //   Não existe botão de zerar: o Concluir de sessão curta já faz esse papel.
+// - O ANEL mostra restante ÷ base (lib/anel.ts). Somar tempo faz o anel
+//   SUBIR animado; a base só cresce se o restante passar dela.
 //
 // O relógio usa UM setInterval fixo que chama sempre a versão mais recente
 // de tick() via ref — evita a classe de bug de closure velha que congelava
@@ -41,6 +56,7 @@ type EstadoSalvo = {
   restanteMs: number;
   inicioFoco: string | null; // ISO de quando o foco começou (p/ started_at)
   ciclosFoco: number; // focos concluídos (decide a pausa longa)
+  baseMs?: number; // o "cheio" do anel (estado salvo antigo não tem)
   // legado (formato antigo marcava a fase por booleano):
   focoAtivo?: boolean;
   pausaAtivo?: boolean;
@@ -73,95 +89,6 @@ function tocarBip(vezes: number) {
   }
 }
 
-// classes compartilhadas dos segmented controls
-const segFundo = "flex rounded-[10px] bg-seg p-[2px]";
-const segBotao =
-  "flex min-h-[38px] flex-1 cursor-pointer items-center justify-center gap-[6px] rounded-[8px] border-none px-2 text-[13px] font-medium text-tinta2 transition-colors";
-// selecionado = vidro fosco iOS. A classe .vidro (globals.css) dá o fundo
-// translúcido e a sombra; o blur vai INLINE porque o Lightning CSS (build do
-// Tailwind v4) remove `backdrop-filter` das folhas de estilo.
-// O VALOR vem da var --vidro-blur (globals.css) em vez de escrito aqui: assim
-// `prefers-reduced-transparency: reduce` consegue desligar o blur trocando a
-// variável, coisa que uma regra de folha não faria contra um estilo inline.
-const segBotaoOn = "vidro font-semibold text-tinta";
-const vidroBlur: React.CSSProperties = {
-  backdropFilter: "var(--vidro-blur)",
-  WebkitBackdropFilter: "var(--vidro-blur)",
-};
-
-const btnPrimario =
-  "cursor-pointer rounded-full bg-acao px-8 py-[13px] text-[16px] font-semibold text-white transition-[transform,opacity] hover:opacity-90 active:scale-[.97]";
-const btnContorno =
-  "flex cursor-pointer items-center gap-[7px] rounded-full border border-hairline px-5 py-3 text-[14px] font-semibold text-tinta hover:border-tinta2";
-
-// Botão "+" com ícone de relógio: abre +1/+2/+5 e estende o foco em curso.
-// Fica fora do componente pai pra não ser recriado a cada render.
-function BotaoEstender({ onAdd }: { onAdd: (min: number) => void }) {
-  const [aberto, setAberto] = useState(false);
-  const caixa = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!aberto) return;
-    function fora(e: MouseEvent) {
-      if (caixa.current && !caixa.current.contains(e.target as Node)) {
-        setAberto(false);
-      }
-    }
-    function esc(e: KeyboardEvent) {
-      if (e.key === "Escape") setAberto(false);
-    }
-    document.addEventListener("mousedown", fora);
-    document.addEventListener("keydown", esc);
-    return () => {
-      document.removeEventListener("mousedown", fora);
-      document.removeEventListener("keydown", esc);
-    };
-  }, [aberto]);
-
-  return (
-    <div ref={caixa} className="relative">
-      {aberto && (
-        <div className="cartao absolute bottom-[calc(100%+10px)] right-0 z-20 flex gap-1 p-[5px]">
-          {[1, 2, 5].map((m) => (
-            <button
-              key={m}
-              onClick={() => {
-                onAdd(m);
-                setAberto(false);
-              }}
-              className="cursor-pointer rounded-lg px-3 py-2 text-[13px] font-semibold text-tinta hover:bg-seg"
-            >
-              +{m}
-            </button>
-          ))}
-        </div>
-      )}
-      <button
-        onClick={() => setAberto((v) => !v)}
-        title="Adicionar minutos ao foco"
-        aria-label="Adicionar minutos ao foco"
-        aria-expanded={aberto}
-        className="flex h-12 cursor-pointer items-center gap-[5px] rounded-full border border-hairline px-[18px] text-[16px] font-semibold text-tinta hover:border-tinta2"
-      >
-        +
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="h-[17px] w-[17px]"
-          aria-hidden
-        >
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 7.5V12l3 2" />
-        </svg>
-      </button>
-    </div>
-  );
-}
-
 export function Pomodoro({
   trilhas,
   settings,
@@ -189,6 +116,28 @@ export function Pomodoro({
   const [aviso, setAviso] = useState<string | null>(null);
   const [confirmarCurta, setConfirmarCurta] = useState<number | null>(null);
   const [configAberta, setConfigAberta] = useState(false);
+  // o "cheio" do anel: começa no total da fase; só cresce ao somar tempo
+  // além dele (lib/anel.ts)
+  const [baseMs, setBaseMs] = useState(settings.pomodoro_foco_min * 60_000);
+  // subida do anel ao somar tempo: o alvo (--off) fica CONGELADO enquanto
+  // ela dura; senão cada tique de 500 ms reinicia a transição e o arco se
+  // arrasta. Separado do setInterval do relógio (que continua único).
+  const [subida, setSubida] = useState<{ modo: "mola" | "suave"; off: number } | null>(null);
+  const subidaTimer = useRef<number | undefined>(undefined);
+  // popover do foco personalizado (substitui o prompt nativo)
+  // (desestruturado: o lint do React separa as refs dos valores comuns)
+  const {
+    aberto: customAberto,
+    alternar: alternarCustom,
+    fechar: fecharCustom,
+    gatilhoRef: lapisRef,
+    painelRef: popCustomRef,
+  } = usePopover<HTMLButtonElement, HTMLFormElement>();
+  const idPopCustom = useId();
+  const idRotFoco = useId();
+  const idRotPausa = useId();
+  const mioloRef = useRef<HTMLDivElement>(null);
+  const acoesRef = useRef<HTMLDivElement>(null);
 
   // ativação de cada fase É a presença de um tempo selecionado
   const focoAtivo = focoMin !== null;
@@ -226,10 +175,41 @@ export function Pomodoro({
       restanteMs,
       inicioFoco: inicioFoco.current,
       ciclosFoco: ciclosFoco.current,
+      baseMs,
       ...extra,
     };
     localStorage.setItem(CHAVE_STORAGE, JSON.stringify(estado));
   }
+
+  // nome da trilha para os avisos ("25 min registrados em Dev.")
+  function nomeDaTrilha(id: string | null) {
+    const t = trilhas.find((x) => x.id === id);
+    return t ? semEmoji(t.nome) : "";
+  }
+
+  // depois de cada ação, o foco do teclado vai para o botão principal que
+  // tomou o lugar (Iniciar, Pausar, Retomar ou o Registrar da sessão curta).
+  // O botão novo só existe depois do render: o pedido vira estado e o efeito
+  // abaixo (que roda depois do render) move o foco.
+  const [pedidoDeFoco, setPedidoDeFoco] = useState(0);
+  function focarPrimario() {
+    setPedidoDeFoco((n) => n + 1);
+  }
+  useEffect(() => {
+    if (pedidoDeFoco === 0) return;
+    mioloRef.current?.querySelector<HTMLElement>(".acoes .btn-prim")?.focus();
+  }, [pedidoDeFoco]);
+
+  // somar tempo: o anel SOBE animado, sempre. "mola" (.6s) com movimento
+  // normal; "suave" (.3s) com movimento reduzido (encher o anel é retorno
+  // de progresso, não deslocamento pela tela)
+  function subirAnel(alvo: number) {
+    const suave = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setSubida({ modo: suave ? "suave" : "mola", off: alvo });
+    window.clearTimeout(subidaTimer.current);
+    subidaTimer.current = window.setTimeout(() => setSubida(null), suave ? 400 : 700);
+  }
+  useEffect(() => () => window.clearTimeout(subidaTimer.current), []);
 
   async function registrarSessao(
     inicioIso: string,
@@ -247,7 +227,7 @@ export function Pomodoro({
       origem: "pomodoro",
     });
     if (error) {
-      setAviso("Erro ao registrar a sessão — anote e registre manual.");
+      setAviso("Não deu para registrar a sessão. Anote o tempo e registre manual.");
     } else {
       router.refresh(); // atualiza streak, metas e últimas sessões
     }
@@ -263,6 +243,7 @@ export function Pomodoro({
     inicioFoco.current = null;
     const dur = faseInicial === "foco" ? focoSeguro : pausaSegura;
     setRestanteMs(dur * 60_000);
+    setBaseMs(dur * 60_000);
     salvarEstado({
       rodando: false,
       extraMs: 0,
@@ -270,6 +251,7 @@ export function Pomodoro({
       fimEm: null,
       inicioFoco: null,
       restanteMs: dur * 60_000,
+      baseMs: dur * 60_000,
     });
   }
 
@@ -284,10 +266,10 @@ export function Pomodoro({
     inicioFoco.current = null;
 
     const msgFoco = registrou
-      ? `✅ Foco concluído — ${totalMin} min registrados!`
+      ? `${totalMin} min registrados em ${nomeDaTrilha(trilhaId)}.`
       : !userId
-        ? "✅ Foco concluído! Entre para salvar suas sessões."
-        : "✅ Foco concluído (sem trilha — não registrado).";
+        ? `Foco de ${totalMin} min concluído. Entre para salvar suas sessões.`
+        : "Foco concluído, sem trilha: não registrado.";
 
     setExtraMs(0);
 
@@ -303,6 +285,7 @@ export function Pomodoro({
       setRodando(true);
       fimEm.current = Date.now() + duracao * 60_000;
       setRestanteMs(duracao * 60_000);
+      setBaseMs(duracao * 60_000);
       salvarEstado({
         fase: "pausa",
         rodando: true,
@@ -311,6 +294,7 @@ export function Pomodoro({
         restanteMs: duracao * 60_000,
         inicioFoco: null,
         ciclosFoco: ciclosFoco.current,
+        baseMs: duracao * 60_000,
       });
     } else {
       // só-foco: para e volta pro começo
@@ -319,6 +303,7 @@ export function Pomodoro({
       setRodando(false);
       fimEm.current = null;
       setRestanteMs(focoSeguro * 60_000);
+      setBaseMs(focoSeguro * 60_000);
       salvarEstado({
         fase: "foco",
         rodando: false,
@@ -327,6 +312,7 @@ export function Pomodoro({
         restanteMs: focoSeguro * 60_000,
         inicioFoco: null,
         ciclosFoco: ciclosFoco.current,
+        baseMs: focoSeguro * 60_000,
       });
     }
   }
@@ -337,8 +323,8 @@ export function Pomodoro({
     const proxima: Fase = focoAtivo ? "foco" : "pausa";
     setAviso(
       focoAtivo
-        ? "⏰ Pausa encerrada — pronto pro próximo foco?"
-        : "⏰ Pausa concluída."
+        ? "Pausa encerrada. Pronto para o próximo foco?"
+        : "Pausa concluída."
     );
     setFase(proxima);
     setRodando(false);
@@ -346,12 +332,14 @@ export function Pomodoro({
     fimEm.current = null;
     const dur = proxima === "foco" ? focoSeguro : pausaSegura;
     setRestanteMs(dur * 60_000);
+    setBaseMs(dur * 60_000);
     salvarEstado({
       fase: proxima,
       rodando: false,
       extraMs: 0,
       fimEm: null,
       restanteMs: dur * 60_000,
+      baseMs: dur * 60_000,
     });
   }
 
@@ -363,8 +351,14 @@ export function Pomodoro({
       return;
     }
     fimEm.current = null; // trava contra tick duplo na virada
+    // a fase vai mudar sozinha: se o foco do teclado estava nos botões de
+    // ação (Pausar, "+ tempo" ou o popover dele), ele vai para o novo botão
+    // principal; senão cairia no <body> (o "+ tempo" some na troca)
+    const focoNasAcoes = !!acoesRef.current?.contains(document.activeElement);
+    fecharCustom(false); // popovers abertos fecham na troca de fase
     if (fase === "foco") concluirFoco();
     else concluirPausa();
+    if (focoNasAcoes) focarPrimario();
   }
 
   // tickRef aponta SEMPRE pra versão mais recente do tick (padrão
@@ -407,6 +401,10 @@ export function Pomodoro({
 
       const dm = (m: number | null) =>
         (m ?? settings.pomodoro_foco_min) * 60_000;
+      // total da fase salva (o foco soma o que o "+ tempo" estendeu); só
+      // serve para a base do anel de estado salvo antigo, sem baseMs
+      const totalDaFase =
+        salvo.fase === "foco" ? dm(fMin) + (salvo.extraMs ?? 0) : dm(pMin);
 
       if (salvo.rodando && salvo.fimEm) {
         if (salvo.fimEm <= Date.now()) {
@@ -416,22 +414,28 @@ export function Pomodoro({
               (dm(fMin) + (salvo.extraMs ?? 0)) / 60_000
             );
             registrarSessao(salvo.inicioFoco, total, salvo.trilhaId);
-            setAviso("✅ Foco concluído (registrado) com a página fechada.");
+            setAviso("Foco concluído com a página fechada e registrado.");
           }
           inicioFoco.current = null;
           setExtraMs(0);
           setFase(salvo.fase);
           setRodando(false);
-          setRestanteMs(salvo.fase === "foco" ? dm(fMin) : dm(pMin));
+          const dur = salvo.fase === "foco" ? dm(fMin) : dm(pMin);
+          setRestanteMs(dur);
+          setBaseMs(dur);
         } else {
           setFase(salvo.fase);
           setRodando(true);
           fimEm.current = salvo.fimEm;
-          setRestanteMs(salvo.fimEm - Date.now());
+          const resta = salvo.fimEm - Date.now();
+          setRestanteMs(resta);
+          setBaseMs(baseAoRestaurar(salvo.baseMs, totalDaFase, resta));
         }
       } else {
         setFase(salvo.fase);
-        setRestanteMs(salvo.restanteMs ?? dm(fMin));
+        const resta = salvo.restanteMs ?? dm(fMin);
+        setRestanteMs(resta);
+        setBaseMs(baseAoRestaurar(salvo.baseMs, totalDaFase, resta));
       }
     } catch {
       localStorage.removeItem(CHAVE_STORAGE);
@@ -452,6 +456,9 @@ export function Pomodoro({
       salvarEstado({ rodando: false, fimEm: null, restanteMs: resta });
       return;
     }
+    // o relógio vai contar: o popover "Foco personalizado" fecha (quem usa o
+    // teclado sai dele com Tab e aperta Iniciar sem fechá-lo)
+    fecharCustom(false);
     if (fase === "foco" && inicioFoco.current === null) {
       inicioFoco.current = new Date().toISOString();
     }
@@ -470,13 +477,19 @@ export function Pomodoro({
     const somaMs = min * 60_000;
     fimEm.current = (fimEm.current ?? Date.now()) + somaMs;
     const novoRestante = restanteMs + somaMs;
+    // o anel sobe na proporção (restante ÷ base); se o restante passar da
+    // base (somou mais do que já tinha corrido), enche e vira a nova base
+    const novaBase = baseAoEstender(baseMs, novoRestante);
     setExtraMs(extraMs + somaMs);
     setRestanteMs(novoRestante);
+    setBaseMs(novaBase);
+    subirAnel(offDoAnel(novoRestante, novaBase));
     setAviso(`+${min} min no foco.`);
     salvarEstado({
       extraMs: extraMs + somaMs,
       fimEm: fimEm.current,
       restanteMs: novoRestante,
+      baseMs: novaBase,
     });
   }
 
@@ -484,17 +497,17 @@ export function Pomodoro({
   function salvarEConcluir(min: number) {
     if (inicioFoco.current && trilhaId && userId) {
       registrarSessao(inicioFoco.current, min, trilhaId);
-      setAviso(`✅ ${min} min registrados.`);
+      setAviso(`${min} min registrados em ${nomeDaTrilha(trilhaId)}.`);
     } else if (!userId) {
-      setAviso("✅ Foco encerrado! Entre para salvar suas sessões.");
+      setAviso("Foco encerrado. Entre para salvar suas sessões.");
     } else {
-      setAviso("✅ Foco encerrado (sem trilha — não registrado).");
+      setAviso("Foco encerrado, sem trilha: não registrado.");
     }
     setConfirmarCurta(null);
     voltarAoInicio();
   }
 
-  // ⏹ Concluir: numa pausa só encerra; num foco, salva o decorrido —
+  // Concluir: numa pausa só encerra; num foco, salva o decorrido —
   // perguntando antes se a sessão foi curta demais
   function concluir() {
     if (fase === "pausa") {
@@ -503,7 +516,7 @@ export function Pomodoro({
       return;
     }
     if (decorridoMin < 1) {
-      setAviso("Sessão muito curta — nada registrado.");
+      setAviso("Sessão muito curta: nada registrado.");
       voltarAoInicio();
       return;
     }
@@ -534,6 +547,7 @@ export function Pomodoro({
     inicioFoco.current = null;
     const dur = (faseInicial === "foco" ? f : p) ?? settings.pomodoro_foco_min;
     setRestanteMs(dur * 60_000);
+    setBaseMs(dur * 60_000);
     salvarEstado({
       focoMin: f,
       pausaMin: p,
@@ -543,6 +557,7 @@ export function Pomodoro({
       fimEm: null,
       inicioFoco: null,
       restanteMs: dur * 60_000,
+      baseMs: dur * 60_000,
     });
   }
 
@@ -550,9 +565,19 @@ export function Pomodoro({
     setAviso("Selecione ao menos um tempo (foco ou pausa).");
   }
 
+  // Travado (relógio contando): o clique não muda nada e o aviso explica o
+  // motivo (antes ele era ignorado em silêncio)
+  function avisarTrava(motivo: "trilha" | "tempos") {
+    setAviso(
+      motivo === "trilha"
+        ? "A trilha não muda no meio de um foco."
+        : "Pause para trocar os tempos."
+    );
+  }
+
   // clicar na trilha seleciona; clicar de novo DESMARCA
   function alternarTrilha(id: string) {
-    if (rodando && fase === "foco") return; // não troca no meio de um foco
+    if (rodando && fase === "foco") return avisarTrava("trilha"); // não troca no meio de um foco
     const nova = trilhaId === id ? null : id;
     setTrilhaId(nova);
     salvarEstado({ trilhaId: nova });
@@ -560,7 +585,7 @@ export function Pomodoro({
 
   // clicar num tempo de foco: seleciona; clicar no já selecionado DESMARCA
   function escolherFoco(min: number) {
-    if (rodando) return;
+    if (rodando) return avisarTrava("tempos");
     if (focoMin === min) {
       if (pausaMin === null) return precisaDeUm();
       aplicarSelecao(null, pausaMin);
@@ -569,20 +594,33 @@ export function Pomodoro({
     }
   }
 
+  // lápis: com o personalizado ligado, DESMARCA (se a pausa estiver
+  // selecionada); senão abre o popover "Foco personalizado"
   function escolherFocoCustom() {
-    if (rodando) return;
+    if (rodando) return avisarTrava("tempos");
     if (focoCustom) {
       if (pausaMin === null) return precisaDeUm();
       aplicarSelecao(null, pausaMin);
       return;
     }
-    const valor = prompt("Minutos de foco:", "35");
-    const min = valor ? parseInt(valor, 10) : NaN;
-    if (min > 0) aplicarSelecao(min, pausaMin);
+    alternarCustom();
+  }
+
+  // "Aplicar" do popover (o valor já chega validado: maior que zero).
+  // Com o relógio contando, NÃO aplica: aplicarSelecao zera o relógio e o
+  // foco em andamento sumiria sem registro. (O prompt de antes era modal e
+  // não deixava isso acontecer; o popover deixa sair com Tab.)
+  function aplicarFocoCustom(min: number) {
+    if (rodando) {
+      fecharCustom(true);
+      return avisarTrava("tempos");
+    }
+    fecharCustom(true);
+    aplicarSelecao(min, pausaMin);
   }
 
   function escolherPausa(min: number) {
-    if (rodando) return;
+    if (rodando) return avisarTrava("tempos");
     if (pausaMin === min) {
       if (focoMin === null) return precisaDeUm();
       aplicarSelecao(focoMin, null);
@@ -596,175 +634,227 @@ export function Pomodoro({
 
   const modoTexto =
     focoAtivo && pausaAtivo
-      ? "modo automático · foco → pausa"
+      ? "Modo automático · foco, depois pausa"
       : focoAtivo
-        ? "só foco · conta e para"
-        : "só pausa · conta e para";
+        ? "Só foco · conta e para"
+        : "Só pausa · conta e para";
+
+  // a legenda só aparece quando informa algo (repetir a trilha era ruído)
+  const legenda = !userId
+    ? "Entre para registrar o foco"
+    : trilhaId
+      ? ""
+      : "Sem trilha: o foco não é registrado";
+
+  // anel: durante a subida o alvo fica congelado (ver `subida`)
+  const off = subida ? subida.off : offDoAnel(restanteMs, baseMs);
+  const corDaTrilha = trilhas.find((t) => t.id === trilhaId)?.cor ?? null;
+
+  const opcoesTrilha: OpcaoSeg[] = trilhas.map((t) => ({
+    valor: t.id,
+    conteudo: semEmoji(t.nome),
+    titulo: semEmoji(t.nome),
+  }));
+  const opcoesFoco: OpcaoSeg[] = [
+    ...FOCO_FIXOS.map((m) => ({ valor: String(m), conteudo: String(m) })),
+    {
+      valor: "custom",
+      // ligado mostra o número; desligado, o lápis
+      conteudo: focoCustom ? String(focoMin) : <Icone nome="lapis" />,
+      ariaLabel: focoCustom ? `Foco personalizado: ${focoMin} min` : "Foco personalizado",
+      titulo: "Foco personalizado",
+      ref: lapisRef,
+      ariaHaspopup: "dialog",
+      ariaExpanded: customAberto,
+      ariaControls: idPopCustom,
+    },
+  ];
+  const opcoesPausa: OpcaoSeg[] = [5, 10, 15].map((m) => ({
+    valor: String(m),
+    conteudo: String(m),
+  }));
 
   return (
-    <section className="cartao flex flex-col p-[clamp(16px,1.8vw,24px)] max-md:order-1">
-      <div className="flex items-center justify-between">
-        <h2 className="text-[13px] font-semibold text-tinta2">Foco</h2>
-        {userId && (
-          <button
-            onClick={() => setConfigAberta(true)}
-            className="cursor-pointer text-[15px] text-tinta2 hover:text-tinta"
-            title="Tempos do pomodoro"
-          >
-            ⚙
-          </button>
-        )}
-      </div>
-
-      <div className="flex flex-1 flex-col items-center justify-center py-[clamp(8px,2vh,20px)]">
-        {/* seletor de trilha — vidro fosco + nome na cor da trilha */}
-        <div className={`${segFundo} w-full max-w-[420px]`}>
-          {trilhas.map((t) => {
-            const selecionada = trilhaId === t.id;
-            return (
-              <button
-                key={t.id}
-                onClick={() => alternarTrilha(t.id)}
-                className={`com-cor ${segBotao} ${selecionada ? segBotaoOn : ""}`}
-                style={
-                  {
-                    "--cor": t.cor,
-                    ...(selecionada
-                      ? { color: "var(--cor-texto)", ...vidroBlur }
-                      : {}),
-                  } as React.CSSProperties
-                }
-                title={
-                  selecionada
-                    ? "Clique para desmarcar (foco sem registro)"
-                    : `Registrar o foco em ${t.nome}`
-                }
-              >
-                {t.nome}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="my-[clamp(14px,3.5vh,36px)] text-[clamp(56px,min(13vh,10vw),120px)] font-extralight leading-none tabular-nums tracking-[-0.01em] text-tinta">
-          {String(minutos).padStart(2, "0")}:{String(segundos).padStart(2, "0")}
-        </div>
-
-        <div className="flex w-full max-w-[400px] flex-col gap-[10px]">
-          <div className="flex items-center gap-3">
-            <span
-              className={`w-11 shrink-0 text-right text-[13px] ${
-                focoAtivo ? "font-medium text-tinta" : "text-tinta2"
-              }`}
+    <>
+      <section className="cartao foco" aria-labelledby="t-foco">
+        <div className="cartao-cab">
+          <h2 className="cartao-titulo" id="t-foco">
+            Pomodoro
+          </h2>
+          {userId && (
+            <button
+              type="button"
+              className="btn-icone"
+              aria-label="Tempos do pomodoro"
+              title="Tempos do pomodoro"
+              onClick={() => setConfigAberta(true)}
             >
-              foco
-            </span>
-            <div className={`${segFundo} flex-1`}>
-              {FOCO_FIXOS.map((min) => (
-                <button
-                  key={min}
-                  onClick={() => escolherFoco(min)}
-                  className={`${segBotao} ${focoMin === min ? segBotaoOn : ""}`}
-                  style={focoMin === min ? vidroBlur : undefined}
-                >
-                  {min}
-                </button>
-              ))}
-              <button
-                onClick={escolherFocoCustom}
-                className={`${segBotao} ${focoCustom ? segBotaoOn : ""}`}
-                style={focoCustom ? vidroBlur : undefined}
-                title="Foco personalizado"
-              >
-                {focoCustom ? focoMin : "✎"}
-              </button>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <span
-              className={`w-11 shrink-0 text-right text-[13px] ${
-                pausaAtivo ? "font-medium text-tinta" : "text-tinta2"
-              }`}
-            >
-              pausa
-            </span>
-            <div className={`${segFundo} flex-1`}>
-              {[5, 10, 15].map((min) => (
-                <button
-                  key={min}
-                  onClick={() => escolherPausa(min)}
-                  className={`${segBotao} ${pausaMin === min ? segBotaoOn : ""}`}
-                  style={pausaMin === min ? vidroBlur : undefined}
-                >
-                  {min}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="text-center text-[11px] text-tinta2">{modoTexto}</div>
+              <Icone nome="engrenagem" />
+            </button>
+          )}
         </div>
 
-        {/* Ações — mudam conforme o estado do ciclo */}
-        {confirmarCurta !== null ? (
-          <div className="mt-[clamp(14px,3.5vh,28px)] flex flex-col items-center gap-[10px] text-center">
-            <p className="max-w-[300px] text-[13px] text-tinta">
-              Você estudou só <strong>{confirmarCurta} min</strong> nesta
-              sessão. Quer registrar mesmo assim?
-            </p>
-            <div className="flex gap-[10px]">
-              <button
-                onClick={() => salvarEConcluir(confirmarCurta)}
-                className="cursor-pointer rounded-full bg-acao px-5 py-[9px] text-[13px] font-semibold text-white"
-              >
-                Registrar
-              </button>
-              <button
-                onClick={descartarCurta}
-                className="cursor-pointer rounded-full border border-hairline px-5 py-[9px] text-[13px] font-semibold text-tinta"
-              >
-                Descartar
-              </button>
-            </div>
+        <div className="foco-miolo" ref={mioloRef}>
+          <Segmentado
+            modo="desmarcavel"
+            className="seg-trilha"
+            ariaLabel="Trilha do foco"
+            opcoes={opcoesTrilha}
+            valor={trilhaId}
+            travado={rodando && fase === "foco"}
+            onEscolher={alternarTrilha}
+          />
+          <p className="foco-legenda">{legenda}</p>
+
+          <div className="relogio-vaga">
+            <Anel
+              tempo={`${String(minutos).padStart(2, "0")}:${String(segundos).padStart(2, "0")}`}
+              fase={fase}
+              rotuloFase={rotuloDaFase({ fase, rodando, decorridoMs, restanteMs, baseMs })}
+              off={off}
+              corDaTrilha={corDaTrilha}
+              subindo={subida?.modo ?? null}
+            />
           </div>
-        ) : (
-          <div className="mt-[clamp(14px,3.5vh,28px)] flex items-center gap-3">
-            {rodando ? (
-              <>
-                <button onClick={iniciarOuPausar} className={btnPrimario}>
-                  ⏸ Pausar
-                </button>
-                {fase === "foco" && <BotaoEstender onAdd={estender} />}
-              </>
-            ) : emAndamento ? (
-              <>
-                <button onClick={iniciarOuPausar} className={btnPrimario}>
-                  ▶ Retomar
+
+          <div className="tempos">
+            <span className={focoAtivo ? "tempo-rotulo" : "tempo-rotulo off"} id={idRotFoco}>
+              Foco
+            </span>
+            <div className="tempo-caixa">
+              <Segmentado
+                modo="desmarcavel"
+                ariaLabelledby={idRotFoco}
+                opcoes={opcoesFoco}
+                valor={focoMin === null ? null : focoCustom ? "custom" : String(focoMin)}
+                travado={rodando}
+                onEscolher={(v) => (v === "custom" ? escolherFocoCustom() : escolherFoco(Number(v)))}
+              />
+              {/* key: cada abertura monta o popover de novo, que volta a
+                  começar em 35 e sem o erro da vez anterior (Esc fecha sem
+                  passar pelo Cancelar) */}
+              <PopoverFocoCustom
+                key={customAberto ? "aberto" : "fechado"}
+                id={idPopCustom}
+                painelRef={popCustomRef}
+                aberto={customAberto}
+                onAplicar={aplicarFocoCustom}
+                onCancelar={() => fecharCustom(true)}
+              />
+            </div>
+            <span className={pausaAtivo ? "tempo-rotulo" : "tempo-rotulo off"} id={idRotPausa}>
+              Pausa
+            </span>
+            <Segmentado
+              modo="desmarcavel"
+              ariaLabelledby={idRotPausa}
+              opcoes={opcoesPausa}
+              valor={pausaMin === null ? null : String(pausaMin)}
+              travado={rodando}
+              onEscolher={(v) => escolherPausa(Number(v))}
+            />
+            <p className="modo">{modoTexto}</p>
+          </div>
+
+          {/* Ações: mudam conforme o estado do ciclo. Depois de cada uma, o
+              foco vai para o botão principal que tomou o lugar */}
+          {confirmarCurta !== null ? (
+            <div className="confirma">
+              <p>
+                Você estudou só <b>{confirmarCurta} min</b> nesta sessão. Quer
+                registrar mesmo assim?
+              </p>
+              <div className="acoes">
+                <button
+                  type="button"
+                  className="btn btn-sec btn-p"
+                  onClick={() => {
+                    descartarCurta();
+                    focarPrimario();
+                  }}
+                >
+                  Descartar
                 </button>
                 <button
-                  onClick={concluir}
-                  className={btnContorno}
-                  title={
-                    fase === "pausa"
-                      ? "Encerrar a pausa"
-                      : "Encerrar e salvar o tempo estudado"
-                  }
+                  type="button"
+                  className="btn btn-prim btn-p"
+                  onClick={() => {
+                    salvarEConcluir(confirmarCurta);
+                    focarPrimario();
+                  }}
                 >
-                  ⏹ Concluir
+                  Registrar
                 </button>
-              </>
-            ) : (
-              <button onClick={iniciarOuPausar} className={btnPrimario}>
-                ▶ Iniciar
-              </button>
-            )}
-          </div>
-        )}
+              </div>
+            </div>
+          ) : (
+            <div className="acoes" ref={acoesRef}>
+              {rodando ? (
+                <>
+                  <button
+                    type="button"
+                    className="btn btn-prim"
+                    onClick={() => {
+                      iniciarOuPausar();
+                      focarPrimario();
+                    }}
+                  >
+                    <Icone nome="pausa" />
+                    Pausar
+                  </button>
+                  {fase === "foco" && <BotaoEstender onAdd={estender} />}
+                </>
+              ) : emAndamento ? (
+                <>
+                  <button
+                    type="button"
+                    className="btn btn-prim"
+                    onClick={() => {
+                      iniciarOuPausar();
+                      focarPrimario();
+                    }}
+                  >
+                    <Icone nome="play" />
+                    Retomar
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-sec"
+                    title={fase === "pausa" ? "Encerrar a pausa" : "Encerrar e salvar o tempo estudado"}
+                    onClick={() => {
+                      concluir();
+                      focarPrimario();
+                    }}
+                  >
+                    <Icone nome="parar" />
+                    Concluir
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-prim"
+                  onClick={() => {
+                    iniciarOuPausar();
+                    focarPrimario();
+                  }}
+                >
+                  <Icone nome="play" />
+                  Iniciar
+                </button>
+              )}
+            </div>
+          )}
 
-        {aviso && (
-          <div className="mt-4 text-center text-[12px] text-tinta2">{aviso}</div>
-        )}
-      </div>
+          {/* sempre no DOM: o leitor de tela só anuncia mudanças de uma
+              região que já existia */}
+          <p className="aviso" role="status">
+            {aviso ?? ""}
+          </p>
+        </div>
+      </section>
 
+      {/* a folha fica fora da section do cartão */}
       {userId && (
         <ModalConfigPomodoro
           aberto={configAberta}
@@ -773,6 +863,6 @@ export function Pomodoro({
           userId={userId}
         />
       )}
-    </section>
+    </>
   );
 }
