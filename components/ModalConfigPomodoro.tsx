@@ -1,18 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { UserSettings } from "@/lib/types";
-import { Modal } from "./Modal";
+import { Folha } from "./Folha";
+import { Icone } from "./Icone";
+import { Passo } from "./Passo";
 
-const campo =
-  "w-full rounded-lg border border-hairline bg-fundo px-2 py-[7px] text-[13px] text-tinta";
-const rotulo = "mb-1 block text-[11px] text-tinta2";
-
-// Config do POMODORO (tempos padrão + regra da pausa longa). Abre pela
-// engrenagem do card "Foco". Só edita os campos do pomodoro — os da
-// constância passam intactos no upsert da mesma linha user_settings.
+// Folha "Tempos do pomodoro" (abre pela engrenagem do card Pomodoro). Só
+// edita os campos do pomodoro — os da constância passam intactos no upsert
+// da mesma linha user_settings.
 export function ModalConfigPomodoro({
   aberto,
   onFechar,
@@ -25,18 +23,20 @@ export function ModalConfigPomodoro({
   userId: string;
 }) {
   const router = useRouter();
+  const id = useId();
   const [form, setForm] = useState({ ...settings });
   const [salvando, setSalvando] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
+  const [erro, setErro] = useState(false);
 
-  function num(valor: string, minimo = 1) {
-    return Math.max(minimo, parseInt(valor, 10) || minimo);
+  // número inteiro, nunca abaixo de 1
+  function num(texto: string) {
+    return Math.max(1, parseInt(texto, 10) || 1);
   }
 
   async function salvar(e: React.FormEvent) {
     e.preventDefault();
     setSalvando(true);
-    setErro(null);
+    setErro(false);
 
     const supabase = createClient();
     const { error } = await supabase
@@ -45,82 +45,55 @@ export function ModalConfigPomodoro({
 
     setSalvando(false);
     if (error) {
-      setErro(error.message);
+      setErro(true); // texto amigável (antes ia o error.message cru, em inglês)
       return;
     }
     router.refresh();
     onFechar();
   }
 
+  // os quatro campos: [chave em user_settings, rótulo, unidade]
+  const campos = [
+    ["pomodoro_foco_min", "Foco padrão", "min"],
+    ["pausa_curta_min", "Pausa curta", "min"],
+    ["pausa_longa_min", "Pausa longa", "min"],
+    ["ciclos_ate_pausa_longa", "Ciclos até a longa", ""],
+  ] as const;
+
   return (
-    <Modal titulo="Tempos do pomodoro" aberto={aberto} onFechar={onFechar}>
-      <form onSubmit={salvar} className="flex flex-col gap-3">
-        <p className="text-[12px] text-tinta2">
-          Os tempos padrão de foco e pausa também podem ser trocados na hora,
-          pelos botões do timer. Aqui você define o padrão e a regra da pausa
-          longa.
+    <Folha
+      aberto={aberto}
+      onFechar={onFechar}
+      titulo="Tempos do pomodoro"
+      rotuloEnviar="Salvar"
+      enviando={salvando}
+      onEnviar={salvar}
+    >
+      <p className="form-nota">
+        Os tempos de foco e pausa também mudam na hora, pelos botões do timer.
+        Aqui fica o padrão e a regra da pausa longa.
+      </p>
+      <div className="form-grupo">
+        {campos.map(([chave, rotulo, unidade]) => (
+          <div className="form-linha" key={chave}>
+            <label htmlFor={`${id}-${chave}`}>{rotulo}</label>
+            <Passo
+              id={`${id}-${chave}`}
+              valor={form[chave]}
+              onMudar={(t) => setForm({ ...form, [chave]: num(t) })}
+              min={1}
+              unidade={unidade}
+            />
+          </div>
+        ))}
+      </div>
+
+      {erro && (
+        <p className="form-erro" role="alert">
+          <Icone nome="alerta" />
+          <span>Não deu para salvar. Confira a conexão e tente de novo.</span>
         </p>
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className={rotulo}>Foco padrão (min)</label>
-            <input
-              type="number"
-              min={1}
-              value={form.pomodoro_foco_min}
-              onChange={(e) =>
-                setForm({ ...form, pomodoro_foco_min: num(e.target.value) })
-              }
-              className={campo}
-            />
-          </div>
-          <div>
-            <label className={rotulo}>Pausa curta (min)</label>
-            <input
-              type="number"
-              min={1}
-              value={form.pausa_curta_min}
-              onChange={(e) =>
-                setForm({ ...form, pausa_curta_min: num(e.target.value) })
-              }
-              className={campo}
-            />
-          </div>
-          <div>
-            <label className={rotulo}>Pausa longa (min)</label>
-            <input
-              type="number"
-              min={1}
-              value={form.pausa_longa_min}
-              onChange={(e) =>
-                setForm({ ...form, pausa_longa_min: num(e.target.value) })
-              }
-              className={campo}
-            />
-          </div>
-          <div>
-            <label className={rotulo}>Ciclos até a longa</label>
-            <input
-              type="number"
-              min={1}
-              value={form.ciclos_ate_pausa_longa}
-              onChange={(e) =>
-                setForm({ ...form, ciclos_ate_pausa_longa: num(e.target.value) })
-              }
-              className={campo}
-            />
-          </div>
-        </div>
-
-        {erro && <p className="text-[11px] text-red-400">{erro}</p>}
-
-        <button
-          type="submit"
-          disabled={salvando}
-          className="rounded-full bg-acao py-[10px] text-[14px] font-semibold text-white disabled:opacity-60"
-        >
-          {salvando ? "Salvando..." : "Salvar"}
-        </button>
-      </form>
-    </Modal>
+      )}
+    </Folha>
   );
 }

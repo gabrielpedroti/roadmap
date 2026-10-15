@@ -1,29 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import type { UserSettings } from "@/lib/types";
 import { historicoAoMudarMin, hojeSP } from "@/lib/streak";
-import { Modal } from "./Modal";
+import type { InicioSemana, UserSettings } from "@/lib/types";
+import { Folha } from "./Folha";
+import { Icone } from "./Icone";
+import { Passo } from "./Passo";
+import { Segmentado } from "./Segmentado";
 
+// 1=seg ... 7=dom (convenção de user_settings.dias_que_contam)
 const DIAS = [
-  { num: 1, rotulo: "seg" },
-  { num: 2, rotulo: "ter" },
-  { num: 3, rotulo: "qua" },
-  { num: 4, rotulo: "qui" },
-  { num: 5, rotulo: "sex" },
-  { num: 6, rotulo: "sáb" },
-  { num: 7, rotulo: "dom" },
+  { num: 1, curto: "seg", nome: "segunda-feira" },
+  { num: 2, curto: "ter", nome: "terça-feira" },
+  { num: 3, curto: "qua", nome: "quarta-feira" },
+  { num: 4, curto: "qui", nome: "quinta-feira" },
+  { num: 5, curto: "sex", nome: "sexta-feira" },
+  { num: 6, curto: "sáb", nome: "sábado" },
+  { num: 7, curto: "dom", nome: "domingo" },
 ];
 
-const campo =
-  "w-full rounded-lg border border-hairline bg-fundo px-2 py-[7px] text-[13px] text-tinta";
-const rotulo = "mb-1 block text-[11px] text-tinta2";
-
-// Config da CONSTÂNCIA (streak + metas). Abre pela engrenagem do card de
-// Constância. Guarda tudo na mesma linha user_settings, mas só edita o que
-// é da constância — os campos do pomodoro passam intactos no upsert.
+// Folha "Constância e metas" (abre pela engrenagem do card Constância).
+// Guarda tudo na mesma linha user_settings, mas só edita o que é da
+// constância — os campos do pomodoro passam intactos no upsert.
 export function ModalConfigConstancia({
   aberto,
   onFechar,
@@ -36,27 +36,35 @@ export function ModalConfigConstancia({
   userId: string;
 }) {
   const router = useRouter();
+  const id = useId(); // prefixo dos ids dos campos (htmlFor / aria-labelledby)
   const [form, setForm] = useState({
     ...settings,
     // linha antiga no banco pode não ter a coluna ainda → segunda
     inicio_semana: settings.inicio_semana ?? "seg",
   });
   const [salvando, setSalvando] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
+  const [erro, setErro] = useState(false);
+  const [avisoDias, setAvisoDias] = useState("");
 
-  function alternarDia(num: number) {
+  // dias que contam: liga/desliga; pelo menos um dia precisa contar
+  function alternarDia(valor: string) {
+    const num = Number(valor);
     const atuais = form.dias_que_contam;
     const novos = atuais.includes(num)
       ? atuais.filter((d) => d !== num)
       : [...atuais, num].sort((a, b) => a - b);
-    if (novos.length === 0) return; // pelo menos um dia precisa contar
+    if (novos.length === 0) {
+      setAvisoDias("Pelo menos um dia precisa contar.");
+      return;
+    }
+    setAvisoDias("");
     setForm({ ...form, dias_que_contam: novos });
   }
 
   async function salvar(e: React.FormEvent) {
     e.preventDefault();
     setSalvando(true);
-    setErro(null);
+    setErro(false);
 
     // Se o mínimo do streak mudou, atualiza o histórico pra que a mudança
     // NÃO seja retroativa: o passado fica congelado no mínimo antigo e o novo
@@ -79,7 +87,7 @@ export function ModalConfigConstancia({
 
     setSalvando(false);
     if (error) {
-      setErro(error.message);
+      setErro(true); // texto amigável; a folha fica aberta
       return;
     }
     router.refresh();
@@ -87,117 +95,111 @@ export function ModalConfigConstancia({
   }
 
   return (
-    <Modal titulo="Constância e metas" aberto={aberto} onFechar={onFechar}>
-      <form onSubmit={salvar} className="flex flex-col gap-3">
-        <div>
-          <label className={rotulo}>Streak — mínimo por dia (min)</label>
-          <input
-            type="number"
-            min={1}
-            value={form.streak_min_diario_min}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                streak_min_diario_min: Math.max(
-                  1,
-                  parseInt(e.target.value, 10) || 1
-                ),
-              })
+    <Folha
+      aberto={aberto}
+      onFechar={onFechar}
+      titulo="Constância e metas"
+      rotuloEnviar="Salvar"
+      enviando={salvando}
+      onEnviar={salvar}
+    >
+      <h3 className="form-secao">Streak</h3>
+      <div className="form-grupo">
+        <div className="form-linha">
+          <label htmlFor={`${id}-min`}>Mínimo por dia</label>
+          <Passo
+            id={`${id}-min`}
+            valor={form.streak_min_diario_min}
+            onMudar={(t) =>
+              setForm({ ...form, streak_min_diario_min: Math.max(1, parseInt(t, 10) || 1) })
             }
-            className={campo}
+            min={1}
+            unidade="min"
+            stepper
+            rotuloMenos="Menos 1 minuto"
+            rotuloMais="Mais 1 minuto"
           />
         </div>
-
-        <div>
-          <label className={rotulo}>Dias que contam pro streak</label>
-          <div className="flex flex-wrap gap-1">
-            {DIAS.map((d) => (
-              <button
-                key={d.num}
-                type="button"
-                onClick={() => alternarDia(d.num)}
-                className={`cursor-pointer rounded-full border border-hairline px-[10px] py-1 text-[12px] ${
-                  form.dias_que_contam.includes(d.num)
-                    ? "bg-seg font-semibold text-tinta"
-                    : "bg-transparent text-tinta2"
-                }`}
-              >
-                {d.rotulo}
-              </button>
-            ))}
-          </div>
+        <div className="form-linha col">
+          <span className="rotulo" id={`${id}-dias`}>
+            Dias que contam
+          </span>
+          <Segmentado
+            modo="multiplo"
+            className="form-dias"
+            ariaLabelledby={`${id}-dias`}
+            opcoes={DIAS.map((d) => ({ valor: String(d.num), conteudo: d.curto, ariaLabel: d.nome }))}
+            valores={form.dias_que_contam.map(String)}
+            onEscolher={alternarDia}
+          />
+          <p className="form-status" role="status">
+            {avisoDias}
+          </p>
         </div>
+      </div>
+      <p className="form-nota">
+        O mínimo novo vale de hoje em diante; os dias que já passaram seguem
+        julgados pelo mínimo antigo. Fora dos dias que contam a sequência não
+        quebra, e cumprir o mínimo neles soma um dia bônus.
+      </p>
 
-        <div>
-          <label className={rotulo}>Semana das metas começa no(a)</label>
-          <div className="flex gap-1">
-            {(
-              [
-                { valor: "dom", texto: "domingo" },
-                { valor: "seg", texto: "segunda" },
-              ] as const
-            ).map((op) => (
-              <button
-                key={op.valor}
-                type="button"
-                onClick={() => setForm({ ...form, inicio_semana: op.valor })}
-                className={`cursor-pointer rounded-full border border-hairline px-[10px] py-1 text-[12px] ${
-                  form.inicio_semana === op.valor
-                    ? "bg-seg font-semibold text-tinta"
-                    : "bg-transparent text-tinta2"
-                }`}
-              >
-                {op.texto}
-              </button>
-            ))}
-          </div>
+      <h3 className="form-secao">Metas de horas</h3>
+      <div className="form-grupo">
+        <div className="form-linha col">
+          <span className="rotulo" id={`${id}-semana`}>
+            A semana das metas começa
+          </span>
+          <Segmentado
+            modo="unico"
+            ariaLabelledby={`${id}-semana`}
+            opcoes={[
+              { valor: "dom", conteudo: "domingo" },
+              { valor: "seg", conteudo: "segunda" },
+            ]}
+            valor={form.inicio_semana}
+            onEscolher={(v) => setForm({ ...form, inicio_semana: v as InicioSemana })}
+          />
         </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className={rotulo}>Meta semanal (h)</label>
-            <input
-              type="number"
-              min={1}
-              step="0.5"
-              value={form.meta_semanal_h}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  meta_semanal_h: Math.max(0.5, parseFloat(e.target.value) || 1),
-                })
-              }
-              className={campo}
-            />
-          </div>
-          <div>
-            <label className={rotulo}>Meta mensal (h)</label>
-            <input
-              type="number"
-              min={1}
-              step="0.5"
-              value={form.meta_mensal_h}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  meta_mensal_h: Math.max(0.5, parseFloat(e.target.value) || 1),
-                })
-              }
-              className={campo}
-            />
-          </div>
+        <div className="form-linha">
+          <label htmlFor={`${id}-sem`}>Meta semanal</label>
+          <Passo
+            id={`${id}-sem`}
+            valor={form.meta_semanal_h}
+            onMudar={(t) =>
+              setForm({ ...form, meta_semanal_h: Math.max(0.5, parseFloat(t) || 1) })
+            }
+            min={0.5}
+            passo={0.5}
+            unidade="h"
+            stepper
+            rotuloMenos="Menos meia hora"
+            rotuloMais="Mais meia hora"
+          />
         </div>
+        <div className="form-linha">
+          <label htmlFor={`${id}-mes`}>Meta mensal</label>
+          <Passo
+            id={`${id}-mes`}
+            valor={form.meta_mensal_h}
+            onMudar={(t) =>
+              setForm({ ...form, meta_mensal_h: Math.max(0.5, parseFloat(t) || 1) })
+            }
+            min={0.5}
+            passo={0.5}
+            unidade="h"
+            stepper
+            rotuloMenos="Menos meia hora"
+            rotuloMais="Mais meia hora"
+          />
+        </div>
+      </div>
 
-        {erro && <p className="text-[11px] text-red-400">{erro}</p>}
-
-        <button
-          type="submit"
-          disabled={salvando}
-          className="rounded-full bg-acao py-[10px] text-[14px] font-semibold text-white disabled:opacity-60"
-        >
-          {salvando ? "Salvando..." : "Salvar"}
-        </button>
-      </form>
-    </Modal>
+      {erro && (
+        <p className="form-erro" role="alert">
+          <Icone nome="alerta" />
+          <span>Não deu para salvar. Confira a conexão e tente de novo.</span>
+        </p>
+      )}
+    </Folha>
   );
 }

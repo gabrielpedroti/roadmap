@@ -1,18 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { hojeSP } from "@/lib/streak";
+import { semEmoji } from "@/lib/texto";
 import type { Track } from "@/lib/types";
-import { Modal } from "./Modal";
+import { Folha } from "./Folha";
+import { Icone } from "./Icone";
+import { Passo } from "./Passo";
+import { Segmentado } from "./Segmentado";
 
-const campo =
-  "w-full rounded-lg border border-hairline bg-fundo px-2 py-[7px] text-[13px] text-tinta";
-const rotulo = "mb-1 block text-[11px] text-tinta2";
-
-// "+ Registrar manual": trilha, data e (hora início/fim OU duração).
-// Serve pro estudo feito longe do app — inclusive retroativo.
+// Folha "Registrar estudo manual": trilha, data e (hora início/fim OU
+// duração). Serve pro estudo feito longe do app — inclusive retroativo.
 export function ModalRegistroManual({
   aberto,
   onFechar,
@@ -25,6 +25,7 @@ export function ModalRegistroManual({
   userId: string;
 }) {
   const router = useRouter();
+  const id = useId();
   const [trilhaId, setTrilhaId] = useState(trilhas[0]?.id ?? "");
   const [data, setData] = useState(hojeSP());
   const [modo, setModo] = useState<"horario" | "duracao">("horario");
@@ -75,7 +76,8 @@ export function ModalRegistroManual({
     setSalvando(false);
 
     if (error) {
-      setErro(error.message);
+      // texto amigável (antes ia o error.message cru, em inglês)
+      setErro("Não deu para registrar. Confira a conexão e tente de novo.");
       return;
     }
     router.refresh(); // sessão nova entra nas metas, streak e histórico
@@ -83,99 +85,104 @@ export function ModalRegistroManual({
   }
 
   return (
-    <Modal titulo="Registrar estudo manual" aberto={aberto} onFechar={onFechar}>
-      <form onSubmit={salvar} className="flex flex-col gap-3">
-        <div>
-          <label className={rotulo}>Trilha</label>
-          <select
-            value={trilhaId}
-            onChange={(e) => setTrilhaId(e.target.value)}
-            className={campo}
-          >
-            {trilhas.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.nome}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className={rotulo}>Data</label>
-          <input
-            type="date"
-            value={data}
-            max={hojeSP()}
-            onChange={(e) => setData(e.target.value)}
-            className={campo}
+    <Folha
+      aberto={aberto}
+      onFechar={onFechar}
+      titulo="Registrar estudo manual"
+      rotuloEnviar="Registrar"
+      enviando={salvando}
+      onEnviar={salvar}
+    >
+      <div className="form-grupo">
+        <div className="form-linha col">
+          <span className="rotulo" id={`${id}-trilha`}>
+            Trilha
+          </span>
+          <Segmentado
+            modo="unico"
+            className="seg-trilha"
+            ariaLabelledby={`${id}-trilha`}
+            opcoes={trilhas.map((t) => ({
+              valor: t.id,
+              conteudo: semEmoji(t.nome),
+              titulo: semEmoji(t.nome),
+            }))}
+            valor={trilhaId}
+            onEscolher={setTrilhaId}
           />
         </div>
-
-        <div className="flex gap-3 text-[12px] text-tinta2">
-          <label className="flex cursor-pointer items-center gap-1">
+        <div className="form-linha">
+          <label htmlFor={`${id}-data`}>Data</label>
+          <div className="passo">
             <input
-              type="radio"
-              checked={modo === "horario"}
-              onChange={() => setModo("horario")}
+              id={`${id}-data`}
+              type="date"
+              value={data}
+              max={hojeSP()}
+              onChange={(e) => setData(e.target.value)}
             />
-            início e fim
-          </label>
-          <label className="flex cursor-pointer items-center gap-1">
-            <input
-              type="radio"
-              checked={modo === "duracao"}
-              onChange={() => setModo("duracao")}
-            />
-            só a duração
-          </label>
-        </div>
-
-        {modo === "horario" ? (
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className={rotulo}>Início</label>
-              <input
-                type="time"
-                value={horaInicio}
-                onChange={(e) => setHoraInicio(e.target.value)}
-                className={campo}
-              />
-            </div>
-            <div>
-              <label className={rotulo}>Fim</label>
-              <input
-                type="time"
-                value={horaFim}
-                onChange={(e) => setHoraFim(e.target.value)}
-                className={campo}
-              />
-            </div>
           </div>
+        </div>
+        <div className="form-linha col">
+          <span className="rotulo" id={`${id}-modo`}>
+            Informar
+          </span>
+          <Segmentado
+            modo="unico"
+            ariaLabelledby={`${id}-modo`}
+            opcoes={[
+              { valor: "horario", conteudo: "início e fim" },
+              { valor: "duracao", conteudo: "só a duração" },
+            ]}
+            valor={modo}
+            onEscolher={(v) => setModo(v as "horario" | "duracao")}
+          />
+        </div>
+        {modo === "horario" ? (
+          <>
+            <div className="form-linha">
+              <label htmlFor={`${id}-ini`}>Início</label>
+              <div className="passo">
+                <input
+                  id={`${id}-ini`}
+                  type="time"
+                  value={horaInicio}
+                  onChange={(e) => setHoraInicio(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="form-linha">
+              <label htmlFor={`${id}-fim`}>Fim</label>
+              <div className="passo">
+                <input
+                  id={`${id}-fim`}
+                  type="time"
+                  value={horaFim}
+                  onChange={(e) => setHoraFim(e.target.value)}
+                />
+              </div>
+            </div>
+          </>
         ) : (
-          <div>
-            <label className={rotulo}>Duração (min)</label>
-            <input
-              type="number"
+          <div className="form-linha">
+            <label htmlFor={`${id}-dur`}>Duração</label>
+            <Passo
+              id={`${id}-dur`}
+              valor={duracaoMin}
+              onMudar={(t) => setDuracaoMin(Math.max(1, parseInt(t, 10) || 1))}
               min={1}
-              value={duracaoMin}
-              onChange={(e) =>
-                setDuracaoMin(Math.max(1, parseInt(e.target.value, 10) || 1))
-              }
-              className={campo}
+              unidade="min"
             />
           </div>
         )}
+      </div>
 
-        {erro && <p className="text-[11px] text-red-400">{erro}</p>}
-
-        <button
-          type="submit"
-          disabled={salvando}
-          className="rounded-full bg-acao py-[10px] text-[14px] font-semibold text-white disabled:opacity-60"
-        >
-          {salvando ? "Salvando..." : "Registrar"}
-        </button>
-      </form>
-    </Modal>
+      {erro && (
+        <p className="form-erro" role="alert">
+          <Icone nome="alerta" />
+          <span>{erro}</span>
+        </p>
+      )}
+    </Folha>
   );
 }
