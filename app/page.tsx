@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { Abas } from "@/components/Abas";
+import { Barra, destinosDasAbas } from "@/components/Barra";
 import { BarraProgresso } from "@/components/BarraProgresso";
-import { Barra } from "@/components/Barra";
 import { Constancia } from "@/components/Constancia";
+import { Icone } from "@/components/Icone";
 import { Pomodoro } from "@/components/Pomodoro";
 import { UltimasSessoes } from "@/components/UltimasSessoes";
 import { carregarPainel } from "@/lib/dados";
@@ -13,12 +15,15 @@ import {
   minutosNoMes,
   minutosPorDia,
 } from "@/lib/streak";
+import { semEmoji } from "@/lib/texto";
+import { varsDaTrilha } from "@/lib/tons";
 
-// Dashboard (layout aprovado em docs/mockups/proposta-final.html):
-// Trilhas + Constância empilhadas à esquerda, Foco (pomodoro) à direita,
-// últimas sessões recolhidas no rodapé. Tudo cabe na altura da tela.
+// Home (visual aprovado: .agents/context/mockup-apple/apple.html):
+// Trilhas em cima à esquerda, Constância embaixo dela e o Pomodoro à
+// direita; no computador a Home inteira cabe na altura da janela.
+// Últimas sessões fica recolhida no rodapé.
 // Visitante sem login vê tudo e usa o pomodoro; salvar exige conta.
-export default async function Dashboard() {
+export default async function Home() {
   const { user, tracks, blocks, groups, items, feitos, sessoes, settings } =
     await carregarPainel();
 
@@ -45,53 +50,64 @@ export default async function Dashboard() {
   );
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-[1320px] flex-col px-[clamp(14px,2.5vw,32px)] py-[clamp(12px,2vh,24px)]">
+    <div className="app app-painel" data-app>
       <Barra email={user?.email ?? null} tracks={tracks} atual="home" titulo="Home" />
 
-      {tracks.length === 0 ? (
-        <div className="cartao flex flex-1 items-center justify-center p-8 text-center text-[13px] text-tinta2">
-          As trilhas ainda não foram carregadas no banco.
-          <br />
-          Rode <code className="mx-1 text-tinta">npm run seed</code> e
-          recarregue.
-        </div>
-      ) : (
-        <div className="grid flex-1 gap-[clamp(10px,1.5vw,18px)] md:grid-cols-[1fr_1.35fr]">
-          {/* Coluna esquerda: Trilhas em cima, Constância embaixo */}
-          <div className="flex min-h-0 flex-col gap-[clamp(10px,1.5vw,18px)] max-md:order-2">
-            <section className="cartao p-[clamp(16px,1.8vw,24px)]">
-              <h2 className="text-[13px] font-semibold text-tinta2">
-                Trilhas
-              </h2>
-              <div className="mt-4 flex flex-col gap-[clamp(12px,2.2vh,22px)]">
-                {trilhas.map((t) => (
-                  <Link key={t.id} href={`/trilha/${t.slug}`} className="block">
-                    <div
-                      className="com-cor mb-2 flex items-center gap-1 text-[15px] font-semibold"
-                      style={{ "--cor": t.cor } as React.CSSProperties}
-                    >
-                      <span style={{ color: "var(--cor-texto)" }}>{t.nome}</span>
-                      <span className="font-normal text-tinta2">›</span>
-                      <span className="ml-auto text-[14px] font-normal tabular-nums text-tinta2">
-                        {user ? `${Math.round(t.progresso * 100)}%` : "—"}
-                      </span>
-                    </div>
-                    <BarraProgresso fracao={user ? t.progresso : 0} />
-                  </Link>
-                ))}
+      <main className="conteudo miolo">
+        {tracks.length === 0 ? (
+          <section className="cartao vazio">
+            <p>As trilhas ainda não estão no banco.</p>
+            <p>
+              Se o app é seu: rode <code>npm run seed</code> e recarregue.
+            </p>
+          </section>
+        ) : (
+          // a ordem de leitura é Trilhas, Constância, Pomodoro em todos os
+          // tamanhos; só a posição visual muda (CSS da .painel-grade)
+          <div className="painel-grade">
+            <section className="cartao trilhas" aria-labelledby="t-trilhas">
+              <div className="cartao-cab">
+                <h2 className="cartao-titulo" id="t-trilhas">
+                  Trilhas
+                </h2>
               </div>
+              <ul className="lista-trilhas">
+                {trilhas.map((t) => (
+                  <li key={t.id}>
+                    {/* sem bolinha: a cor vai no nome (--tom) e na barra */}
+                    <Link
+                      href={`/trilha/${t.slug}`}
+                      className="trilha-linha com-cor"
+                      style={varsDaTrilha(t.cor)}
+                    >
+                      <span className="trilha-nome">{semEmoji(t.nome)}</span>
+                      {user ? (
+                        <span className="trilha-pct tab">
+                          {Math.round(t.progresso * 100)}%
+                        </span>
+                      ) : (
+                        <span className="trilha-pct">
+                          <span aria-hidden="true">—</span>
+                          <span className="sr">sem progresso salvo</span>
+                        </span>
+                      )}
+                      <Icone nome="chev-dir" />
+                      <BarraProgresso fracao={user ? t.progresso : 0} />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
               {!user && (
-                <p className="mt-4 text-[12px] text-tinta2">
-                  <Link href="/login" className="text-acao">
-                    Entre
-                  </Link>{" "}
-                  para marcar e acompanhar seu progresso.
+                <p className="dica">
+                  <Link href="/login">Entre</Link> para marcar e acompanhar seu
+                  progresso.
                 </p>
               )}
             </section>
 
             <Constancia
               logado={!!user}
+              hoje={hoje}
               streakDias={streak}
               minutosHoje={porDia.get(hoje) ?? 0}
               minutosSemana={minutosNaSemana(
@@ -105,23 +121,25 @@ export default async function Dashboard() {
               trilhas={tracks}
               userId={user?.id ?? null}
             />
+
+            <Pomodoro
+              trilhas={tracks}
+              settings={settings}
+              userId={user?.id ?? null}
+            />
           </div>
+        )}
 
-          {/* Coluna direita: Foco (pomodoro) */}
-          <Pomodoro
-            trilhas={tracks}
-            settings={settings}
-            userId={user?.id ?? null}
-          />
-        </div>
-      )}
+        <UltimasSessoes
+          logado={!!user}
+          sessoes={sessoes.slice(0, 8)}
+          trilhasInfo={trilhasInfo}
+          hoje={hoje}
+        />
+      </main>
 
-      <UltimasSessoes
-        logado={!!user}
-        sessoes={sessoes.slice(0, 8)}
-        trilhasInfo={trilhasInfo}
-        hoje={hoje}
-      />
-    </main>
+      {/* abas do pé (só no celular): depois do <main>, na ordem de leitura */}
+      <Abas destinos={destinosDasAbas(tracks, "home")} posicao="pe" />
+    </div>
   );
 }

@@ -2,19 +2,22 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { estadoDaChama } from "@/lib/chama";
 import { formatarHoras } from "@/lib/formato";
-import { diaDaSemana, hojeSP } from "@/lib/streak";
 import type { Track, UserSettings } from "@/lib/types";
 import { BarraProgresso } from "./BarraProgresso";
+import { Chama } from "./Chama";
+import { Icone } from "./Icone";
 import { ModalConfigConstancia } from "./ModalConfigConstancia";
 import { ModalRegistroManual } from "./ModalRegistroManual";
 
-// Card de Constância. Streak e metas são INDEPENDENTES:
-// o foguinho mede constância (mínimo diário), as barras medem volume.
-// REGRA DO FOGO: se hoje ainda não atingiu o mínimo, a chama fica apagada
-// (cinza) — ela acende quando o dia é cumprido.
+// Card de Constância. Streak e metas são INDEPENDENTES: a chama e o número
+// medem constância (mínimo diário); as barras medem volume (horas).
+// REGRA DA CHAMA (lib/chama.ts): só acende se o mínimo de HOJE foi cumprido,
+// ou se hoje não é dia que conta. A legenda diz o porquê.
 export function Constancia({
   logado,
+  hoje,
   streakDias,
   minutosHoje,
   minutosSemana,
@@ -24,6 +27,7 @@ export function Constancia({
   userId,
 }: {
   logado: boolean;
+  hoje: string; // YYYY-MM-DD em São Paulo (vem do servidor)
   streakDias: number;
   minutosHoje: number;
   minutosSemana: number;
@@ -35,20 +39,19 @@ export function Constancia({
   const [registroAberto, setRegistroAberto] = useState(false);
   const [configAberta, setConfigAberta] = useState(false);
 
-  // visitante: card em modo convite
+  // visitante: convite no lugar do dado (sem engrenagem)
   if (!logado || !userId) {
     return (
-      <section className="cartao flex flex-1 flex-col p-[clamp(16px,1.8vw,24px)]">
-        <h2 className="text-[13px] font-semibold text-tinta2">Constância</h2>
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-          <div className="text-[44px] opacity-35 grayscale">🔥</div>
-          <p className="max-w-[220px] text-[13px] text-tinta2">
-            Streak diário e metas de horas ficam salvos na sua conta.
-          </p>
-          <Link
-            href="/login"
-            className="rounded-xl bg-acao-tinta px-6 py-3 text-[14px] font-semibold text-acao"
-          >
+      <section className="cartao const" aria-labelledby="t-const">
+        <div className="cartao-cab">
+          <h2 className="cartao-titulo" id="t-const">
+            Constância
+          </h2>
+        </div>
+        <div className="visitante-miolo">
+          <Chama acesa={false} convite />
+          <p>Streak diário e metas de horas ficam salvos na sua conta.</p>
+          <Link href="/login" className="btn btn-prim">
             Entrar para acompanhar
           </Link>
         </div>
@@ -56,77 +59,61 @@ export function Constancia({
     );
   }
 
-  // Hoje é um dia que conta pro streak? Nos dias que NÃO contam (ex.: fim de
-  // semana desmarcado) a sequência não corre risco — então a chama fica acesa
-  // em vez de apagar e dar a impressão de que o streak sumiu.
-  const hojeConta = settings.dias_que_contam.includes(diaDaSemana(hojeSP()));
-  const chamaAcesa =
-    !hojeConta || minutosHoje >= settings.streak_min_diario_min;
-  const metaSemanalMin = settings.meta_semanal_h * 60;
-  const metaMensalMin = settings.meta_mensal_h * 60;
+  const chama = estadoDaChama({
+    hoje,
+    minutosHoje,
+    minimo: settings.streak_min_diario_min,
+    diasQueContam: settings.dias_que_contam,
+  });
 
   return (
-    <section className="cartao flex flex-1 flex-col p-[clamp(16px,1.8vw,24px)]">
-      <div className="flex items-center justify-between">
-        <h2 className="text-[13px] font-semibold text-tinta2">Constância</h2>
-        <button
-          onClick={() => setConfigAberta(true)}
-          className="cursor-pointer text-[15px] text-tinta2 hover:text-tinta"
-          title="Configurações"
-        >
-          ⚙
-        </button>
-      </div>
-
-      <div className="flex flex-1 flex-col justify-center gap-[clamp(12px,2.5vh,24px)]">
-        {/* foguinho grande + dias grandes (apaga se hoje não cumpriu) */}
-        <div className="text-center">
-          <div
-            className={`text-[clamp(34px,4.5vh,44px)] leading-none ${
-              chamaAcesa ? "" : "opacity-35 grayscale"
-            }`}
-            title={
-              !hojeConta
-                ? minutosHoje >= settings.streak_min_diario_min
-                  ? "Dia bônus cumprido — hoje somou +1 no streak!"
-                  : "Hoje não é obrigatório — sua sequência está segura (cumpra o mínimo e vira dia bônus)"
-                : chamaAcesa
-                  ? "Mínimo de hoje cumprido!"
-                  : "Estude o mínimo de hoje para acender a chama"
-            }
+    <>
+      <section className="cartao const" aria-labelledby="t-const">
+        <div className="cartao-cab">
+          <h2 className="cartao-titulo" id="t-const">
+            Constância
+          </h2>
+          <button
+            type="button"
+            className="btn-icone"
+            aria-label="Ajustes de constância e metas"
+            title="Constância e metas"
+            onClick={() => setConfigAberta(true)}
           >
-            🔥
-          </div>
-          <div className="mt-1 text-[clamp(22px,3vh,28px)] font-semibold tabular-nums text-tinta">
-            {streakDias} {streakDias === 1 ? "dia" : "dias"}
+            <Icone nome="engrenagem" />
+          </button>
+        </div>
+
+        {/* o herói: o NÚMERO manda e a chama acompanha a altura dele */}
+        <div className="const-topo">
+          <div className="heroi">
+            <Chama acesa={chama.acesa} />
+            <div>
+              <p className="streak tab">
+                {streakDias}
+                <span>{streakDias === 1 ? "dia" : "dias"}</span>
+              </p>
+              <p className="chama-legenda">{chama.legenda}</p>
+            </div>
           </div>
         </div>
 
-        <div className="border-t border-hairline pt-[clamp(10px,2vh,16px)]">
-          <div className="mb-[6px] flex justify-between text-[14px]">
-            <span className="text-tinta">Semana</span>
-            <span className="tabular-nums text-tinta2">
-              {formatarHoras(minutosSemana)} / {formatarHoras(metaSemanalMin)}h
-            </span>
-          </div>
-          <BarraProgresso fracao={minutosSemana / metaSemanalMin} />
-          <div className="mt-[clamp(10px,2vh,16px)] mb-[6px] flex justify-between text-[14px]">
-            <span className="text-tinta">Mês</span>
-            <span className="tabular-nums text-tinta2">
-              {formatarHoras(minutosMes)} / {formatarHoras(metaMensalMin)}h
-            </span>
-          </div>
-          <BarraProgresso fracao={minutosMes / metaMensalMin} />
+        <div className="metas">
+          <Meta rotulo="Semana" nomeDaBarra="Meta da semana" minutos={minutosSemana} metaH={settings.meta_semanal_h} />
+          <Meta rotulo="Mês" nomeDaBarra="Meta do mês" minutos={minutosMes} metaH={settings.meta_mensal_h} />
         </div>
-      </div>
 
-      <button
-        onClick={() => setRegistroAberto(true)}
-        className="w-full cursor-pointer rounded-xl bg-acao-tinta py-3 text-[14px] font-semibold text-acao"
-      >
-        + Registrar manual
-      </button>
+        <button
+          type="button"
+          className="btn btn-tinta btn-largo btn-p"
+          onClick={() => setRegistroAberto(true)}
+        >
+          <Icone nome="mais" />
+          Registrar manual
+        </button>
+      </section>
 
+      {/* as folhas ficam fora da section do cartão */}
       <ModalRegistroManual
         aberto={registroAberto}
         onFechar={() => setRegistroAberto(false)}
@@ -139,6 +126,37 @@ export function Constancia({
         settings={settings}
         userId={userId}
       />
-    </section>
+    </>
+  );
+}
+
+// "Semana   7,5 de 10 h" + a barra (meta ultrapassada: barra cheia, valor real no texto)
+function Meta({
+  rotulo,
+  nomeDaBarra,
+  minutos,
+  metaH,
+}: {
+  rotulo: string;
+  nomeDaBarra: string;
+  minutos: number;
+  metaH: number;
+}) {
+  const feito = formatarHoras(minutos);
+  const alvo = formatarHoras(metaH * 60);
+  return (
+    <div>
+      <div className="meta-l1">
+        <span>{rotulo}</span>
+        <span className="meta-val tab">
+          <b>{feito}</b> de {alvo} h
+        </span>
+      </div>
+      <BarraProgresso
+        fracao={minutos / (metaH * 60)}
+        rotulo={nomeDaBarra}
+        textoValor={`${feito} de ${alvo} horas`}
+      />
+    </div>
   );
 }
