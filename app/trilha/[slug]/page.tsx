@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BarraProgresso } from "@/components/BarraProgresso";
-import { Cabecalho } from "@/components/Cabecalho";
+import { Barra } from "@/components/Barra";
 import { ListaBlocos, type BlocoTela } from "@/components/ListaBlocos";
 import { carregarPainel } from "@/lib/dados";
 import {
@@ -80,11 +80,7 @@ export default async function TelaTrilha({
       style={{ "--cor": trilha.cor } as React.CSSProperties}
     >
       <div className="mx-auto flex w-full max-w-[1320px] flex-col px-[clamp(14px,2.5vw,40px)] py-[clamp(12px,2vh,24px)]">
-        <Cabecalho
-          email={user?.email ?? null}
-          tracks={tracks}
-          atual={trilha.slug}
-        />
+        <Barra email={user?.email ?? null} tracks={tracks} atual={trilha.slug} />
 
         {/* Hero aberto (sem card): título colorido + descrição + progresso */}
         <div
