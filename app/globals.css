@@ -1,264 +1,861 @@
 @import "tailwindcss";
 
-/* =====================================================================
-   Tema do Roadmap — aprovado em docs/mockups/proposta-final.html
-   O tema segue o SISTEMA operacional: claro por padrão, escuro via
-   prefers-color-scheme. Não existe botão de tema no app (decisão fixa).
-   ===================================================================== */
+/* =========================================================================
+   Roadmap no padrão Apple ("Apple sem dó")
+   Visual aprovado: .agents/context/mockup-apple/apple.html. As seções aqui
+   têm os mesmos números das do mockup, para comparar lado a lado.
+   O tema segue o SISTEMA (color-scheme: light dark). Cada cor é
+   light-dark(claro, escuro). Não existe botão nem atributo de tema.
+   ========================================================================= */
+
+/* 1. TOKENS --------------------------------------------------------------- */
 :root {
   color-scheme: light dark;
-  --bg: #f5f5f7; /* fundo da página */
-  --surface: #ffffff; /* cards */
-  --ink: #1d1d1f; /* texto principal */
-  --ink-2: #6e6e73; /* texto secundário */
-  --hairline: rgba(0, 0, 0, 0.08); /* bordas finas */
-  --seg: rgba(120, 120, 128, 0.12); /* fundo dos segmented controls */
-  --seg-on: #ffffff; /* segmento selecionado */
-  --trilho: rgba(120, 120, 128, 0.16); /* barra de progresso vazia */
-  /* Azul de ação. Era #0071E3 (o azul da Apple), mas no tema claro ele dava
-     4.31:1 sobre o fundo e 4.10:1 sobre --acao-tinta — abaixo do piso de
-     4.5:1 que o próprio PRODUCT.md define. Escurecido o mínimo necessário
-     para passar nos três fundos (pior caso agora 4.66:1). */
-  --acao: #0068d2; /* azul de ação (Iniciar, links) */
-  --acao-tinta: rgba(0, 104, 210, 0.1); /* fundo de botão secundário */
-  --sombra: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.05);
-  /* O blur do vidro mora numa VARIAVEL porque o Lightning CSS remove
-     `backdrop-filter` das folhas — o valor e' aplicado inline (vidroBlur em
-     Pomodoro.tsx) referenciando esta var, entao da' pra desligar por media
-     query mesmo com o estilo sendo inline. */
-  --vidro-blur: blur(16px) saturate(180%);
+  --fonte: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --fonte-titulo: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+
+  /* neutros no padrão iOS agrupado: fundo cinza e cartões brancos (claro);
+     fundo preto, cartões #1c1c1e e o que flutua em #2c2c2e (escuro) */
+  --bg: light-dark(#f2f2f7, #000000);
+  --surface: light-dark(#ffffff, #1c1c1e);
+  --surface-2: light-dark(#ffffff, #2c2c2e);
+  --folha-bg: light-dark(#f2f2f7, #1c1c1e);
+  --ink: light-dark(#1d1d1f, #f5f5f7);
+  --ink-2: light-dark(#636366, #aeaeb2); /* 5,37 no fundo; 6,30 no #2c2c2e */
+  --ink-3: light-dark(#aeaeb2, #636366); /* só desenho (chevron), NUNCA texto */
+  --sep: light-dark(rgba(60,60,67,.16), rgba(84,84,88,.55));
+  --sep-forte: light-dark(rgba(60,60,67,.32), rgba(120,120,128,.6));
+  --fill: light-dark(rgba(120,120,128,.12), rgba(118,118,128,.24));
+  --fill-forte: light-dark(rgba(120,120,128,.2), rgba(118,118,128,.36));
+  --trilho: light-dark(rgba(120,120,128,.16), rgba(118,118,128,.3));
+  --thumb: light-dark(#ffffff, #636366);
+  /* contorno do item ligado: passa 3:1 contra o trilho (a cor sozinha não passa) */
+  --thumb-aro: light-dark(#89898d, #98989d);
+  --thumb-sombra: 0 3px 8px light-dark(rgba(0,0,0,.12), transparent), 0 1px 1px light-dark(rgba(0,0,0,.05), transparent), inset 0 0 0 1px var(--thumb-aro);
+  --meta-fill: light-dark(#1d1d1f, #f5f5f7); /* metas em tinta: azul é só ação */
+
+  /* ação: um tom para texto e foco, outro para fundo de botão (branco 4,70).
+     #0A84FF saiu: branco sobre ele dá 3,65 e reprova no AA */
+  --acao: light-dark(#0066cc, #409cff);
+  --acao-fundo: #0071e3;
+  --acao-fundo-press: #0066cc;
+  --acao-tinta: light-dark(rgba(0,113,227,.10), rgba(64,156,255,.16));
+  --erro: light-dark(#d70015, #ff6165);
+  --erro-tinta: light-dark(rgba(215,0,21,.08), rgba(255,97,101,.14));
+  --borda-ctrl: light-dark(#7c7c80, #7c7c80); /* borda do checkbox; chama apagada */
+  --sobre-tom: light-dark(#ffffff, #1c1c1e); /* visto dentro do círculo marcado */
+
+  /* lente: a seleção dentro do vidro é só uma tinta (sem vidro sobre vidro) */
+  --lente: light-dark(rgba(0,0,0,.07), rgba(255,255,255,.14));
+  --lente-leve: light-dark(rgba(0,0,0,.04), rgba(255,255,255,.07));
+
+  /* vidro: base quase opaca; com suporte a blur, tinta de 72%.
+     O BLUR (--vidro-blur) é aplicado INLINE (components/vidro.ts): o
+     Lightning CSS apaga backdrop-filter das folhas de estilo */
+  --vidro-solido: light-dark(rgba(255,255,255,.94), rgba(30,30,32,.94));
+  --vidro-tinta: light-dark(rgba(255,255,255,.72), rgba(30,30,32,.72));
+  --vidro-blur: blur(20px) saturate(130%);
+  --vidro-aro: light-dark(rgba(255,255,255,.7), rgba(255,255,255,.1));
+  --vidro-brilho: light-dark(rgba(255,255,255,.95), rgba(255,255,255,.18));
+  --vidro-fio: light-dark(rgba(0,0,0,.08), rgba(0,0,0,.6));
+  --borda-blur: blur(10px) saturate(160%); /* névoa da borda de rolagem (inline também) */
+  --sombra-flutuante: 0 1px 2px light-dark(rgba(0,0,0,.06), rgba(0,0,0,.4)), 0 12px 32px -8px light-dark(rgba(0,0,0,.2), rgba(0,0,0,.75));
+  --scrim: light-dark(rgba(0,0,0,.28), rgba(0,0,0,.6));
+
+  /* raios (concêntricos: raio de dentro = raio de fora − padding) */
+  --raio-cartao: 26px;
+  --raio-folha: 34px;
+  --raio-menu: 22px;
+
+  /* movimento: mola criticamente amortecida, sem quique */
+  --mola: linear(0, 0.13 6%, 0.34 13%, 0.53 20%, 0.68 27%, 0.79 35%, 0.87 44%, 0.93 54%, 0.97 66%, 0.99 80%, 1);
+  --t-mola: .34s;
+
+  /* alvos: computador com a densidade do Mac; toque ganha 44 px (abaixo) */
+  --alvo: 0px;
+  --h-ctrl: 34px;
+  --h-campo: 34px;
+  --campo-fonte: .9375rem;
+
+  /* largura: até 1320 px de conteúdo, centralizado */
+  --calha: clamp(16px, 2.5vw, 40px);
+  --larg: calc(1320px + 2 * var(--calha));
+  /* folgas verticais (a Home encolhe as suas para caber na altura) */
+  --vao: 20px;
+  --pad-v: 24px;
+  --cab-mb: 18px;
+  /* barra de cima: 68 px; em janela baixa encolhe até 56 */
+  --h-barra: clamp(56px, 8.6dvh, 68px);
+  --ls-titulo: -0.022em;
+}
+/* tracking de título menor só com a SF Pro (fonte de sistema da Apple) */
+@supports (font: -apple-system-body) { :root { --ls-titulo: -0.008em; } }
+
+/* toque: alvos de 44 px SÓ em aparelho de toque (no computador fica a densidade) */
+@media (pointer: coarse) { :root { --alvo: 44px; --h-ctrl: 44px; --h-campo: 44px; --campo-fonte: 1.0625rem; } }
+
+/* cores das trilhas: a cor oficial vem do banco (tracks.cor) e os tons saem
+   de lib/tons.ts (varsDaTrilha). A classe .com-cor e o style={varsDaTrilha()}
+   vão SEMPRE no MESMO elemento. */
+.com-cor {
+  --tom: light-dark(var(--tom-c), var(--tom-e));
+  --campo: light-dark(var(--campo-c), var(--campo-e));
+  --campo-tinta: light-dark(var(--campo-tinta-c), var(--campo-tinta-e));
+  --cor-viva: light-dark(var(--cor), color-mix(in srgb, var(--cor) 76%, white));
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #000000;
-    --surface: #1c1c1e;
-    --ink: #f5f5f7;
-    --ink-2: #a1a1a6;
-    --hairline: rgba(255, 255, 255, 0.1);
-    --seg: rgba(120, 120, 128, 0.24);
-    --seg-on: #636366;
-    --trilho: rgba(120, 120, 128, 0.28);
-    --acao: #0a84ff;
-    --acao-tinta: rgba(10, 132, 255, 0.16);
-    --sombra: none;
-  }
+/* marcas dos chips e tags (COR e LETRA de ListaBlocos.tsx). Fundo OPACO: a
+   tinta da linha (hover, foco) não soma por baixo e o texto segue AA */
+.com-marca {
+  --m-texto: light-dark(var(--cor-texto-claro, color-mix(in srgb, var(--cor) 78%, black)), var(--cor-texto-escuro, color-mix(in srgb, var(--cor) 65%, white)));
+  --m-fundo: light-dark(color-mix(in srgb, var(--cor) 12%, #ffffff), color-mix(in srgb, var(--cor) 22%, #1c1c1e));
 }
 
-/* Vira classes do Tailwind: bg-fundo, bg-superficie, text-tinta,
-   text-tinta2, border-hairline, bg-trilho, bg-acao, bg-acao-tinta... */
+/* Vira classes do Tailwind (bg-fundo, text-tinta, text-tinta2…) */
 @theme inline {
   --color-fundo: var(--bg);
   --color-superficie: var(--surface);
   --color-tinta: var(--ink);
   --color-tinta2: var(--ink-2);
-  --color-hairline: var(--hairline);
-  --color-seg: var(--seg);
-  --color-seg-on: var(--seg-on);
-  --color-trilho: var(--trilho);
   --color-acao: var(--acao);
-  --color-acao-tinta: var(--acao-tinta);
+  --color-erro: var(--erro);
 }
 
-body {
-  background: var(--bg);
-  color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
-    "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
-}
-
-/* Card padrão (mesma cara em todo o app) */
-.cartao {
-  background: var(--surface);
-  border: 1px solid var(--hairline);
-  border-radius: 20px;
-  box-shadow: var(--sombra);
-}
-
-/* A cor da trilha vem do banco (hex claro, ex. bordô PUCPR #9D2235).
-   No tema escuro, clareamos a MESMA cor pra não sumir no fundo preto.
-   Uso: className="com-cor" + style={{ "--cor": trilha.cor }} e, dentro
-   do elemento, usar var(--cor-final). */
-.com-cor {
-  --cor-final: var(--cor);
-  /* versão para TEXTO: escurecida no claro (contraste no branco)… — ou o tom
-     ajustado da marca, quando o elemento define --cor-texto-claro (chips) */
-  --cor-texto: var(
-    --cor-texto-claro,
-    color-mix(in srgb, var(--cor) 78%, black)
-  );
-  /* …e um fundo bem suave para tags coloridas */
-  --cor-fundo: color-mix(in srgb, var(--cor) 12%, transparent);
-}
-@media (prefers-color-scheme: dark) {
-  .com-cor {
-    --cor-final: color-mix(in srgb, var(--cor) 72%, white);
-    --cor-texto: var(
-      --cor-texto-escuro,
-      color-mix(in srgb, var(--cor) 65%, white)
-    );
-    --cor-fundo: color-mix(in srgb, var(--cor) 22%, transparent);
-  }
-}
-
-/* Fundo da tela de uma trilha: um "brilho" suave da cor da trilha no topo
-   que se dissolve no fundo padrão. Dá identidade sem virar bananeira.
-   Requer --cor definido no elemento (a cor crua do banco). */
-.trilha-fundo {
-  background: radial-gradient(
-    130% 60% at 50% -5%,
-    color-mix(in srgb, var(--cor) 21%, var(--bg)) 0%,
-    var(--bg) 58%
-  );
-}
-/* no escuro, um pouco mais de cor pra o brilho aparecer sobre o preto */
-@media (prefers-color-scheme: dark) {
-  .trilha-fundo {
-    background: radial-gradient(
-      130% 62% at 50% -5%,
-      color-mix(in srgb, var(--cor) 34%, var(--bg)) 0%,
-      var(--bg) 60%
-    );
-  }
-}
-
-/* Vidro fosco estilo iOS — usado no segmento SELECIONADO dos controles.
-   Sobre a cor da tela da trilha o efeito aparece de verdade; sobre um card
-   branco fica uma pastilha translúcida discreta (tudo bem). */
-.vidro {
-  background: rgba(255, 255, 255, 0.62);
-  backdrop-filter: var(--vidro-blur);
-  -webkit-backdrop-filter: var(--vidro-blur);
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.09),
-    inset 0 0.5px 0 rgba(255, 255, 255, 0.7);
-}
-@media (prefers-color-scheme: dark) {
-  .vidro {
-    background: rgba(120, 120, 128, 0.38);
-    box-shadow:
-      0 1px 3px rgba(0, 0, 0, 0.35),
-      inset 0 0.5px 0 rgba(255, 255, 255, 0.14);
-  }
-}
-
-/* Barra de navegação (Home + trilhas) rola na horizontal no mobile sem
-   mostrar a barra de rolagem. */
-.scroll-x {
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.scroll-x::-webkit-scrollbar {
-  display: none;
-}
-
-/* =====================================================================
-   Interação — "Designing Fluid Interfaces" (WWDC 2018)
-   ===================================================================== */
-
-/* Sem o atraso de ~300ms do toque e sem o flash cinza padrão do mobile:
-   o feedback daqui de baixo é o nosso. */
-button,
-a,
-label,
-input,
-select {
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* REGRA 1 da fluidez: responder no PRESSIONAR, não no soltar. No celular
-   :hover não existe — sem isto o app fica mudo entre o toque e a ação.
-   Sem transição de entrada de propósito: o retorno tem que ser imediato. */
-button:not(:disabled):active,
-a:active,
-label:has(input:not(:disabled)):active {
-  opacity: 0.6;
-}
-
-/* Modal: o cartão "materializa" (escala + opacidade juntas) e sai pelo
-   MESMO caminho — entrar de um jeito e sair de outro desorienta. */
-@keyframes modal-entra {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-}
-@keyframes modal-sai {
-  to {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-}
-@keyframes scrim-entra {
-  from {
-    opacity: 0;
-  }
-}
-@keyframes scrim-sai {
-  to {
-    opacity: 0;
-  }
-}
-.modal-scrim {
-  animation: scrim-entra 180ms ease-out;
-}
-.modal-cartao {
-  animation: modal-entra 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.modal-fechando .modal-scrim {
-  animation: scrim-sai 160ms ease-in forwards;
-}
-.modal-fechando .modal-cartao {
-  animation: modal-sai 160ms cubic-bezier(0.4, 0, 1, 1) forwards;
-}
-
-/* =====================================================================
-   Acessibilidade — os três sinais do sistema (WWDC "reduce motion",
-   "reduce transparency", "increase contrast")
-   ===================================================================== */
-
-/* Movimento reduzido NÃO é "sem feedback": o :active acima continua
-   valendo (é opacidade, não deslocamento). O que morre aqui é a
-   animação — pulso do loading, barra crescendo, modal escalando. */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* Transparência reduzida: o vidro vira sólido (o blur é o que atrapalha
-   quem pediu menos transparência). */
-/* Desligar o blur pela VARIAVEL e' o que funciona aqui: o valor inline
-   referencia var(--vidro-blur), entao trocar a var apaga o blur mesmo o
-   estilo sendo inline. Regra direta em .vidro nao resolveria (inline ganha,
-   e o Lightning CSS ainda remove backdrop-filter da folha). */
-@media (prefers-reduced-transparency: reduce) {
-  :root {
-    --vidro-blur: none;
-  }
-  .vidro {
-    background: var(--seg-on);
-  }
-}
-
-/* Mais contraste: bordas definidas e texto secundário mais escuro/claro. */
+/* 2. PREFERÊNCIAS DO SISTEMA (tokens) ---------------------------------------- */
 @media (prefers-contrast: more) {
   :root {
-    --hairline: rgba(0, 0, 0, 0.3);
-    --ink-2: #45454a;
-    --trilho: rgba(120, 120, 128, 0.4);
+    --ink-2: light-dark(#48484a, #d1d1d6);
+    --sep: light-dark(rgba(60,60,67,.42), rgba(160,160,168,.6));
+    --borda-ctrl: light-dark(#545458, #aeaeb2);
+    --acao: light-dark(#0051a4, #7fbdff);
+    --acao-fundo: #0057af;
+    --erro: light-dark(#aa0011, #ff9da0);
   }
+  .com-cor { --tom: light-dark(var(--tom-mais-c), var(--tom-mais-e)); }
 }
-@media (prefers-contrast: more) and (prefers-color-scheme: dark) {
-  :root {
-    --hairline: rgba(255, 255, 255, 0.36);
-    --ink-2: #d2d2d7;
-    --trilho: rgba(120, 120, 128, 0.5);
+
+/* 3. BASE ------------------------------------------------------------------ */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+[hidden] { display: none !important; }
+/* o foco nunca para escondido sob a barra fixa (em cima) nem sob as abas
+   (embaixo, no celular) */
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scrollbar-color: var(--ink-3) transparent; scroll-padding-top: calc(var(--h-barra) + 16px); }
+@media (max-width: 699px) { html { scroll-padding-top: 0; scroll-padding-bottom: 88px; } }
+body {
+  background: var(--bg); color: var(--ink);
+  font: 400 1.0625rem/1.4706 var(--fonte);
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  accent-color: var(--acao); caret-color: var(--acao);
+}
+button, input { font: inherit; color: inherit; letter-spacing: inherit; }
+button { cursor: pointer; background: none; border: 0; padding: 0; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+p, li { text-wrap: pretty; }
+h1, h2, h3 { text-wrap: balance; font-weight: 600; }
+ul, ol { list-style: none; padding: 0; }
+::selection { background: color-mix(in srgb, var(--acao) 24%, transparent); }
+:focus-visible { outline: 2px solid var(--acao); outline-offset: 2px; }
+.tab { font-variant-numeric: tabular-nums; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* inline-block: o preflight do Tailwind deixa svg como bloco, e um ícone
+   dentro de uma linha de texto cairia numa linha só dele */
+.ic { display: inline-block; width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+
+/* vidro: SÓ na camada de controle (abas, conta, menus, popovers, cancelar da
+   folha). Aqui fica só a tinta; o blur vai inline (VIDRO em components/vidro.ts) */
+.vidro {
+  background: var(--vidro-solido);
+  box-shadow: inset 0 0 0 .5px var(--vidro-aro), inset 0 1px 0 0 var(--vidro-brilho), 0 0 0 .5px var(--vidro-fio), var(--sombra-flutuante);
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .vidro { background: var(--vidro-tinta); }
+}
+
+/* pressão: cada tipo responde do seu jeito, na hora do toque */
+.btn, .btn-icone, .btn-circ, .conta { transition: transform .25s var(--mola), background-color .2s ease-out, color .2s ease-out; }
+.btn:active:not(:disabled), .btn-icone:active, .btn-circ:active:not(:disabled), .conta:active { transform: scale(.96); }
+
+/* keyframes: materializar (menu/popover), surgir/sumir (folha), esmaecer */
+@keyframes materializa { from { opacity: 0; transform: scale(.9); filter: blur(6px); } }
+@keyframes some { to { opacity: 0; transform: scale(.94); } }
+@keyframes sobe { from { transform: translateY(100%); } }
+@keyframes desce { to { transform: translateY(100%); } }
+@keyframes surge { from { opacity: 0; transform: scale(.96) translateY(8px); } }
+@keyframes esmaece { from { opacity: 0; } }
+@keyframes apaga { to { opacity: 0; } }
+@keyframes pulso { 50% { opacity: .55; } }
+
+/* 4. MOLDURA ----------------------------------------------------------------- */
+.app { position: relative; display: flex; flex-direction: column; min-height: 100svh; padding-bottom: 40px; }
+.conteudo { width: 100%; }
+.miolo { width: min(var(--larg), 100%); margin: 0 auto; padding: 0 var(--calha); }
+
+/* barra de cima: título à esquerda, abas no centro, conta à direita, no mesmo
+   eixo. Pisos nas colunas laterais: com muitas trilhas, quem encolhe é a
+   cápsula das abas (que rola), nunca a conta nem o título */
+.barra {
+  position: sticky; top: 0; z-index: 20;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(max-content, 1fr); align-items: center; gap: 12px;
+  height: var(--h-barra); padding: 0 max(var(--calha), calc((100% - var(--larg)) / 2 + var(--calha)));
+}
+.app-painel .barra { grid-template-columns: minmax(5.5rem, 1fr) auto minmax(max-content, 1fr); }
+/* borda de rolagem: névoa que só aparece com conteúdo por baixo da barra.
+   É um <span> de verdade (pseudo-elemento não aceita o blur inline) */
+.barra-borda {
+  position: absolute; inset: 0 0 -28px; z-index: -1; pointer-events: none; opacity: 0;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--bg) 82%, transparent) 35%, transparent);
+  -webkit-mask-image: linear-gradient(#000 50%, transparent); mask-image: linear-gradient(#000 50%, transparent);
+  transition: opacity .3s ease-out;
+}
+.app[data-rolou] .barra-borda { opacity: 1; }
+.app[data-sobre-campo] .barra-borda { opacity: 0; } /* sobre o campo colorido, nada de névoa clara */
+.barra-fim { justify-self: end; display: flex; align-items: center; gap: 8px; }
+/* stretch: a data ganha reticências antes de passar por baixo das abas */
+.barra-titulo { justify-self: stretch; min-width: 0; }
+.titulo-barra { font: 700 clamp(1.625rem, 2vw, 1.875rem)/1.1 var(--fonte-titulo); letter-spacing: var(--ls-titulo); }
+.subtitulo { margin-top: 4px; font-size: 1.0625rem; color: var(--ink-2); }
+.subtitulo::first-letter { text-transform: uppercase; }
+.barra-titulo .subtitulo { margin-top: 2px; font-size: .9375rem; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* abas (iPadOS 26): cápsula de vidro, só texto, rótulos monocromáticos.
+   Rola na horizontal quando não cabe (muitas trilhas), sem barra visível */
+.abas {
+  position: relative; display: flex; padding: 4px; border-radius: 999px; isolation: isolate;
+  overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+  transition: background-color .3s ease-out;
+}
+.abas::-webkit-scrollbar { display: none; }
+.abas a {
+  position: relative; z-index: 1; flex: none; display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: max(38px, var(--alvo)); padding: 0 16px; border-radius: 999px;
+  font-size: .9375rem; line-height: 1.2; font-weight: 500; color: var(--ink); white-space: nowrap;
+}
+.abas a[aria-current="page"] { font-weight: 600; }
+/* reserva a largura do negrito: a cápsula não treme ao trocar de aba */
+.abas a::after { content: attr(data-rotulo); height: 0; overflow: hidden; visibility: hidden; font-weight: 600; }
+@media (hover: hover) { .abas a:not([aria-current="page"]):hover { background: var(--lente-leve); } }
+/* tablet em pé (700 a 819 px): abas mais justas */
+@media (min-width: 700px) and (max-width: 819px) { .abas-topo a { padding: 0 12px; font-size: .875rem; } }
+.abas-lente {
+  position: absolute; z-index: 0; top: 4px; bottom: 4px; left: 0; width: var(--w, 0px);
+  transform: translateX(var(--x, 0px)); border-radius: 999px; background: var(--lente); opacity: var(--op, 0); pointer-events: none;
+  transition: transform var(--t-mola) var(--mola), width var(--t-mola) var(--mola), scale .2s var(--mola), opacity .2s ease-out;
+}
+.abas[data-pressao] .abas-lente { scale: 1.06; background: var(--fill-forte); }
+
+/* conta: cápsula com o nome no computador; círculo no celular */
+.conta-caixa { position: relative; display: flex; }
+.conta { display: inline-flex; align-items: center; gap: 8px; min-height: max(38px, var(--alvo)); padding: 0 12px 0 6px; border-radius: 999px; font-size: .9375rem; font-weight: 500; color: var(--ink); }
+.conta .ic-pessoa { width: 28px; height: 28px; stroke: none; fill: var(--ink-2); }
+.conta .ic-chev { width: 12px; height: 12px; stroke-width: 2.4; color: var(--ink-2); transition: transform .25s var(--mola); }
+.conta[aria-expanded="true"] .ic-chev { transform: rotate(180deg); }
+.conta-entrar { padding-right: 16px; }
+/* hover em cima do vidro: uma camada de lente, sem trocar a tinta do vidro */
+@media (hover: hover) { .conta:hover, .btn-circ.vidro:hover { background-image: linear-gradient(var(--lente-leve), var(--lente-leve)); } }
+
+/* vidro sobre o campo colorido da trilha: os controles viram vidro ESCURO
+   (como os do Music sobre uma capa). O menu que abre deles segue o tema.
+   ATENÇÃO: o build (Lightning CSS do Next) troca light-dark() por variáveis
+   que já chegam RESOLVIDAS da raiz; herdar --ink e cia. traria o lado claro.
+   Por isso os tokens que estes controles usam são declarados DE NOVO aqui,
+   junto do color-scheme: dark — assim eles pegam o lado escuro neste
+   elemento. Vale também no celular: lá a conta rola junto com o campo e
+   sai da tela antes de o data-sobre-campo desligar. */
+.app[data-sobre-campo] .barra :is(.abas-topo, .conta) {
+  color-scheme: dark;
+  --ink: light-dark(#1d1d1f, #f5f5f7);
+  --ink-2: light-dark(#636366, #aeaeb2);
+  --surface-2: light-dark(#ffffff, #2c2c2e);
+  --fill-forte: light-dark(rgba(120,120,128,.2), rgba(118,118,128,.36));
+  --lente: light-dark(rgba(0,0,0,.07), rgba(255,255,255,.14));
+  --lente-leve: light-dark(rgba(0,0,0,.04), rgba(255,255,255,.07));
+  --acao: light-dark(#0066cc, #409cff);
+  --vidro-solido: light-dark(rgba(255,255,255,.94), rgba(30,30,32,.94));
+  --vidro-tinta: light-dark(rgba(255,255,255,.72), rgba(30,30,32,.72));
+  --vidro-aro: light-dark(rgba(255,255,255,.7), rgba(255,255,255,.1));
+  --vidro-brilho: light-dark(rgba(255,255,255,.95), rgba(255,255,255,.18));
+  --vidro-fio: light-dark(rgba(0,0,0,.08), rgba(0,0,0,.6));
+  --sombra-flutuante: 0 1px 2px light-dark(rgba(0,0,0,.06), rgba(0,0,0,.4)), 0 12px 32px -8px light-dark(rgba(0,0,0,.2), rgba(0,0,0,.75));
+  color: var(--ink);
+}
+@media (prefers-contrast: more) {
+  .app[data-sobre-campo] .barra :is(.abas-topo, .conta) { --ink-2: light-dark(#48484a, #d1d1d6); --acao: light-dark(#0051a4, #7fbdff); }
+}
+
+/* menu e popover: vidro mais denso (texto pequeno e muito por trás), nascem
+   do botão que abriu (transform-origin) */
+.menu, .pop { --vidro-tinta: light-dark(rgba(255,255,255,.9), rgba(36,36,38,.9)); --vidro-blur: blur(24px) saturate(110%); }
+.menu { position: absolute; z-index: 40; top: calc(100% + 8px); right: 0; min-width: 232px; padding: 6px; border-radius: var(--raio-menu); transform-origin: top right; color: var(--ink); }
+.menu[data-abrindo] { animation: materializa .3s var(--mola) both; }
+.menu-titulo { display: flex; align-items: center; gap: 10px; padding: 8px 12px 10px; font-size: .9375rem; font-weight: 600; color: var(--ink); }
+.menu-titulo .ic { width: 28px; height: 28px; stroke: none; fill: var(--ink-2); }
+.menu-rot { display: block; font-size: .8125rem; font-weight: 400; color: var(--ink-2); }
+.menu-email { display: block; font-weight: 500; overflow-wrap: anywhere; }
+.menu-sep { height: .5px; margin: 0 12px 4px; background: var(--sep-forte); }
+.menu-item { display: flex; align-items: center; gap: 12px; width: 100%; min-height: max(40px, var(--alvo)); padding: 0 12px; border-radius: 16px; font-size: 1rem; text-align: left; color: var(--ink); }
+.menu-item .ic { width: 18px; height: 18px; }
+@media (hover: hover) { .menu-item:hover { background: var(--lente-leve); } }
+.menu-item:active { background: var(--lente); }
+
+/* celular: as abas descem para perto do polegar; a conta fica no canto.
+   São duas <nav> no DOM; só uma aparece por vez (display: none tira a
+   outra do Tab e do leitor de tela) */
+.abas-pe { display: none; }
+@media (max-width: 699px) {
+  .barra { display: contents; }
+  .barra-borda, .barra-ini, .abas-topo { display: none; }
+  .abas-pe { display: flex; position: sticky; bottom: max(14px, env(safe-area-inset-bottom)); z-index: 20; align-self: center; margin: 28px auto 4px; max-width: calc(100% - 24px); }
+  .abas-pe a { padding: 0 12px; font-size: .875rem; min-height: max(44px, var(--alvo)); }
+  .barra-fim { position: absolute; top: max(14px, env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right)); z-index: 21; }
+  .conta { width: 44px; height: 44px; padding: 0; justify-content: center; }
+  .conta .ic-pessoa { width: 30px; height: 30px; }
+  .conta-nome, .conta .ic-chev { display: none; }
+  /* Home: a barra some e o título vira o título grande, com espaço à
+     direita para a conta */
+  .barra > .barra-titulo { padding: max(14px, env(safe-area-inset-top)) 64px 16px max(var(--calha), env(safe-area-inset-left)); }
+  .barra > .barra-titulo .titulo-barra { font-size: 2.125rem; line-height: 1.12; }
+  .barra > .barra-titulo .subtitulo { margin-top: 4px; font-size: 1.0625rem; }
+}
+
+/* 5. COMPONENTES ------------------------------------------------------------ */
+.cartao { background: var(--surface); border-radius: var(--raio-cartao); padding: var(--pad-v) 24px; }
+.cartao-cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 32px; margin-bottom: var(--cab-mb); }
+.cartao-titulo { font: 600 1.25rem/1.25 var(--fonte-titulo); letter-spacing: -0.012em; }
+@media (max-width: 699px) { .cartao { padding: 20px; } }
+
+.btn-icone { position: relative; display: inline-grid; place-items: center; flex: none; width: max(32px, var(--alvo)); height: max(32px, var(--alvo)); border-radius: 50%; background: var(--fill); color: var(--ink-2); }
+.btn-icone .ic { width: 17px; height: 17px; }
+@media (hover: hover) { .btn-icone:hover { color: var(--ink); background: var(--fill-forte); } }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; padding: 0 26px; border-radius: 999px; font-size: 1.0625rem; font-weight: 600; white-space: nowrap; }
+.btn .ic { width: 17px; height: 17px; }
+.btn:disabled { opacity: .6; cursor: default; }
+.btn-prim { background: var(--acao-fundo); color: #fff; }
+@media (hover: hover) { .btn-prim:hover:not(:disabled) { background: var(--acao-fundo-press); } }
+.btn-sec { background: var(--fill); color: var(--ink); }
+@media (hover: hover) { .btn-sec:hover:not(:disabled) { background: var(--fill-forte); } }
+.btn-tinta { background: var(--acao-tinta); color: var(--acao); }
+@media (hover: hover) { .btn-tinta:hover { background: color-mix(in srgb, var(--acao) 18%, transparent); } }
+.btn-largo { width: 100%; }
+.btn-p { min-height: max(38px, var(--alvo)); padding: 0 16px; font-size: .9375rem; }
+.btn-circ { display: grid; place-items: center; width: 44px; height: 44px; flex: none; border-radius: 50%; color: var(--ink); }
+.btn-circ .ic { width: 18px; height: 18px; stroke-width: 2.2; }
+.btn-circ:disabled { opacity: .6; cursor: default; }
+.btn-circ.prom { background: var(--acao-fundo); color: #fff; }
+@media (hover: hover) { .btn-circ.prom:hover:not(:disabled) { background: var(--acao-fundo-press); } }
+
+/* segmentado (iOS 26): trilho em cápsula, thumb SÓLIDO que desliza (nunca
+   vidro: o thumb fica na camada de conteúdo). O modo único usa <label> com
+   rádio nativo dentro (as setas do teclado funcionam sem código) */
+.seg { position: relative; display: flex; padding: 3px; border-radius: 999px; background: var(--fill); isolation: isolate; }
+.seg > button, .seg > label {
+  position: relative; z-index: 1; flex: 1 1 0; min-width: 0; min-height: max(var(--h-ctrl), var(--alvo));
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 10px; border-radius: 999px;
+  font-size: .9375rem; line-height: 1.2; font-weight: 500; color: var(--ink-2); white-space: nowrap; transition: color .2s ease-out;
+}
+.seg > label { cursor: pointer; }
+/* texto longo (nome de trilha grande) ganha reticências, com title no botão */
+.seg-txt { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.seg > button:focus-visible { z-index: 2; outline-offset: -1px; }
+.seg > label:has(input:focus-visible) { z-index: 2; outline: 2px solid var(--acao); outline-offset: -1px; }
+.seg > button[aria-pressed="true"], .seg > label:has(input:checked) { color: var(--ink); font-weight: 600; }
+@media (hover: hover) {
+  .seg > button:not([aria-pressed="true"]):hover, .seg > label:not(:has(input:checked)):hover { color: var(--ink); }
+}
+.seg > button .ic { width: 15px; height: 15px; }
+.seg-thumb {
+  position: absolute; z-index: 0; top: 3px; bottom: 3px; left: 0; width: var(--w, 0px); transform: translateX(var(--x, 0px));
+  border-radius: 999px; background: var(--thumb); box-shadow: var(--thumb-sombra); opacity: var(--op, 0); pointer-events: none;
+  transition: transform var(--t-mola) var(--mola), width var(--t-mola) var(--mola), opacity .2s ease-out;
+}
+/* a primeira medida (e as de redimensionar) não animam */
+.sem-transicao, .sem-transicao * { transition: none !important; }
+/* travado (relógio contando): parece desligado de verdade; o toque explica */
+.seg[data-travado] { opacity: .45; }
+.seg[data-travado] > button { cursor: not-allowed; }
+@media (hover: hover) { .seg[data-travado] > button:hover { color: var(--ink-2); } }
+
+/* vários ao mesmo tempo (dias que contam): sem thumb deslizante; cada dia
+   ligado ganha o próprio fundo de thumb, com sombra e sem aro */
+.seg.multi > button { transition: color .2s ease-out, background-color .2s ease-out, box-shadow .2s ease-out; }
+.seg.multi > button[aria-pressed="true"] { background: var(--thumb); box-shadow: 0 3px 8px light-dark(rgba(0,0,0,.12), transparent), 0 1px 1px light-dark(rgba(0,0,0,.05), transparent); }
+@media (prefers-contrast: more) { .seg.multi > button[aria-pressed="true"] { box-shadow: var(--thumb-sombra); } }
+.form-dias { width: 100%; }
+.form-status { min-height: 18px; font-size: .8125rem; color: var(--ink-2); }
+.form-status:empty { min-height: 0; }
+
+/* barra de progresso: cápsula com ponta redonda de verdade (anima a largura) */
+.barra-p { display: block; height: 6px; border-radius: 999px; background: var(--trilho); overflow: hidden; }
+.barra-p > i { display: block; height: 100%; width: calc(var(--p, 0) * 100%); min-width: calc(min(var(--p, 0) * 1000, 1) * 6px); border-radius: inherit; background: var(--barra-cor, var(--cor-viva, var(--meta-fill))); transition: width .45s var(--mola); }
+/* metas: sempre na tinta, mesmo dentro de um elemento com cor de trilha */
+.metas .barra-p { --barra-cor: var(--meta-fill); }
+
+.tag { display: inline-flex; align-items: center; margin-left: 8px; padding: 2px 8px; border-radius: 999px; vertical-align: 2px; font-size: .6875rem; line-height: 1.182; font-weight: 600; letter-spacing: .01em; background: var(--m-fundo); color: var(--m-texto); white-space: nowrap; }
+.tag-neutra { background: none; box-shadow: inset 0 0 0 1px var(--sep-forte); color: var(--ink-2); font-weight: 500; }
+
+/* 6. HOME ------------------------------------------------------------------- */
+/* Trilhas sobre Constância à esquerda; o Pomodoro à direita, nas duas linhas.
+   Abaixo de 980 px o Pomodoro sobe para o topo */
+.painel-grade { display: grid; gap: var(--vao); grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: auto 1fr; align-items: stretch; }
+.foco, .const { display: flex; flex-direction: column; }
+.painel-grade > .trilhas { grid-column: 1 / span 5; grid-row: 1; }
+.painel-grade > .const { grid-column: 1 / span 5; grid-row: 2; }
+.painel-grade > .foco { grid-column: 6 / -1; grid-row: 1 / span 2; }
+@media (max-width: 979px) {
+  .painel-grade { grid-template-rows: none; }
+  .painel-grade > .foco { grid-column: 1 / -1; grid-row: 1; }
+  .painel-grade > .trilhas { grid-column: 1 / span 6; grid-row: 2; }
+  .painel-grade > .const { grid-column: 7 / -1; grid-row: 2; }
+}
+@media (max-width: 699px) {
+  .painel-grade { gap: 14px; }
+  .painel-grade > .trilhas, .painel-grade > .const { grid-column: 1 / -1; grid-row: auto; }
+}
+@media (min-width: 700px) { .app-painel .painel-grade { margin-top: 12px; } }
+
+/* CABE NA TELA (computador e tablet deitado): a Home inteira na altura da
+   janela, sem rolar. As folgas encolhem com a altura (dvh) e o anel ocupa a
+   vaga que sobra no cartão do Pomodoro */
+@media (min-width: 980px) and (orientation: landscape) {
+  .app-painel {
+    --vao: clamp(12px, 2.2dvh, 20px);
+    --pad-v: clamp(14px, 2.6dvh, 24px);
+    --cab-mb: clamp(6px, 1.4dvh, 18px);
+    --linha-v: clamp(7px, 1.2dvh, 12px);
+    --linha-gap: clamp(4px, .9dvh, 8px);
+    --meta-l1-mb: clamp(5px, .9dvh, 8px);
+    --metas-m: clamp(8px, 1.6dvh, 22px);
+    --metas-gap: clamp(10px, 1.6dvh, 16px);
+    min-height: 100dvh; padding-bottom: clamp(6px, 1.2dvh, 16px);
   }
+  .app-painel > .miolo { flex: 1; display: flex; flex-direction: column; }
+  .app-painel .painel-grade { flex: 1 0 auto; margin-top: clamp(4px, 1.2dvh, 12px); }
+  /* o herói da Constância fica com a sobra de altura do cartão e o número
+     cresce com ela; o mínimo é o bloco com o número mínimo */
+  .app-painel .const-topo { flex: 1 1 0; --n-min: clamp(2rem, 5dvh, 2.5rem); min-height: calc(1.05 * var(--n-min) + 26px); container: heroi / size; --n: clamp(var(--n-min), 45cqh, 4rem); }
+  .app-painel .foco-legenda { margin-top: clamp(4px, .8dvh, 10px); }
+  .app-painel .tempos { row-gap: clamp(6px, 1.2dvh, 10px); }
+  .app-painel .acoes { margin-top: clamp(8px, 1.8dvh, 22px); }
+  .app-painel .acoes .btn { min-height: clamp(44px, 6.4dvh, 50px); }
+  .app-painel .aviso { margin-top: clamp(6px, 1.2dvh, 14px); }
+  .app-painel .confirma { margin-top: clamp(8px, 1.8dvh, 22px); gap: clamp(8px, 1.4dvh, 14px); }
+  .app-painel .sessoes { margin-top: clamp(4px, 1dvh, 12px); }
+  .app-painel .sessoes-botao { min-height: max(28px, var(--alvo)); }
+  /* a vaga do anel: o anel é o maior círculo que cabe (até 400 px) */
+  .app-painel .relogio-vaga { flex: 1 1 0; align-self: stretch; min-height: 140px; max-height: 440px; padding: clamp(8px, 1.6dvh, 20px) 0; container-type: size; display: grid; place-items: center; }
+  .app-painel .relogio-vaga > .relogio { --d: min(100cqh, 100cqw, 400px); width: var(--d); margin: 0; }
+  .app-painel .relogio-vaga .relogio-tempo { font-size: calc(var(--d) * .255); }
+}
+/* janela bem baixa: aperta mais as folgas para tudo caber */
+@media (min-width: 980px) and (orientation: landscape) and (max-height: 620px) {
+  .app-painel { --pad-v: 12px; --cab-mb: 4px; --vao: 10px; --linha-v: 6px; --metas-m: 6px; --metas-gap: 8px; --h-ctrl: 30px; }
+  .app-painel .relogio-vaga { min-height: 116px; }
+  .app-painel .const-topo { --n-min: 26px; --n: clamp(var(--n-min), 45cqh, 2.5rem); }
+}
+
+/* Pomodoro: trilha, anel, tempos, ação */
+.foco-miolo { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: 4px 0 4px; }
+.seg-trilha { width: 100%; max-width: 460px; }
+.seg-trilha > button, .seg-trilha > label { flex: 1 1 auto; padding: 0 12px; }
+.foco-legenda { margin-top: 10px; min-height: 20px; font-size: .875rem; color: var(--ink-2); text-align: center; }
+.relogio { position: relative; width: clamp(220px, 26vw, 288px); aspect-ratio: 1; margin: 22px auto 24px; }
+.anel { display: block; width: 100%; height: 100%; transform: rotate(-90deg); }
+.anel-trilho { fill: none; stroke: var(--trilho); stroke-width: 5; }
+.anel-arco { fill: none; stroke: var(--arco, var(--ink-3)); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 100 100; stroke-dashoffset: var(--off, 0); transition: stroke-dashoffset .3s linear, stroke .3s ease-out; }
+/* somar tempo: o anel SOBE animado, SEMPRE. "mola" com movimento normal;
+   "suave" (curta, sem passar do alvo) com movimento reduzido */
+.relogio[data-subindo="mola"] .anel-arco { transition: stroke-dashoffset .6s var(--mola), stroke .3s ease-out; }
+.relogio[data-subindo="suave"] .anel-arco { transition: stroke-dashoffset .3s cubic-bezier(.33, 1, .68, 1), stroke .3s ease-out; }
+.relogio[data-trilha] { --arco: var(--cor-viva); }
+.relogio[data-fase="pausa"] { --arco: var(--ink-2); }
+.relogio-centro { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; text-align: center; }
+.relogio-tempo { font: 300 clamp(3.5rem, 5.6vw, 4.6rem)/1 var(--fonte-titulo); letter-spacing: -0.03em; }
+.relogio-fase { margin-top: 8px; font-size: .9375rem; font-weight: 500; color: var(--ink-2); }
+.tempos { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 10px 14px; width: 100%; max-width: 420px; }
+.tempo-rotulo { min-width: 3.4em; font-size: .9375rem; font-weight: 600; color: var(--ink); }
+.tempo-rotulo.off { font-weight: 500; color: var(--ink-2); }
+.tempo-caixa { position: relative; min-width: 0; }
+.modo { grid-column: 1 / -1; margin-top: 2px; text-align: center; font-size: .8125rem; color: var(--ink-2); }
+.acoes { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px; margin-top: 22px; }
+.acoes .btn-prim { min-width: 168px; }
+.estender { position: relative; }
+.btn-quadrado { width: 58px; padding: 0; gap: 2px; }
+/* ordem: .ic antes de .ic-mais, para o + ficar com 13 px e o relógio com 19 */
+.btn-quadrado .ic { width: 19px; height: 19px; }
+.btn-quadrado .ic-mais { width: 13px; height: 13px; stroke-width: 2.6; }
+.pop { position: absolute; z-index: 30; border-radius: var(--raio-menu); }
+.pop[data-abrindo] { animation: materializa .3s var(--mola) both; }
+.pop-mais { bottom: calc(100% + 10px); left: 50%; translate: -50% 0; display: flex; gap: 4px; padding: 6px; transform-origin: bottom center; }
+.pop-mais button { min-height: max(40px, var(--alvo)); padding: 0 14px; border-radius: 16px; font-size: .9375rem; font-weight: 600; white-space: nowrap; }
+@media (hover: hover) { .pop-mais button:hover { background: var(--lente-leve); } }
+.pop-mais button:active { background: var(--lente); }
+.pop-custom { bottom: calc(100% + 10px); right: 0; width: 248px; padding: 16px; display: grid; gap: 12px; transform-origin: bottom right; }
+.pop-custom label { font-size: .9375rem; font-weight: 600; }
+.pop-acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.campo-erro { font-size: .8125rem; line-height: 1.385; color: var(--erro); }
+@media (max-width: 699px) {
+  /* no celular o "+ tempo" fica à direita do Pausar: o popover cresce para a esquerda */
+  .pop-mais { left: auto; right: 0; translate: none; transform-origin: bottom right; }
+}
+.confirma { display: grid; justify-items: center; gap: 14px; margin-top: 22px; max-width: 340px; text-align: center; }
+.confirma p { font-size: 1rem; }
+.confirma .acoes { margin-top: 0; }
+.confirma .btn-prim { min-width: 0; }
+.aviso { min-height: 20px; margin-top: 14px; font-size: .875rem; color: var(--ink-2); text-align: center; }
+
+/* Constância: chama e número formam o herói; metas e botão embaixo. O
+   número (--n) manda: a chama tem a altura da coluna ao lado */
+.const-topo { flex: 1 0 auto; display: grid; align-items: center; --n: 2.5rem; }
+/* 26 px = 4 de margem + a linha da legenda (15 px x 1,47) */
+.heroi { display: flex; align-items: center; gap: calc(var(--n) * .375); --h-chama: calc(1.05 * var(--n) + 26px); }
+.chama { width: 46px; height: 46px; flex: none; }
+/* o viewBox da chama do herói é recortado no desenho: --h-chama é a altura
+   da chama que se vê. O fogo crescendo pode passar da caixa: overflow visível */
+.const-topo .chama { width: auto; height: var(--h-chama); aspect-ratio: 3 / 4; overflow: visible; }
+.chama.apagada { fill: none; stroke: var(--borda-ctrl); stroke-width: 1.5; }
+.streak { font: 700 2.5rem/1.05 var(--fonte-titulo); letter-spacing: var(--ls-titulo); }
+.const-topo .streak { font-size: var(--n); }
+.streak span { margin-left: .2em; font-size: max(1.375rem, .46em); font-weight: 600; letter-spacing: 0; } /* piso: 22 px */
+.chama-legenda { margin-top: 4px; font-size: .9375rem; color: var(--ink-2); }
+.metas { display: grid; gap: var(--metas-gap, 16px); margin: var(--metas-m, 22px) 0 max(14px, calc(1.5 * var(--metas-gap, 16px))); }
+/* vaga alta: chama em cima e número embaixo, centrados */
+@container heroi (min-height: 220px) {
+  .heroi { flex-direction: column; gap: 10px; text-align: center; --n: clamp(4rem, 22cqh, 4.75rem); --h-chama: clamp(96px, 44cqh, 132px); }
+}
+
+/* a chama tem duas camadas: o contorno cinza (apagada) e o fogo (acesa).
+   ACENDER (ao abrir a tela e quando deixa de ser .apagada): o cinza sai e o
+   fogo entra; no herói, o FOGO (só ele) cresce, tremula duas vezes e PARA, e
+   o svg brilha. Com movimento reduzido, só a cor muda (seção 12) */
+.chama-cinza { fill: none; stroke: var(--borda-ctrl); stroke-width: 1; stroke-linejoin: round; }
+.chama:not(.apagada) > .chama-cinza { opacity: 0; animation: cinza-sai .15s ease-out backwards; }
+.chama:not(.apagada) > .chama-fogo { animation: fogo-entra .35s ease-out backwards; }
+.chama.apagada > .chama-fogo { opacity: 0; }
+.const-topo .chama:not(.apagada) { animation: brilha .6s ease-out backwards; }
+.const-topo .chama:not(.apagada) > .chama-fogo { transform-box: fill-box; transform-origin: 50% 95%; animation: fogo-entra .35s ease-out backwards, acende .6s ease-out backwards; }
+@keyframes cinza-sai { from { opacity: 1; } to { opacity: 0; } }
+@keyframes fogo-entra { from { opacity: 0; } to { opacity: 1; } }
+@keyframes acende {
+  0% { transform: translateY(10%) scale(.7); }
+  45% { transform: translateY(-3%) scale(1.04, 1.08); }
+  65% { transform: translateY(0) scale(.98, .95) skewX(-3deg); }
+  82% { transform: scale(1.01, 1.03) skewX(2deg); }
+  100% { transform: none; }
+}
+@keyframes brilha {
+  0% { filter: drop-shadow(0 0 0 rgb(255 128 32 / 0)); }
+  45% { filter: drop-shadow(0 0 12px rgb(255 128 32 / .6)); }
+  82% { filter: drop-shadow(0 0 6px rgb(255 128 32 / .3)); }
+  100% { filter: drop-shadow(0 0 0 rgb(255 128 32 / 0)); }
+}
+.meta-l1 { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: var(--meta-l1-mb, 8px); font-size: 1rem; }
+.meta-val { color: var(--ink-2); }
+.meta-val b { color: var(--ink); font-weight: 600; }
+
+/* visitante: convite onde o dado faltaria */
+.visitante-miolo { display: grid; justify-items: center; gap: 14px; padding: 8px 4px 4px; text-align: center; }
+.visitante-miolo p { max-width: 26ch; font-size: 1rem; color: var(--ink-2); }
+.visitante-miolo .btn { min-height: max(44px, var(--alvo)); font-size: 1rem; }
+.dica { margin-top: 14px; font-size: .9375rem; color: var(--ink-2); }
+.dica a, .link-acao { color: var(--acao); font-weight: 600; }
+
+/* Trilhas: linhas de lista; a cor vai no nome e na barra, sem bolinha */
+.lista-trilhas { margin: -6px -12px -10px; }
+.trilha-linha { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: var(--linha-gap, 8px) 10px; padding: var(--linha-v, 12px) 12px; border-radius: 18px; transition: background-color .2s ease-out; }
+li + li > .trilha-linha::before { content: ""; position: absolute; top: 0; left: 12px; right: 12px; height: .5px; background: var(--sep); }
+@media (hover: hover) { .trilha-linha:hover { background: var(--lente-leve); } }
+.trilha-linha:active { background: var(--lente); }
+.trilha-nome { font-size: 1.0625rem; font-weight: 600; color: var(--tom); }
+.trilha-pct { font-size: 1rem; color: var(--ink-2); }
+.trilha-linha .ic { width: 14px; height: 14px; stroke-width: 2.4; color: var(--ink-3); }
+.trilha-linha .barra-p { grid-column: 1 / -1; }
+.vazio { display: grid; gap: 6px; padding: 32px 8px; text-align: center; }
+.vazio p + p { font-size: .875rem; color: var(--ink-2); }
+
+/* Últimas sessões: fechado por padrão (decisão do Gabriel) */
+.sessoes { margin-top: 18px; }
+.sessoes-botao { display: inline-flex; align-items: center; gap: 8px; min-height: max(36px, var(--alvo)); padding: 0 6px; margin-left: -6px; border-radius: 10px; font-size: 1rem; font-weight: 600; }
+.sessoes-botao .ic { width: 13px; height: 13px; stroke-width: 2.6; color: var(--ink-2); transition: transform .25s var(--mola); }
+.sessoes-botao[aria-expanded="true"] .ic { transform: rotate(90deg); }
+@media (hover: hover) { .sessoes-botao:hover { background: var(--fill); } }
+/* largura de leitura: a duração fica perto do nome */
+.sessoes-lista { max-width: 640px; margin-top: 8px; padding: 2px 20px; border-radius: var(--raio-cartao); background: var(--surface); }
+.sessao { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 12px 0; }
+.sessao + .sessao { border-top: .5px solid var(--sep); }
+.sessao-trilha { font-weight: 600; color: var(--tom); }
+.sessao-quando, .sessao-orig { font-size: .875rem; color: var(--ink-2); }
+.sessao-dur, .sessao-orig { text-align: right; }
+.sessao-vazia { padding: 12px 0; font-size: .9375rem; color: var(--ink-2); }
+
+/* 7. TRILHA ----------------------------------------------------------------- */
+/* campo: cabeçalho da trilha na cor dela. A barra de vidro flutua por cima */
+.campo { margin-top: calc(-1 * var(--h-barra)); padding: calc(var(--h-barra) + 28px) 0 40px; background: var(--campo); color: var(--campo-tinta); }
+.campo-in { width: min(var(--larg), 100%); margin: 0 auto; padding: 0 var(--calha); }
+.campo-titulo { font: 700 clamp(2.5rem, 5vw, 3.5rem)/1.05 var(--fonte-titulo); letter-spacing: -0.03em; }
+.campo-desc { margin-top: 14px; max-width: 64ch; font-size: 1.0625rem; line-height: 1.47; }
+.campo-prog { display: flex; align-items: center; gap: 14px; max-width: 560px; margin-top: 26px; }
+.campo-pct { font: 700 1.75rem/1 var(--fonte-titulo); letter-spacing: -0.02em; }
+.campo-rot { font-size: 1rem; }
+.campo-prog .barra-p { flex: 1; height: 8px; background: color-mix(in srgb, var(--campo-tinta) 24%, transparent); }
+.campo-prog .barra-p > i { background: var(--campo-tinta); }
+.campo-visit { margin-top: 14px; font-size: .9375rem; }
+.campo-visit a { font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 699px) {
+  .campo { margin-top: 0; padding: 74px 0 28px; }
+  .campo-desc { font-size: 1rem; }
+}
+
+/* divisão: no largo, o roteiro à esquerda e o bloco aberto à direita; no
+   estreito, os blocos viram acordeão */
+.divisao { container: divisao / inline-size; width: min(var(--larg), 100%); margin: 24px auto 0; padding: 0 var(--calha); }
+.roteiro { display: none; }
+.bloco { margin-bottom: 12px; border-radius: var(--raio-cartao); background: var(--surface); }
+/* acordeão: <h2><button>; quem navega por títulos acha cada bloco */
+.bloco-h { font: inherit; text-wrap: initial; }
+.bloco-cab { display: block; width: 100%; padding: 18px 20px; border-radius: var(--raio-cartao); text-align: left; }
+.bloco-cab:disabled { cursor: default; color: inherit; }
+.bloco-cab:focus-visible { outline-offset: -2px; }
+.bloco-l1 { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+.bloco-chev { width: 12px; height: 12px; stroke-width: 2.6; color: var(--ink-2); transition: transform .25s var(--mola); align-self: center; }
+.bloco[data-aberto] .bloco-chev { transform: rotate(90deg); }
+.bloco-cad { display: none; width: 15px; height: 15px; color: var(--ink-2); align-self: center; }
+.bloqueado .bloco-cad { display: block; }
+.bloco-titulo { flex: 1; min-width: 0; font-size: 1.0625rem; line-height: 1.294; font-weight: 600; }
+.bloco-pct { flex: none; font-size: .9375rem; color: var(--ink-2); }
+.bloco-meta { display: block; margin-top: 10px; font-size: .875rem; color: var(--ink-2); }
+.bloco .barra-p { --barra-cor: var(--cor-viva); }
+.bloco-trava { display: flex; align-items: flex-start; gap: 10px; margin: -4px 20px 16px; padding: 12px 14px; border-radius: 16px; background: var(--fill); font-size: .9375rem; line-height: 1.4; }
+.bloco-trava .ic { width: 16px; height: 16px; margin-top: 2px; color: var(--ink-2); }
+.bloco-corpo { padding: 0 20px 18px; }
+.bloco:not([data-aberto]) .bloco-corpo { display: none; }
+.bloco-desc { max-width: 68ch; padding-top: 2px; font-size: .9375rem; line-height: 1.47; color: var(--ink-2); }
+
+.grupo { margin-top: 24px; }
+.grupo-titulo { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 0; margin-bottom: 4px; font-size: .9375rem; font-weight: 600; color: var(--ink); }
+.grupo-titulo .tag { vertical-align: 0; }
+.lista { margin: 0 -12px; }
+.item { position: relative; }
+.item + .item::before { content: ""; position: absolute; top: 0; left: 48px; right: 12px; height: .5px; background: var(--sep); }
+.item-linha { display: flex; align-items: flex-start; gap: 14px; min-height: max(44px, var(--alvo)); padding: 12px; border-radius: 16px; cursor: pointer; transition: background-color .2s ease-out; }
+@media (hover: hover) { .item-linha:hover { background: var(--lente-leve); } }
+.item-linha:active { background: var(--lente); }
+.item-linha:has(:focus-visible) { background: var(--lente-leve); }
+.item-linha:has(input:disabled) { cursor: not-allowed; background: none; }
+.marca { position: relative; display: grid; place-items: center; width: 22px; height: 22px; flex: none; margin-top: 0; }
+.marca input { appearance: none; -webkit-appearance: none; display: block; width: 22px; height: 22px; margin: 0; padding: 0; border-radius: 50%; border: 1.5px solid var(--borda-ctrl); background: transparent; cursor: inherit; }
+.marca input:checked { background: var(--tom); border-color: var(--tom); }
+.marca input:disabled { border-color: var(--fill-forte); background: var(--fill); }
+/* item já feito num bloco que voltou a ficar bloqueado: cinza (inativo), com
+   o visto ainda visível. Sem isto o :disabled venceria e o visto sumiria */
+.marca input:checked:disabled { background: var(--ink-2); border-color: var(--ink-2); }
+.marca input:focus-visible { outline-offset: 3px; }
+.marca-v { position: absolute; width: 12px; height: 12px; stroke: var(--sobre-tom); stroke-width: 3.2; opacity: 0; pointer-events: none; }
+.marca input:checked + .marca-v { opacity: 1; }
+.opcional .marca input { border-style: dashed; }
+.item-txt { min-width: 0; }
+.item-titulo { font-size: 1.0625rem; line-height: 1.35; }
+/* dois sinais diferentes: CONCLUÍDO leva risco fino e segue em tinta; o
+   cinza é só do OPCIONAL, junto da tag "opcional" */
+.item:not(.projeto):has(input:checked) .item-titulo { text-decoration: line-through 1px; text-decoration-color: color-mix(in srgb, currentColor 60%, transparent); }
+.opcional .item-titulo { color: var(--ink-2); }
+.item-desc { display: block; max-width: 70ch; margin-top: 4px; font-size: .9375rem; line-height: 1.4; color: var(--ink-2); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+/* raio 12: numa linha vira cápsula; quebrado em duas, um cartãozinho */
+.chip { display: inline-flex; align-items: baseline; gap: 5px; max-width: 100%; padding: 4px 10px; border-radius: 12px; font-size: .75rem; line-height: 1.333; font-weight: 500; background: var(--m-fundo); color: var(--m-texto); }
+.chip b { font-weight: 700; }
+.grupo-projeto .lista { margin: 6px 0 0; padding: 4px 4px; border-radius: 20px; background: color-mix(in srgb, var(--cor) 8%, var(--surface)); }
+.projeto .item-titulo { font-weight: 600; }
+.ic-proj { width: 17px; height: 17px; margin-right: 8px; vertical-align: -3px; color: var(--tom); }
+/* falha ao salvar um item: o aviso fica na própria linha, alinhado ao texto
+   (48 = 12 de padding + 22 do círculo + 14 de vão) */
+.erro-inline { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 8px 10px; margin: 2px 12px 6px 48px; padding: 12px 14px; border-radius: 16px; background: var(--erro-tinta); color: var(--erro); font-size: .9375rem; }
+.erro-inline .ic { width: 18px; height: 18px; margin-top: 1px; }
+.erro-inline button { grid-column: 2; justify-self: start; min-height: max(32px, var(--alvo)); padding: 0 12px; border-radius: 999px; background: var(--surface); color: var(--acao); font-weight: 600; font-size: .9375rem; transition: background-color .2s ease-out; }
+@media (hover: hover) { .erro-inline button:hover { background: color-mix(in srgb, var(--acao) 8%, var(--surface)); } }
+
+@container divisao (min-width: 820px) {
+  .divisao-grade { display: grid; grid-template-columns: clamp(300px, 22cqi, 380px) minmax(0, 1fr); gap: 24px; align-items: start; }
+  .roteiro { display: block; position: sticky; top: calc(var(--h-barra) + 16px); max-height: calc(100svh - var(--h-barra) - 36px); overflow: auto; overscroll-behavior: contain; padding: 8px; border-radius: var(--raio-cartao); background: var(--surface); }
+  .roteiro-cab { padding: 10px 12px 6px; font-size: .9375rem; font-weight: 600; }
+  .rot-item { display: grid; gap: 8px; width: 100%; padding: 12px; border-radius: 18px; text-align: left; transition: background-color .2s ease-out; }
+  @media (hover: hover) { .rot-item:not([aria-current]):hover { background: var(--lente-leve); } }
+  .rot-item[aria-current="true"] { background: color-mix(in srgb, var(--cor) 12%, var(--surface)); }
+  .rot-titulo { display: flex; gap: 8px; align-items: flex-start; font-size: .9375rem; line-height: 1.33; font-weight: 600; }
+  .rot-item[aria-current="true"] .rot-titulo { color: var(--tom); }
+  .rot-cad { display: none; width: 14px; height: 14px; margin-top: 2px; color: var(--ink-2); }
+  .rot-item.bloqueado .rot-cad { display: block; }
+  .rot-meta { display: flex; justify-content: space-between; gap: 8px; font-size: .8125rem; color: var(--ink-2); }
+  .rot-item .barra-p { height: 4px; --barra-cor: var(--cor-viva); }
+  .bloco { margin: 0; }
+  .bloco:not(.sel) { display: none; }
+  .bloco-cab { padding: 28px 28px 6px; pointer-events: none; }
+  .bloco-chev { display: none; }
+  .bloco-titulo { font: 700 1.5rem/1.25 var(--fonte-titulo); letter-spacing: -0.015em; }
+  .bloco-pct { font-size: 1.0625rem; }
+  .bloco-trava { margin: 10px 28px 4px; }
+  /* o bloco escolhido no roteiro aparece SEMPRE aberto */
+  .bloco.sel .bloco-corpo, .bloco.sel:not([data-aberto]) .bloco-corpo { display: block; padding: 12px 28px 28px; }
+}
+
+/* 8. FOLHA (sheet) ----------------------------------------------------------- */
+.folha { display: flex; flex-direction: column; width: min(540px, 100%); max-height: min(760px, calc(100svh - 48px)); overflow: hidden; border-radius: var(--raio-folha); background: var(--folha-bg); color: var(--ink); box-shadow: inset 0 0 0 .5px var(--vidro-aro), var(--sombra-flutuante); }
+.folha-alca { display: none; width: 36px; height: 5px; margin: 7px auto 0; border-radius: 3px; background: var(--ink-3); }
+.folha-cab { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 8px; padding: 14px 14px 6px; }
+.folha-cab h2 { font-size: 1.0625rem; text-align: center; }
+.folha-cab h2:focus { outline: none; }
+.folha-corpo { overflow: auto; padding: 4px 20px 26px; overscroll-behavior: contain; }
+.form-secao { margin: 18px 16px 8px; font-size: .9375rem; font-weight: 600; }
+.form-grupo { padding: 0 16px; border-radius: 22px; background: var(--surface-2); }
+.form-linha { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 54px; padding: 8px 0; }
+.form-linha + .form-linha { border-top: .5px solid var(--sep); }
+.form-linha.col { flex-direction: column; align-items: stretch; gap: 10px; padding: 12px 0 14px; }
+.form-linha > label, .form-linha > .rotulo { font-size: 1.0625rem; }
+.form-nota { margin: 8px 16px 0; font-size: .8125rem; line-height: 1.385; color: var(--ink-2); }
+.form-erro { display: flex; gap: 8px; align-items: flex-start; margin: 14px 16px 0; font-size: .875rem; color: var(--erro); }
+.form-erro .ic { width: 16px; height: 16px; margin-top: 2px; }
+/* respiros do começo de cada folha (no mockup estavam inline): nota no topo
+   (Tempos do pomodoro), grupo logo depois dela, grupo no topo (Registrar) */
+.folha-corpo > .form-nota:first-child { margin-top: 6px; }
+.folha-corpo > .form-nota + .form-grupo { margin-top: 14px; }
+.folha-corpo > .form-grupo:first-child { margin-top: 10px; }
+.passo { display: flex; align-items: center; gap: 10px; }
+.passo input { width: 4.2em; height: max(var(--h-campo), 34px); padding: 0 6px; border: 0; border-radius: 10px; background: var(--fill); color: var(--ink); text-align: center; font-size: var(--campo-fonte); font-weight: 600; font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
+.passo input::-webkit-inner-spin-button, .passo input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.passo input[aria-invalid="true"] { box-shadow: inset 0 0 0 1.5px var(--erro); }
+.passo .un { min-width: 2.2em; color: var(--ink-2); }
+.stepper { display: flex; align-items: center; padding: 2px; border-radius: 999px; background: var(--fill); }
+.stepper button { display: grid; place-items: center; width: max(40px, var(--alvo)); height: max(30px, var(--alvo)); border-radius: 999px; }
+.stepper button .ic { width: 15px; height: 15px; stroke-width: 2.4; }
+@media (hover: hover) { .stepper button:hover { background: var(--lente-leve); } }
+.stepper button:active { background: var(--lente); }
+.stepper i { width: .5px; height: 16px; background: var(--sep-forte); }
+.form .seg > :is(button, label) { padding: 0 4px; font-size: .875rem; }
+.form-linha:not(.col) .seg { flex: 0 1 220px; }
+@media (max-width: 699px) {
+  /* celular: valor e passo cabem ao lado do rótulo (o passo mantém 44 px no toque) */
+  .passo { gap: 6px; }
+  .passo input { width: 2.9em; padding: 0 2px; }
+  .passo .un { min-width: 0; }
+  .folha-corpo { padding-bottom: max(26px, calc(env(safe-area-inset-bottom) + 12px)); }
+}
+/* data e hora não usam a largura do passo (sairiam cortadas). Depois da
+   regra do celular, para valer nos dois tamanhos */
+.passo input[type="date"], .passo input[type="time"] { width: auto; padding: 0 10px; }
+/* celular estreito: os 7 dias dividem a largura e cada um mantém 44 px */
+@media (max-width: 419px) {
+  .folha-corpo { padding-inline: 12px; }
+  .form-dias { margin-inline: -8px; width: calc(100% + 16px); }
+}
+
+/* <dialog> com showModal(). Largura FIXA no largo: todas as folhas com 540 px */
+dialog.dlg { margin: auto; padding: 0; border: 0; background: transparent; color: var(--ink); width: min(540px, calc(100% - 32px)); max-width: none; max-height: none; overflow: visible; }
+dialog.dlg .folha { width: 100%; }
+dialog.dlg::backdrop { background: var(--scrim); animation: esmaece .2s ease-out; }
+dialog.dlg[open] .folha { animation: surge .3s var(--mola) both; }
+dialog.dlg.fechando .folha { animation: some .18s cubic-bezier(.4, 0, 1, 1) forwards; }
+dialog.dlg.fechando::backdrop { animation: apaga .18s ease-in forwards; }
+/* com a folha aberta, a página de trás não rola */
+:root:has(dialog[open]) { overflow: hidden; }
+@media (max-width: 699px) {
+  dialog.dlg { width: 100%; max-width: 100%; margin: auto 0 0; }
+  .folha { width: 100%; border-radius: var(--raio-folha) var(--raio-folha) 0 0; }
+  .folha-alca { display: block; }
+  .folha-cab { padding-top: 6px; }
+  dialog.dlg[open] .folha { animation: sobe .38s var(--mola) both; }
+  dialog.dlg.fechando .folha { animation: desce .22s cubic-bezier(.4, 0, 1, 1) forwards; }
+}
+
+/* 10. ESTADOS ---------------------------------------------------------------- */
+/* carregando: a moldura fica; os cartões viram formas nos lugares reais */
+.esq { display: block; border-radius: 8px; background: var(--fill); animation: pulso 1.6s ease-in-out infinite; }
+.esq-pilula { width: 64px; height: 20px; border-radius: 999px; margin: 9px 6px; }
+.esq-grade { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 14px; margin-top: 12px; }
+.esq-coluna { display: grid; gap: 14px; align-content: start; }
+.esq-cartao { display: grid; gap: 12px; align-content: start; padding: 18px; border-radius: 22px; background: var(--surface); }
+.esq-campo { display: grid; gap: 12px; margin-top: calc(-1 * var(--h-barra)); padding: calc(var(--h-barra) + 28px) var(--calha) 40px; background: var(--fill); }
+.esq-divisao { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(0, 2.4fr); gap: 24px; width: min(var(--larg), 100%); margin: 24px auto 0; padding: 0 var(--calha); }
+@media (max-width: 699px) {
+  .esq-grade { grid-template-columns: minmax(0, 1fr); }
+  .esq-grade > .esq-cartao { order: -1; } /* na ordem do celular: Pomodoro em cima */
+  .esq-campo { margin-top: 0; padding-top: 74px; }
+  .esq-divisao { grid-template-columns: minmax(0, 1fr); }
+  .esq-divisao > .esq-roteiro { display: none; }
+}
+
+/* erro geral e página não encontrada: centralizados na tela inteira */
+.tela-erro { display: grid; place-items: center; min-height: 100dvh; padding: var(--calha); }
+.tela-erro-in { display: grid; justify-items: center; gap: 6px; max-width: 320px; text-align: center; }
+.tela-erro-in > .ic { width: 40px; height: 40px; stroke-width: 1.6; color: var(--ink-2); margin-bottom: 6px; }
+.tela-erro-titulo { font: 600 1.25rem/1.25 var(--fonte-titulo); letter-spacing: -0.012em; }
+.tela-erro-in p { color: var(--ink-2); font-size: 1rem; }
+.tela-erro-in .codigo { font-size: .8125rem; user-select: all; }
+.tela-erro-in .btn { margin-top: 14px; }
+
+/* login (derivado dos tokens: o mockup não tem esta tela) */
+.login { display: grid; place-items: center; min-height: 100dvh; padding: var(--calha); background: var(--bg); }
+.login-cartao { width: min(420px, 100%); padding: 28px 24px; }
+.login-titulo { font: 700 1.875rem/1.1 var(--fonte-titulo); letter-spacing: var(--ls-titulo); }
+.login-texto { margin: 6px 0 22px; font-size: .9375rem; line-height: 1.47; color: var(--ink-2); }
+.login-form { display: grid; gap: 8px; }
+.login-rotulo { font-size: .9375rem; font-weight: 600; }
+.login-campo { min-height: 50px; padding: 0 16px; border: 0; border-radius: 12px; background: var(--fill); color: var(--ink); font-size: 1.0625rem; }
+.login-campo::placeholder { color: var(--ink-2); }
+.login-form .btn { margin-top: 12px; }
+.login-enviado { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; padding: 16px; border-radius: 16px; background: var(--fill); }
+.login-enviado .ic { width: 22px; height: 22px; color: var(--acao); grid-row: span 2; }
+.login-enviado strong { font-weight: 600; }
+.login-enviado p { font-size: .9375rem; color: var(--ink-2); }
+.login-enviado p b { color: var(--ink); font-weight: 600; }
+.login .form-erro { margin: 14px 0 0; }
+.login-detalhe { display: block; margin-top: 4px; font-size: .8125rem; color: var(--ink-2); }
+.login-pe { margin-top: 20px; padding-top: 16px; border-top: .5px solid var(--sep); font-size: .9375rem; color: var(--ink-2); }
+.login-pe a { color: var(--acao); font-weight: 600; }
+
+/* calhas: no iPhone deitado, somam a área segura dos lados */
+.miolo, .campo-in, .divisao { padding-left: max(var(--calha), env(safe-area-inset-left)); padding-right: max(var(--calha), env(safe-area-inset-right)); }
+
+/* 12. PREFERÊNCIAS: MOVIMENTO, TRANSPARÊNCIA, CONTRASTE, CORES FORÇADAS -------
+   Ficam no FIM do arquivo para vencer as regras que sobrepõem (ex.: .menu e
+   .pop redefinem --vidro-blur lá em cima). O blur é desligado pelas
+   VARIÁVEIS, porque é a variável que o estilo inline lê. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  /* deslocamento vira esmaecer; a pressão continua (feedback, não enfeite) */
+  .menu[data-abrindo], .pop[data-abrindo] { animation-name: esmaece; }
+  dialog.dlg[open] .folha { animation: esmaece .2s ease-out both !important; }
+  dialog.dlg.fechando .folha { animation: apaga .16s ease-in forwards !important; }
+  .seg-thumb, .abas-lente { transition: opacity .2s ease-out; }
+  .abas[data-pressao] .abas-lente { scale: 1; }
+  .bloco-chev, .sessoes-botao .ic, .conta .ic-chev { transition: none; }
+  .esq { animation: none; }
+  .barra-p > i { transition: none; }
+  /* chama acendendo: sem crescer, tremular nem brilhar; só o cinza vira laranja */
+  .const-topo .chama:not(.apagada) { animation: none; }
+  .const-topo .chama:not(.apagada) > .chama-fogo { animation: fogo-entra .35s ease-out backwards; }
+  /* o anel ao somar tempo NÃO entra aqui: ele sempre anima (data-subindo="suave") */
+}
+@media (prefers-reduced-transparency: reduce) {
+  :root, .menu, .pop { --vidro-blur: none; }
+  :root { --borda-blur: none; }
+  .vidro { background: var(--surface-2) !important; }
+  .barra-borda { background: var(--bg) !important; -webkit-mask-image: none !important; mask-image: none !important; box-shadow: 0 .5px 0 var(--sep); }
+}
+@media (prefers-contrast: more) {
+  :root, .menu, .pop { --vidro-blur: none; }
+  .vidro { background: var(--surface-2) !important; box-shadow: inset 0 0 0 1px var(--ink-2), var(--sombra-flutuante); }
+}
+@media (forced-colors: active) {
+  .marca input { appearance: auto; -webkit-appearance: auto; border: 0; }
+  .marca-v { display: none; }
+  .seg-thumb, .abas-lente { forced-color-adjust: none; background: SelectedItem; box-shadow: none; }
+  .seg > button[aria-pressed="true"], .seg > label:has(input:checked), .abas a[aria-current="page"] { forced-color-adjust: none; color: SelectedItemText; }
+  .seg > label:has(input:focus-visible) { outline-color: Highlight; }
+  /* dias que contam: o ligado é Highlight cheio, com contorno */
+  .seg.multi > button[aria-pressed="true"] { forced-color-adjust: none; background: Highlight; color: HighlightText; box-shadow: none; outline: 1px solid HighlightText; outline-offset: -3px; }
+  .seg.multi > button[aria-pressed="true"]:focus-visible { outline: 2px solid CanvasText; outline-offset: 1px; }
+  .barra-p { border: 1px solid CanvasText; }
+  .barra-p > i { forced-color-adjust: none; background: Highlight; }
+  .vidro, .folha, .cartao, .bloco, .roteiro { border: 1px solid CanvasText; }
+  :focus-visible { outline-color: Highlight; }
 }
