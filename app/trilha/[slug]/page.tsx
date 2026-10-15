@@ -1,19 +1,16 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BarraProgresso } from "@/components/BarraProgresso";
-import { Barra } from "@/components/Barra";
+import { Abas } from "@/components/Abas";
+import { Barra, destinosDasAbas } from "@/components/Barra";
 import { ListaBlocos, type BlocoTela } from "@/components/ListaBlocos";
 import { carregarPainel } from "@/lib/dados";
-import {
-  blocosConcluidos,
-  itensPorBloco,
-  progressoDaTrilha,
-} from "@/lib/progress";
+import { blocosConcluidos, itensPorBloco } from "@/lib/progress";
+import { semEmoji } from "@/lib/texto";
+import { varsDaTrilha } from "@/lib/tons";
 
-// Tela de uma trilha. A identidade aqui é a COR da trilha: a página inteira
-// ganha um brilho suave dela no topo (.trilha-fundo), o título vem colorido
-// e blocos, tags e checkboxes seguem a mesma cor. Os blocos continuam sendo
-// cards neutros — o contraste é o que mantém a leitura fácil.
+// Tela de uma trilha. A identidade é a COR da trilha: o campo (cabeçalho)
+// pintado nela, com o vidro das abas escuro por cima; o nome do bloco
+// escolhido, as barras e os círculos marcados seguem a mesma cor. Os
+// blocos são cartões neutros — o contraste mantém a leitura fácil.
 // Visitante sem login VÊ tudo, mas não marca.
 export default async function TelaTrilha({
   params,
@@ -28,17 +25,13 @@ export default async function TelaTrilha({
   if (!trilha) notFound();
 
   // conclusão é calculada sobre TODOS os blocos (o pré-requisito cruzado
-  // da IA Etapa 2 depende de um bloco da trilha Dev)
+  // da IA Carreira 2 depende de um bloco da trilha Dev)
   const porBloco = itensPorBloco(blocks, groups, items, feitos);
   const concluidos = blocosConcluidos(porBloco);
 
   const blocosDaTrilha = blocks
     .filter((b) => b.track_id === trilha.id)
     .sort((a, b) => a.ordem - b.ordem);
-
-  const progressoTotal = progressoDaTrilha(
-    blocosDaTrilha.map((b) => porBloco.get(b.id) ?? [])
-  );
 
   // rótulo de um pré-requisito; prefixa a trilha quando é de outra
   function rotuloDoBloco(id: string): string {
@@ -75,57 +68,30 @@ export default async function TelaTrilha({
   );
 
   return (
-    <main
-      className="trilha-fundo min-h-dvh"
-      style={{ "--cor": trilha.cor } as React.CSSProperties}
+    // .com-cor e varsDaTrilha no MESMO elemento. data-sobre-campo já nasce
+    // aqui (o campo sempre começa debaixo da barra): sem isso as abas
+    // piscariam claras a cada carga antes de escurecer
+    <div
+      className="app com-cor"
+      style={varsDaTrilha(trilha.cor)}
+      data-app
+      data-trilha-app=""
+      data-sobre-campo=""
     >
-      <div className="mx-auto flex w-full max-w-[1320px] flex-col px-[clamp(14px,2.5vw,40px)] py-[clamp(12px,2vh,24px)]">
-        <Barra email={user?.email ?? null} tracks={tracks} atual={trilha.slug} />
-
-        {/* Hero aberto (sem card): título colorido + descrição + progresso */}
-        <div
-          className="com-cor mb-5 px-1"
-          style={{ "--cor": trilha.cor } as React.CSSProperties}
-        >
-          <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
-            <h2
-              className="text-[clamp(24px,3.2vw,34px)] font-bold tracking-[-0.02em]"
-              style={{ color: "var(--cor-texto)" }}
-            >
-              {trilha.nome}
-            </h2>
-            <span
-              className="text-[clamp(18px,2vw,22px)] font-semibold tabular-nums"
-              style={{ color: user ? "var(--cor-texto)" : "var(--ink-2)" }}
-            >
-              {user ? `${Math.round(progressoTotal * 100)}%` : ""}
-            </span>
-          </div>
-          {trilha.descricao && (
-            <p className="mb-4 max-w-[70ch] text-[14px] leading-relaxed text-tinta2">
-              {trilha.descricao}
-            </p>
-          )}
-          <BarraProgresso fracao={user ? progressoTotal : 0} />
-          {!user && (
-            <p className="mt-3 text-[12px] text-tinta2">
-              Você está no modo visualização.{" "}
-              <Link href="/login" className="font-medium text-acao">
-                Entre
-              </Link>{" "}
-              para marcar seu progresso.
-            </p>
-          )}
-        </div>
-
+      <Barra email={user?.email ?? null} tracks={tracks} atual={trilha.slug} />
+      <main className="conteudo">
         <ListaBlocos
+          trilha={{
+            nome: semEmoji(trilha.nome),
+            descricao: trilha.descricao ? semEmoji(trilha.descricao) : null,
+          }}
           blocos={blocosParaTela}
           feitosIniciais={[...feitos]}
           concluidosForaDaTrilha={concluidosForaDaTrilha}
-          cor={trilha.cor}
           userId={user?.id ?? null}
         />
-      </div>
-    </main>
+      </main>
+      <Abas destinos={destinosDasAbas(tracks, trilha.slug)} posicao="pe" />
+    </div>
   );
 }

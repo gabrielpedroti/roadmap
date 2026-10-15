@@ -1,14 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { blocoInicial, fonteDoGrupo, fonteEfetiva, textoDoPct } from "@/lib/blocos";
 import {
   blocoConcluido,
   blocoDesbloqueado,
+  progressoDaTrilha,
   progressoDoBloco,
   type ItemProgresso,
 } from "@/lib/progress";
+import { semEmoji } from "@/lib/texto";
 import type {
   Block,
   Fonte,
@@ -18,6 +22,7 @@ import type {
   Plataforma,
 } from "@/lib/types";
 import { BarraProgresso } from "./BarraProgresso";
+import { Icone } from "./Icone";
 
 // Cores OFICIAIS de cada marca (conferidas em out/2026 no Simple Icons ou no
 // site/logo da própria marca). A mesma marca tem a mesma cor nos dois mapas.
@@ -33,26 +38,28 @@ const COR = {
 };
 type Marca = keyof typeof COR;
 
-// Tom da LETRA ajustado, só onde a cor oficial (escurecida no claro /
-// clareada no escuro pelo .com-cor) fica abaixo de 4.5:1 sobre o fundo do
-// chip. Mesmo matiz da marca; o fundo do chip continua na cor oficial.
+// Tom da LETRA ajustado, só onde a regra geral (78% da cor com preto no
+// claro, 65% com branco no escuro: .com-marca no globals.css) fica abaixo de
+// 4.5:1 sobre o fundo do chip. Mesmo matiz da marca.
 const LETRA: Partial<Record<Marca, { claro?: string; escuro?: string }>> = {
   pucpr: { escuro: "#C37884" },
   alura: { escuro: "#6E86E5" },
   dio: { escuro: "#B07AD1" },
   claude: { claro: "#A15840" },
+  fiap: { claro: "#c5134f" }, // menos escuro que a PUC: o magenta não vira vinho
   hackerrank: { claro: "#008137" },
+  coursera: { escuro: "#73a2e6" }, // 55% da cor com branco
   deeplearning: { claro: "#C0384A" },
 };
 
-// Variáveis CSS da marca para um elemento .com-cor (ver app/globals.css)
-function varsDaMarca(marca: Marca) {
+// Variáveis CSS da marca, para um elemento com a classe .com-marca
+function varsDaMarca(marca: Marca): CSSProperties {
   const letra = LETRA[marca];
   return {
     "--cor": COR[marca],
     ...(letra?.claro && { "--cor-texto-claro": letra.claro }),
     ...(letra?.escuro && { "--cor-texto-escuro": letra.escuro }),
-  };
+  } as CSSProperties;
 }
 
 // Nome e marca de cada plataforma nos chips de "onde estudar"
@@ -82,152 +89,305 @@ export type BlocoTela = Block & {
   grupos: (ItemGroup & { itens: Item[] })[];
 };
 
-// Lista de blocos da trilha. Marca/desmarca com update OTIMISTA: o estado
-// local muda na hora (barras e desbloqueio recalculam via lib/progress) e o
-// Supabase persiste em seguida — se falhar, reverte.
+// Tela da trilha: o campo colorido (com o progresso da trilha) e a divisão.
+// - Largo (container ≥ 820 px): o roteiro (todos os blocos) à esquerda e o
+//   bloco escolhido à direita, sempre aberto.
+// - Estreito: acordeão (cada bloco abre e fecha).
+// Marca/desmarca com update OTIMISTA: o estado local muda na hora (barras,
+// % e desbloqueio recalculam via lib/progress) e o Supabase grava em
+// seguida — se falhar, reverte e mostra o erro na própria linha.
 // `userId` null = visitante: tudo visível, checkboxes desabilitados.
 export function ListaBlocos({
+  trilha,
   blocos,
   feitosIniciais,
   concluidosForaDaTrilha,
-  cor,
   userId,
 }: {
+  trilha: { nome: string; descricao: string | null };
   blocos: BlocoTela[];
   feitosIniciais: string[];
   concluidosForaDaTrilha: string[];
-  cor: string;
   userId: string | null;
 }) {
   const router = useRouter();
   const [feitos, setFeitos] = useState(() => new Set(feitosIniciais));
-  const [expandidos, setExpandidos] = useState<Set<string>>(() => {
-    // começa com o primeiro bloco ainda não concluído aberto
-    const inicial = calcularEstado(
-      blocos,
-      new Set(feitosIniciais),
-      concluidosForaDaTrilha
-    );
-    const primeiro = blocos.find((b) => {
-      const info = inicial.get(b.id);
-      return info && info.desbloqueado && !info.concluido;
-    });
-    return new Set(primeiro ? [primeiro.id] : []);
-  });
+  // bloco que começa escolhido (largo) e aberto (acordeão)
+  const [inicial] = useState(() =>
+    blocoInicial(
+      blocos.map((b) => b.id),
+      calcularEstado(blocos, new Set(feitosIniciais), concluidosForaDaTrilha)
+    )
+  );
+  const [escolhido, setEscolhido] = useState<string | null>(inicial);
+  const [abertos, setAbertos] = useState<Set<string>>(
+    () => new Set(inicial ? [inicial] : [])
+  );
+  // largo = o roteiro está visível (o CSS decide pela largura do container)
+  const [largo, setLargo] = useState(false);
+  // item cuja gravação falhou: o aviso aparece na linha dele
+  const [erroItem, setErroItem] = useState<{ itemId: string; marcar: boolean } | null>(null);
+  const divisaoRef = useRef<HTMLDivElement>(null);
 
   const estado = calcularEstado(blocos, feitos, concluidosForaDaTrilha);
   const somenteLeitura = userId === null;
+  const progressoTotal = progressoDaTrilha(
+    blocos.map((b) =>
+      b.grupos.flatMap((g) => g.itens.map((i) => ({ tipo: i.tipo, feito: feitos.has(i.id) })))
+    )
+  );
 
-  function alternarExpandido(blocoId: string) {
-    const novos = new Set(expandidos);
+  // Largo: o cabeçalho do bloco deixa de ser botão (quem escolhe é o
+  // roteiro). O servidor renderiza o acordeão; o CSS já mostra o certo antes
+  // do JavaScript, e aqui só se ajusta a semântica.
+  useEffect(() => {
+    const divisao = divisaoRef.current;
+    const roteiro = divisao?.querySelector(".roteiro");
+    if (!divisao || !roteiro) return;
+    const ro = new ResizeObserver(() =>
+      setLargo(getComputedStyle(roteiro).display !== "none")
+    );
+    ro.observe(divisao);
+    return () => ro.disconnect();
+  }, []);
+
+  function alternarAberto(blocoId: string) {
+    const novos = new Set(abertos);
     if (novos.has(blocoId)) novos.delete(blocoId);
     else novos.add(blocoId);
-    setExpandidos(novos);
+    setAbertos(novos);
   }
 
-  async function alternarItem(item: Item, bloqueado: boolean) {
-    if (bloqueado || somenteLeitura) return;
+  // roteiro: mostra o bloco à direita; se o topo dele estiver fora da tela,
+  // rola até ele (instantâneo com movimento reduzido)
+  function escolher(blocoId: string) {
+    setEscolhido(blocoId);
+    setAbertos(new Set(abertos).add(blocoId));
+    requestAnimationFrame(() => {
+      const alvo = document.getElementById(`bloco-${blocoId}`);
+      if (!alvo) return;
+      const topo = alvo.getBoundingClientRect().top;
+      if (topo < 80 || topo > window.innerHeight) {
+        const reduzido = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        alvo.scrollIntoView({ block: "start", behavior: reduzido ? "auto" : "smooth" });
+      }
+    });
+  }
 
-    const estavaMarcado = feitos.has(item.id);
+  // grava um check (marcar = true) ou o remove; otimista, com reversão
+  async function salvarItem(itemId: string, marcar: boolean) {
     const novos = new Set(feitos);
-    if (estavaMarcado) novos.delete(item.id);
-    else novos.add(item.id);
+    if (marcar) novos.add(itemId);
+    else novos.delete(itemId);
     setFeitos(novos); // otimista: a tela responde antes do banco
 
     const supabase = createClient();
-    const { error } = estavaMarcado
-      ? await supabase
+    const { error } = marcar
+      ? await supabase.from("user_checks").insert({ user_id: userId!, item_id: itemId })
+      : await supabase
           .from("user_checks")
           .delete()
           .eq("user_id", userId!)
-          .eq("item_id", item.id)
-      : await supabase
-          .from("user_checks")
-          .insert({ user_id: userId!, item_id: item.id });
+          .eq("item_id", itemId);
 
     if (error) {
       setFeitos(feitos); // deu ruim → volta como estava
+      setErroItem({ itemId, marcar }); // e diz o porquê, na linha do item
     } else {
-      router.refresh(); // mantém o % do dashboard em dia ao voltar
+      setErroItem(null); // um salvamento que deu certo limpa o aviso
+      router.refresh(); // mantém o % da Home em dia ao voltar
     }
   }
 
+  function alternarItem(item: Item, bloqueado: boolean) {
+    if (bloqueado || somenteLeitura) return;
+    salvarItem(item.id, !feitos.has(item.id));
+  }
+
+  // "Tentar de novo" repete a MESMA ação (marcar ou desmarcar)
+  function tentarDeNovo() {
+    if (!erroItem) return;
+    if (feitos.has(erroItem.itemId) === erroItem.marcar) {
+      setErroItem(null); // já está como deveria
+      return;
+    }
+    salvarItem(erroItem.itemId, erroItem.marcar);
+  }
+
   return (
-    <div>
-      {blocos.map((bloco) => {
-        const info = estado.get(bloco.id)!;
-        const bloqueado = !info.desbloqueado;
-        const aberto = expandidos.has(bloco.id);
+    <>
+      <div className="campo">
+        <div className="campo-in">
+          <h1 className="campo-titulo">{trilha.nome}</h1>
+          {trilha.descricao && <p className="campo-desc">{trilha.descricao}</p>}
+          {somenteLeitura ? (
+            <p className="campo-visit">
+              Você está no modo visualização. <Link href="/login">Entre</Link>{" "}
+              para marcar seu progresso.
+            </p>
+          ) : (
+            <div className="campo-prog">
+              <span className="campo-pct tab">{Math.round(progressoTotal * 100)}%</span>
+              <span className="campo-rot">concluído</span>
+              <BarraProgresso
+                fracao={progressoTotal}
+                rotulo={`Progresso da trilha ${trilha.nome}`}
+              />
+            </div>
+          )}
+        </div>
+      </div>
 
-        // só mostra os pré-requisitos que ainda FALTAM
-        const faltando = [
-          !info.prereqOk ? bloco.prereqRotulo : null,
-          !info.crossOk ? bloco.crossRotulo : null,
-        ].filter(Boolean);
+      {/* trilha recém-criada, ainda sem blocos: só o campo (sem o
+          cartão "Blocos" vazio do roteiro no largo) */}
+      {blocos.length > 0 && (
+        <div className="divisao" ref={divisaoRef}>
+          <div className="divisao-grade">
+            <nav className="roteiro" aria-label={`Blocos da trilha ${trilha.nome}`}>
+              <h2 className="roteiro-cab">Blocos</h2>
+              <ol className="roteiro-lista">
+                {blocos.map((bloco) => {
+                  const info = estado.get(bloco.id)!;
+                  const bloqueado = !info.desbloqueado;
+                  return (
+                    <li key={bloco.id}>
+                      <button
+                        type="button"
+                        className={bloqueado ? "rot-item bloqueado" : "rot-item"}
+                        aria-controls={`bloco-${bloco.id}`}
+                        aria-current={escolhido === bloco.id ? "true" : undefined}
+                        onClick={() => escolher(bloco.id)}
+                      >
+                        <span className="rot-titulo">
+                          <Icone nome="cadeado" className="rot-cad" />
+                          <span>{semEmoji(bloco.titulo)}</span>
+                        </span>
+                        <span className="rot-meta">
+                          <span>{bloco.semanas_estimadas ?? ""}</span>
+                          <span className="tab">
+                            {textoDoPct({
+                              logado: !somenteLeitura,
+                              bloqueado,
+                              progresso: info.progresso,
+                              semanas: bloco.semanas_estimadas,
+                              noRoteiro: true,
+                            })}
+                          </span>
+                        </span>
+                        {!somenteLeitura && <BarraProgresso fracao={info.progresso} />}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ol>
+            </nav>
 
-        return (
-          <div
-            key={bloco.id}
-            className={`cartao mb-[10px] ${bloqueado ? "opacity-55 grayscale" : ""}`}
-          >
-            <button
-              onClick={() => alternarExpandido(bloco.id)}
-              className="w-full cursor-pointer p-[clamp(13px,1.3vw,18px)] text-left"
-            >
-              <div className="mb-2 flex items-baseline justify-between gap-2">
-                <span className="text-[14px] font-medium text-tinta">
-                  <span className="mr-1 text-tinta2">{aberto ? "▾" : "▸"}</span>
-                  {bloqueado && "🔒 "}
-                  {bloco.titulo}
-                </span>
-                <span className="shrink-0 text-[13px] tabular-nums text-tinta2">
-                  {somenteLeitura ? "—" : `${Math.round(info.progresso * 100)}%`}
-                </span>
-              </div>
-              <BarraProgresso fracao={somenteLeitura ? 0 : info.progresso} />
-              {bloco.semanas_estimadas && (
-                <div className="mt-2 text-[12px] text-tinta2">
-                  {bloco.semanas_estimadas}
-                </div>
-              )}
-            </button>
+            <div className="blocos">
+              {blocos.map((bloco) => {
+                const info = estado.get(bloco.id)!;
+                const bloqueado = !info.desbloqueado;
+                const aberto = abertos.has(bloco.id);
+                // só mostra os pré-requisitos que ainda FALTAM
+                const faltando = [
+                  !info.prereqOk ? bloco.prereqRotulo : null,
+                  !info.crossOk ? bloco.crossRotulo : null,
+                ].filter(Boolean);
+                const classes = ["bloco", bloqueado && "bloqueado", escolhido === bloco.id && "sel"]
+                  .filter(Boolean)
+                  .join(" ");
 
-            {bloqueado && faltando.length > 0 && (
-              <div className="px-[clamp(14px,1.6vw,20px)] pb-3 text-[12px] text-tinta2">
-                antes de começar: conclua {faltando.join(" e ")}
-              </div>
-            )}
+                return (
+                  <section
+                    key={bloco.id}
+                    id={`bloco-${bloco.id}`}
+                    className={classes}
+                    data-aberto={aberto ? "" : undefined}
+                    aria-labelledby={`bloco-${bloco.id}-t`}
+                  >
+                    {/* <h2><button>: quem navega por títulos acha cada bloco.
+                        No largo o botão vira só título (desligado, sem papel) */}
+                    <h2 className="bloco-h">
+                      <button
+                        type="button"
+                        className="bloco-cab"
+                        {...(largo
+                          ? { disabled: true, role: "none" }
+                          : { "aria-expanded": aberto, "aria-controls": `bloco-${bloco.id}-c` })}
+                        onClick={() => alternarAberto(bloco.id)}
+                      >
+                        <span className="bloco-l1">
+                          <Icone nome="chev-dir" className="bloco-chev" />
+                          <Icone nome="cadeado" className="bloco-cad" />
+                          <span className="bloco-titulo" id={`bloco-${bloco.id}-t`}>
+                            {semEmoji(bloco.titulo)}
+                          </span>
+                          <span className="bloco-pct tab">
+                            {textoDoPct({
+                              logado: !somenteLeitura,
+                              bloqueado,
+                              progresso: info.progresso,
+                              semanas: bloco.semanas_estimadas,
+                              noRoteiro: false,
+                            })}
+                          </span>
+                        </span>
+                        {/* visitante: nenhum % e nenhuma barra (as semanas vão no espaço do %) */}
+                        {!somenteLeitura && <BarraProgresso fracao={info.progresso} />}
+                        {!somenteLeitura && bloco.semanas_estimadas && (
+                          <span className="bloco-meta">{bloco.semanas_estimadas}</span>
+                        )}
+                      </button>
+                    </h2>
 
-            {aberto && (
-              <div className="border-t border-hairline px-[clamp(14px,1.6vw,20px)] pb-[clamp(14px,1.6vw,20px)]">
-                {bloco.descricao && (
-                  <p className="pt-3 text-[12px] text-tinta2">
-                    {bloco.descricao}
-                  </p>
-                )}
-                {bloco.grupos.map((grupo) => (
-                  <div key={grupo.id} className="pt-4">
-                    <div className="mb-1 text-[12px] font-semibold text-tinta2">
-                      {grupo.titulo}
+                    {bloqueado && faltando.length > 0 && (
+                      <p className="bloco-trava">
+                        <Icone nome="cadeado" />
+                        <span>
+                          Antes de começar: conclua {faltando.map((r) => semEmoji(r!)).join(" e ")}
+                        </span>
+                      </p>
+                    )}
+
+                    <div className="bloco-corpo" id={`bloco-${bloco.id}-c`}>
+                      {bloco.descricao && <p className="bloco-desc">{semEmoji(bloco.descricao)}</p>}
+                      {bloco.grupos.map((grupo) => {
+                        // todos com a mesma fonte: a tag sobe para o título do grupo
+                        const fonteGrupo = fonteDoGrupo(grupo.itens);
+                        const tagGrupo = fonteGrupo ? TAGS_FONTE[fonteGrupo] : null;
+                        const ehProjeto =
+                          grupo.itens.length > 0 && grupo.itens.every((i) => i.tipo === "project");
+                        return (
+                          <section key={grupo.id} className={ehProjeto ? "grupo grupo-projeto" : "grupo"}>
+                            <h3 className="grupo-titulo">
+                              {semEmoji(grupo.titulo)}
+                              {tagGrupo && <Tag texto={tagGrupo.texto} marca={tagGrupo.marca} />}
+                            </h3>
+                            <ul className="lista">
+                              {grupo.itens.map((item) => (
+                                <LinhaItem
+                                  key={item.id}
+                                  item={item}
+                                  marcado={feitos.has(item.id)}
+                                  desabilitado={bloqueado || somenteLeitura}
+                                  mostrarFonte={!tagGrupo}
+                                  onAlternar={() => alternarItem(item, bloqueado)}
+                                  comErro={erroItem?.itemId === item.id}
+                                  onTentarDeNovo={tentarDeNovo}
+                                />
+                              ))}
+                            </ul>
+                          </section>
+                        );
+                      })}
                     </div>
-                    {grupo.itens.map((item) => (
-                      <LinhaItem
-                        key={item.id}
-                        item={item}
-                        marcado={feitos.has(item.id)}
-                        desabilitado={bloqueado || somenteLeitura}
-                        cor={cor}
-                        onAlternar={() => alternarItem(item, bloqueado)}
-                      />
-                    ))}
-                  </div>
-                ))}
-              </div>
-            )}
+                  </section>
+                );
+              })}
+            </div>
           </div>
-        );
-      })}
-    </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -272,130 +432,117 @@ function calcularEstado(
   );
 }
 
-// Tag colorida (bg suave + texto na cor) ou neutra (borda fina)
-function Tag({ texto, marca }: { texto: string; marca?: Marca }) {
+// Tag de fonte (fundo opaco na cor da marca) ou neutra ("opcional", contorno)
+function Tag({ id, texto, marca }: { id?: string; texto: string; marca?: Marca }) {
   if (!marca) {
     return (
-      <span className="ml-2 rounded-full border border-hairline px-2 py-[2px] align-middle text-[10px] font-medium text-tinta2">
+      <span id={id} className="tag tag-neutra">
         {texto}
       </span>
     );
   }
   return (
-    <span
-      className="com-cor ml-2 rounded-full px-2 py-[2px] align-middle text-[10px] font-semibold"
-      style={
-        {
-          ...varsDaMarca(marca),
-          background: "var(--cor-fundo)",
-          color: "var(--cor-texto)",
-        } as React.CSSProperties
-      }
-    >
+    <span id={id} className="tag com-marca" style={varsDaMarca(marca)}>
       {texto}
     </span>
   );
 }
 
 // Chip de "onde estudar": Alura · Trilha: Nome  |  Alura · Nome (curso)
-// |  PUC · Nome (matéria). A palavra "Trilha:" só aparece pra trilha —
-// curso e matéria mostram só o nome.
+// |  PUC · Nome (matéria). A palavra "Trilha:" só aparece pra trilha.
 function ChipOndeEstudar({ fonte }: { fonte: OndeEstudar }) {
   const p = PLATAFORMAS[fonte.plataforma];
   // plataforma que o banco já tem mas este código ainda não conhece (migration
   // rodada antes do deploy): esconde o chip em vez de derrubar a página
   if (!p) return null;
   return (
-    <span
-      className="com-cor inline-flex items-center gap-[5px] rounded-full px-[10px] py-[3px] text-[11px]"
-      style={
-        {
-          ...varsDaMarca(p.marca),
-          background: "var(--cor-fundo)",
-          color: "var(--cor-texto)",
-        } as React.CSSProperties
-      }
-    >
-      <span className="font-extrabold">{p.nome}</span>
-      <span className="opacity-50">·</span>
-      {fonte.tipo === "trilha" && (
-        <span className="font-medium opacity-80">Trilha:</span>
-      )}
-      <span className="font-semibold">{fonte.nome}</span>
+    <span className="chip com-marca" style={varsDaMarca(p.marca)}>
+      <b>{p.nome}</b>
+      <span aria-hidden="true">·</span>
+      {fonte.tipo === "trilha" ? `Trilha: ${semEmoji(fonte.nome)}` : semEmoji(fonte.nome)}
     </span>
   );
 }
 
-// Uma linha de item, com o visual do seu tipo:
-// concept = check normal · optional = apagado + tag "opcional" ·
-// project = destaque com 🏗️. A tag da FONTE (Alura, DIO, ADS-PUCPR,
-// Anthropic) sai do campo `fonte` do item.
+// Uma linha de item: o círculo de marcar (estilo Lembretes), o título, as
+// tags, a descrição e os chips. concept = normal · optional = título cinza +
+// tag "opcional" + círculo tracejado · project = negrito + ícone ferramenta.
+// A tag da FONTE sai do campo `fonte` (ou subiu para o grupo).
 function LinhaItem({
   item,
   marcado,
   desabilitado,
-  cor,
+  mostrarFonte,
   onAlternar,
+  comErro,
+  onTentarDeNovo,
 }: {
   item: Item;
   marcado: boolean;
   desabilitado: boolean;
-  cor: string;
+  mostrarFonte: boolean;
   onAlternar: () => void;
+  comErro: boolean;
+  onTentarDeNovo: () => void;
 }) {
   const ehProjeto = item.tipo === "project";
   const ehOpcional = item.tipo === "optional";
-  // fallback: matéria de faculdade sem fonte gravada ainda cai em ADS-PUCPR
-  const fonte: Fonte | null =
-    item.fonte ?? (item.tipo === "review" ? "ads-pucpr" : null);
+  const fonte = mostrarFonte ? fonteEfetiva(item) : null;
   const tagFonte = fonte ? TAGS_FONTE[fonte] : null;
+  const base = `item-${item.id}`;
+  // o nome do checkbox: o título, mais as tags que estão na linha
+  const rotulos = [`${base}-t`, tagFonte && `${base}-f`, ehOpcional && `${base}-o`]
+    .filter(Boolean)
+    .join(" ");
+  const classes = ["item", ehProjeto && "projeto", ehOpcional && "opcional"]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <label
-      className={`com-cor flex items-start gap-2 py-1 ${
-        desabilitado ? "cursor-not-allowed" : "cursor-pointer"
-      } ${ehProjeto ? "my-1 rounded-xl bg-fundo p-3" : ""}`}
-      style={{ "--cor": cor } as React.CSSProperties}
-    >
-      <input
-        type="checkbox"
-        checked={marcado}
-        disabled={desabilitado}
-        onChange={onAlternar}
-        className="mt-[3px] shrink-0"
-        style={{ accentColor: "var(--cor-final)" }}
-      />
-      {/* Coluna de leitura limitada: sem isto a descrição de um item corre a
-          largura toda do card (~175 caracteres por linha em tela cheia), o
-          que é o dobro do confortável para ler. */}
-      <span className="min-w-0 max-w-[44rem]">
-        <span
-          className={`text-[13.5px] ${
-            ehOpcional
-              ? "text-tinta2"
-              : ehProjeto
-                ? "font-semibold text-tinta"
-                : "text-tinta"
-          } ${marcado && !ehProjeto ? "line-through opacity-60" : ""}`}
-        >
-          {ehProjeto && "🏗️ "}
-          {item.titulo}
+    <li className={classes}>
+      <label className="item-linha">
+        <span className="marca">
+          <input
+            type="checkbox"
+            checked={marcado}
+            disabled={desabilitado}
+            onChange={onAlternar}
+            aria-labelledby={rotulos}
+            aria-describedby={item.descricao ? `${base}-d` : undefined}
+          />
+          <Icone nome="visto" className="marca-v" />
         </span>
-        {tagFonte && <Tag texto={tagFonte.texto} marca={tagFonte.marca} />}
-        {ehOpcional && <Tag texto="opcional" />}
-        {item.descricao && (
-          <span className="block text-[12px] text-tinta2">
-            {item.descricao}
+        <span className="item-txt">
+          <span className="item-titulo" id={`${base}-t`}>
+            {ehProjeto && <Icone nome="ferramenta" className="ic-proj" />}
+            {semEmoji(item.titulo)}
           </span>
-        )}
-        {item.onde_estudar?.length > 0 && (
-          <span className="mt-[6px] flex flex-wrap gap-[5px]">
-            {item.onde_estudar.map((f, i) => (
-              <ChipOndeEstudar key={i} fonte={f} />
-            ))}
-          </span>
-        )}
-      </span>
-    </label>
+          {tagFonte && <Tag id={`${base}-f`} texto={tagFonte.texto} marca={tagFonte.marca} />}
+          {ehOpcional && <Tag id={`${base}-o`} texto="opcional" />}
+          {item.descricao && (
+            <span className="item-desc" id={`${base}-d`}>
+              {semEmoji(item.descricao)}
+            </span>
+          )}
+          {item.onde_estudar?.length > 0 && (
+            <span className="chips">
+              {item.onde_estudar.map((f, i) => (
+                <ChipOndeEstudar key={i} fonte={f} />
+              ))}
+            </span>
+          )}
+        </span>
+      </label>
+      {/* a gravação falhou: a marca já voltou; o motivo fica na própria linha */}
+      {comErro && (
+        <div className="erro-inline" role="alert">
+          <Icone nome="alerta" />
+          <p>Não deu para salvar este item. Confira a conexão e tente de novo.</p>
+          <button type="button" onClick={onTentarDeNovo}>
+            Tentar de novo
+          </button>
+        </div>
+      )}
+    </li>
   );
 }
