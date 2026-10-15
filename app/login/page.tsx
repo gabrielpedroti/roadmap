@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useId, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Icone } from "@/components/Icone";
 import { createClient } from "@/lib/supabase/client";
 
 // Tela única de login E cadastro: e-mail novo = conta criada automaticamente
 // (signInWithOtp com shouldCreateUser). Sem senha — só magic link.
 // Login é OPCIONAL: sem conta dá pra ver os roadmaps e usar o pomodoro;
 // a conta serve pra salvar progresso, sessões e streak.
+// Visual derivado dos tokens do padrão Apple (o mockup não tem esta tela).
 function FormularioLogin() {
   const [email, setEmail] = useState("");
   const [estado, setEstado] = useState<"inicial" | "enviando" | "enviado">(
@@ -17,6 +19,7 @@ function FormularioLogin() {
   const [erro, setErro] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const linkInvalido = searchParams.get("erro") === "link-invalido";
+  const campoId = useId();
 
   async function enviarLink(e: React.FormEvent) {
     e.preventDefault();
@@ -33,7 +36,7 @@ function FormularioLogin() {
     });
 
     if (error) {
-      setErro(error.message);
+      setErro(error.message); // vai como detalhe, embaixo do texto amigável
       setEstado("inicial");
     } else {
       setEstado("enviado");
@@ -41,57 +44,68 @@ function FormularioLogin() {
   }
 
   return (
-    <main className="flex min-h-dvh items-center justify-center px-4">
-      <div className="cartao w-full max-w-sm p-6">
-        <h1 className="text-[19px] font-semibold tracking-[-0.02em] text-tinta">
-          Roadmap
-        </h1>
-        <p className="mt-1 mb-6 text-[13px] text-tinta2">
-          Entre com seu e-mail pra salvar progresso, sessões e streak — sem
-          senha, você recebe um link de acesso.
+    <main className="login">
+      <div className="cartao login-cartao">
+        <h1 className="login-titulo">Roadmap</h1>
+        <p className="login-texto">
+          Entre com seu e-mail para salvar progresso, sessões e streak. Sem
+          senha: você recebe um link de acesso.
         </p>
 
         {estado === "enviado" ? (
-          <div className="rounded-xl border border-hairline bg-fundo p-4 text-[14px] text-tinta">
-            📬 Verifique seu e-mail
-            <p className="mt-1 text-[12px] text-tinta2">
-              Enviamos um link de acesso para <strong>{email}</strong>. Abra
-              neste mesmo navegador para continuar logado.
+          <div className="login-enviado" role="status">
+            <Icone nome="envelope" />
+            <strong>Verifique seu e-mail</strong>
+            <p>
+              Enviamos um link de acesso para <b>{email}</b>. Abra neste mesmo
+              navegador para continuar conectado.
             </p>
           </div>
         ) : (
-          <form onSubmit={enviarLink} className="flex flex-col gap-3">
+          <form onSubmit={enviarLink} className="login-form">
+            <label htmlFor={campoId} className="login-rotulo">
+              E-mail
+            </label>
             <input
+              id={campoId}
               type="email"
               required
               autoFocus
               placeholder="seu@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="rounded-xl border border-hairline bg-fundo px-3 py-[10px] text-[14px] text-tinta placeholder:text-tinta2 focus:border-tinta2 focus:outline-none"
+              className="login-campo"
             />
             <button
               type="submit"
               disabled={estado === "enviando"}
-              className="rounded-full bg-acao py-[11px] text-[14px] font-semibold text-white disabled:opacity-60"
+              aria-busy={estado === "enviando" || undefined}
+              className="btn btn-prim btn-largo"
             >
-              {estado === "enviando" ? "Enviando..." : "Enviar link de acesso"}
+              {estado === "enviando" ? "Enviando…" : "Enviar link de acesso"}
             </button>
           </form>
         )}
 
         {linkInvalido && estado === "inicial" && (
-          <p className="mt-3 text-[12px] text-red-400">
-            O link expirou ou já foi usado. Peça um novo.
+          <p className="form-erro" role="alert">
+            <Icone nome="alerta" />
+            <span>O link expirou ou já foi usado. Peça um novo.</span>
           </p>
         )}
-        {erro && <p className="mt-3 text-[12px] text-red-400">{erro}</p>}
+        {erro && (
+          <div className="form-erro" role="alert">
+            <Icone nome="alerta" />
+            <span>
+              Não deu para enviar o link. Confira o e-mail e tente de novo em
+              instantes.
+              <span className="login-detalhe">{erro}</span>
+            </span>
+          </div>
+        )}
 
-        <p className="mt-5 border-t border-hairline pt-4 text-[12px] text-tinta2">
-          Só olhando?{" "}
-          <Link href="/" className="font-medium text-acao">
-            Voltar pro painel sem entrar
-          </Link>
+        <p className="login-pe">
+          Só olhando? <Link href="/">Voltar para a Home sem entrar</Link>
         </p>
       </div>
     </main>
