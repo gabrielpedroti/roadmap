@@ -12,8 +12,8 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { semEmoji } from "@/lib/texto";
 import type { Track, UserSettings } from "@/lib/types";
+import { FolhaPomodoro } from "./FolhaPomodoro";
 import { Icone } from "./Icone";
-import { ModalConfigPomodoro } from "./ModalConfigPomodoro";
 import { Segmentado, type OpcaoSeg } from "./Segmentado";
 import { usePopover } from "./usePopover";
 import { Anel, type Subida } from "./pomodoro/Anel";
@@ -801,7 +801,7 @@ export function Pomodoro({
 
       {/* a folha fica fora da section do cartão */}
       {userId && (
-        <ModalConfigPomodoro
+        <FolhaPomodoro
           aberto={configAberta}
           onFechar={() => setConfigAberta(false)}
           settings={settings}

@@ -7,9 +7,9 @@ import { formatarHoras } from "@/lib/formato";
 import type { Track, UserSettings } from "@/lib/types";
 import { BarraProgresso } from "./BarraProgresso";
 import { Chama } from "./Chama";
+import { FolhaConstancia } from "./FolhaConstancia";
+import { FolhaRegistroManual } from "./FolhaRegistroManual";
 import { Icone } from "./Icone";
-import { ModalConfigConstancia } from "./ModalConfigConstancia";
-import { ModalRegistroManual } from "./ModalRegistroManual";
 
 // Card de Constância. Streak e metas são INDEPENDENTES: a chama e o número
 // medem constância (mínimo diário); as barras medem volume (horas).
@@ -115,13 +115,13 @@ export function Constancia({
       </section>
 
       {/* as folhas ficam fora da section do cartão */}
-      <ModalRegistroManual
+      <FolhaRegistroManual
         aberto={registroAberto}
         onFechar={() => setRegistroAberto(false)}
         trilhas={trilhas}
         userId={userId}
       />
-      <ModalConfigConstancia
+      <FolhaConstancia
         aberto={configAberta}
         onFechar={() => setConfigAberta(false)}
         settings={settings}

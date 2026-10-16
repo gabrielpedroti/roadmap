@@ -10,7 +10,7 @@ import { Passo } from "./Passo";
 // Folha "Tempos do pomodoro" (abre pela engrenagem do card Pomodoro). Só
 // edita os campos do pomodoro — os da constância passam intactos no upsert
 // da mesma linha user_settings.
-export function ModalConfigPomodoro({
+export function FolhaPomodoro({
   aberto,
   onFechar,
   settings,

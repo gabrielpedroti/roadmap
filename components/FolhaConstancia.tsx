@@ -23,7 +23,7 @@ const DIAS = [
 // Folha "Constância e metas" (abre pela engrenagem do card Constância).
 // Guarda tudo na mesma linha user_settings, mas só edita o que é da
 // constância — os campos do pomodoro passam intactos no upsert.
-export function ModalConfigConstancia({
+export function FolhaConstancia({
   aberto,
   onFechar,
   settings,

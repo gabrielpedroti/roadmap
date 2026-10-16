@@ -12,7 +12,7 @@ import { Segmentado } from "./Segmentado";
 
 // Folha "Registrar estudo manual": trilha, data e (hora início/fim OU
 // duração). Serve pro estudo feito longe do app — inclusive retroativo.
-export function ModalRegistroManual({
+export function FolhaRegistroManual({
   aberto,
   onFechar,
   trilhas,
