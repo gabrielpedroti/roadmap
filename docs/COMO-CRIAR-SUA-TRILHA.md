@@ -24,7 +24,7 @@ Pode criar quantas trilhas quiser, cada uma com sua cor.
 ### 3. Ajustes finos (opcionais)
 - **Tags**: os rótulos "ADS-PUCPR", "Alura" etc. são do MEU conteúdo — troque os textos/cores nos mapas `TAGS_FONTE` (tags de item) e `PLATAFORMAS` (chips de onde estudar), no topo de `components/ListaBlocos.tsx`.
 - **Pré-requisito cruzado**: minha trilha de IA exige um bloco da trilha Dev. Se as suas trilhas forem independentes, remova o trecho "Pré-requisito cruzado" de `supabase/seed/run.ts`.
-- **Nome e textos**: "Roadmap" aparece em `app/layout.tsx`, `components/Cabecalho.tsx` e `app/login/page.tsx`. O README é todo seu.
+- **Nome e textos**: "Roadmap" aparece em `app/layout.tsx` e `app/login/page.tsx`. O README é todo seu.
 - **Cores do tema**: `app/globals.css`.
 
 ### 4. Coloque no ar
