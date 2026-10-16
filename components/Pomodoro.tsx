@@ -362,9 +362,12 @@ export function Pomodoro({
     if (!bruto) return;
     try {
       const salvo: EstadoSalvo = JSON.parse(bruto);
-      if (salvo.trilhaId && trilhas.some((t) => t.id === salvo.trilhaId)) {
-        setTrilhaId(salvo.trilhaId);
-      }
+      // só volta a trilha que ainda existe
+      const trilhaSalva =
+        salvo.trilhaId && trilhas.some((t) => t.id === salvo.trilhaId)
+          ? salvo.trilhaId
+          : null;
+      if (trilhaSalva) setTrilhaId(trilhaSalva);
       // compat: no formato antigo a fase era ligada por booleano; se estava
       // desligada, o tempo passa a ser null (não selecionado)
       const fMin = salvo.focoAtivo === false ? null : salvo.focoMin;
@@ -401,6 +404,22 @@ export function Pomodoro({
           const dur = salvo.fase === "foco" ? dm(fMin) : dm(pMin);
           setRestanteMs(dur);
           setBaseMs(dur);
+          // grava o relógio já parado, com cada valor escrito à mão (pelo
+          // mesmo motivo acima). Sem isso o localStorage seguia "rodando"
+          // com o fim no passado, e cada recarga registrava a MESMA sessão
+          salvarEstado({
+            trilhaId: trilhaSalva,
+            focoMin: fMin,
+            pausaMin: pMin,
+            extraMs: 0,
+            fase: salvo.fase,
+            rodando: false,
+            fimEm: null,
+            restanteMs: dur,
+            inicioFoco: null,
+            ciclosFoco: ciclosFoco.current,
+            baseMs: dur,
+          });
         } else {
           setFase(salvo.fase);
           setRodando(true);
