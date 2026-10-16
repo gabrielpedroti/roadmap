@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Icone } from "@/components/Icone";
+
+export const metadata: Metadata = { title: "Página não encontrada" };
 
 // Página não encontrada (endereço errado ou trilha que não existe: a tela da
 // trilha chama notFound()). Mesmo molde da tela de erro.

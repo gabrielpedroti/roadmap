@@ -1,7 +1,7 @@
 // Estado da chama do card Constância (só exibição). A REGRA é a de sempre:
 // a chama só acende se o mínimo de HOJE foi cumprido, ou se hoje não é dia
-// que conta (aí a sequência está segura). A legenda diz o porquê, em texto
-// visível (antes ficava num title que ninguém via).
+// que conta (aí a sequência está segura). A legenda diz o porquê em texto
+// visível, ao lado da chama.
 import { diaDaSemana } from "./streak";
 
 // 1=seg ... 7=dom (mesma convenção de user_settings.dias_que_contam)
@@ -21,6 +21,8 @@ export function estadoDaChama(p: {
     return { acesa: true, legenda: "Mínimo de hoje cumprido" };
   }
   if (hojeConta) {
+    // arredonda para CIMA: com minutos quebrados (ex.: faltam 0,4) a legenda
+    // diz "Falta 1 min", nunca "Faltam 0 min" com a chama ainda apagada
     const faltam = Math.ceil(p.minimo - p.minutosHoje);
     return {
       acesa: false,

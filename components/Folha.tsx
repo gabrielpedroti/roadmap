@@ -8,6 +8,7 @@ import {
   type FormEvent,
   type ReactNode,
 } from "react";
+import { ErroForm } from "./ErroForm";
 import { Icone } from "./Icone";
 import { VIDRO } from "./vidro";
 
@@ -27,6 +28,7 @@ export function Folha({
   rotuloEnviar,
   enviando,
   onEnviar,
+  erro,
   children,
 }: {
   aberto: boolean;
@@ -35,6 +37,7 @@ export function Folha({
   rotuloEnviar: string; // "Salvar" ou "Registrar" (botão circular com o visto)
   enviando: boolean;
   onEnviar: (e: FormEvent<HTMLFormElement>) => void;
+  erro?: string | null; // o motivo de não ter salvo (aparece no fim do corpo)
   children: ReactNode;
 }) {
   const dialogo = useRef<HTMLDialogElement>(null);
@@ -140,7 +143,10 @@ export function Folha({
               <Icone nome="visto" />
             </button>
           </header>
-          <div className="folha-corpo">{children}</div>
+          <div className="folha-corpo">
+            {children}
+            {erro && <ErroForm>{erro}</ErroForm>}
+          </div>
         </form>
       </div>
     </dialog>

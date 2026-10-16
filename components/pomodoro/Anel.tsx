@@ -1,5 +1,10 @@
 import type { CSSProperties } from "react";
+import type { FaseRelogio } from "@/lib/anel";
 import { varsDaTrilha } from "@/lib/tons";
+
+// como o anel SOBE ao somar tempo: "mola" (movimento normal) ou "suave"
+// (movimento reduzido)
+export type Subida = "mola" | "suave";
 
 // O relógio do Pomodoro: o anel que esvazia com o tempo e, no centro, os
 // dígitos e a fase. SÓ desenha; as contas ficam no Pomodoro e em lib/anel.ts.
@@ -14,11 +19,11 @@ export function Anel({
   subindo,
 }: {
   tempo: string; // "MM:SS"
-  fase: "foco" | "pausa";
+  fase: FaseRelogio;
   rotuloFase: string; // "Foco", "Pausa" ou "Pausado"
   off: number; // --off do arco: 0 = cheio, 100 = vazio
   corDaTrilha: string | null; // null = foco sem trilha
-  subindo: "mola" | "suave" | null; // somando tempo: o anel SOBE animado
+  subindo: Subida | null; // somando tempo: o anel SOBE animado
 }) {
   // .com-cor e varsDaTrilha no MESMO elemento (regra do projeto)
   const estilo = {

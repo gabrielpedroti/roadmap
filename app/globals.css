@@ -42,7 +42,7 @@
   --acao-tinta: light-dark(rgba(0,113,227,.10), rgba(64,156,255,.16));
   --erro: light-dark(#d70015, #ff6165);
   --erro-tinta: light-dark(rgba(215,0,21,.08), rgba(255,97,101,.14));
-  --borda-ctrl: light-dark(#7c7c80, #7c7c80); /* borda do checkbox; chama apagada */
+  --borda-ctrl: #7c7c80; /* borda do checkbox; chama apagada (igual nos dois temas) */
   --sobre-tom: light-dark(#ffffff, #1c1c1e); /* visto dentro do círculo marcado */
 
   /* lente: a seleção dentro do vidro é só uma tinta (sem vidro sobre vidro) */
@@ -111,16 +111,6 @@
   --m-fundo: light-dark(color-mix(in srgb, var(--cor) 12%, #ffffff), color-mix(in srgb, var(--cor) 22%, #1c1c1e));
 }
 
-/* Vira classes do Tailwind (bg-fundo, text-tinta, text-tinta2…) */
-@theme inline {
-  --color-fundo: var(--bg);
-  --color-superficie: var(--surface);
-  --color-tinta: var(--ink);
-  --color-tinta2: var(--ink-2);
-  --color-acao: var(--acao);
-  --color-erro: var(--erro);
-}
-
 /* 2. PREFERÊNCIAS DO SISTEMA (tokens) ---------------------------------------- */
 @media (prefers-contrast: more) {
   :root {
@@ -129,12 +119,16 @@
     --borda-ctrl: light-dark(#545458, #aeaeb2);
     --acao: light-dark(#0051a4, #7fbdff);
     --acao-fundo: #0057af;
+    --acao-fundo-press: #004a94; /* hover/pressão mais escuros que o repouso */
     --erro: light-dark(#aa0011, #ff9da0);
   }
   .com-cor { --tom: light-dark(var(--tom-mais-c), var(--tom-mais-e)); }
 }
 
 /* 3. BASE ------------------------------------------------------------------ */
+/* ATENÇÃO: as regras deste arquivo ficam FORA das camadas (@layer) do
+   Tailwind e por isso vencem qualquer utilitário (mt-*, px-*, text-* num
+   <a>…). Para estilizar, use as classes daqui, não utilitários no JSX. */
 *, *::before, *::after { box-sizing: border-box; }
 * { margin: 0; }
 [hidden] { display: none !important; }
@@ -282,6 +276,15 @@ ul, ol { list-style: none; padding: 0; }
 @media (prefers-contrast: more) {
   .app[data-sobre-campo] .barra :is(.abas-topo, .conta) { --ink-2: light-dark(#48484a, #d1d1d6); --acao: light-dark(#0051a4, #7fbdff); }
 }
+/* anel de foco sobre o campo colorido: o azul não passa 3:1 contra todas as
+   cores de trilha (laranja e verde reprovam).
+   - No texto do campo (link "Entre"): a tinta do campo, que por construção
+     passa 4,5:1 contra ele (lib/tons.ts).
+   - Nas abas e na conta: em volta do vidro a sombra escurece o campo, e
+     nenhuma cor passa dos dois lados. O anel entra 3 px no controle e fica
+     todo sobre o vidro escuro, na tinta clara dele (medido: 6,2 a 12,8:1) */
+.campo :focus-visible { outline-color: var(--campo-tinta); }
+.app[data-sobre-campo] .barra :is(.abas-topo a, .conta):focus-visible { outline-color: var(--ink); outline-offset: -3px; }
 
 /* menu e popover: vidro mais denso (texto pequeno e muito por trás), nascem
    do botão que abriu (transform-origin) */
@@ -514,7 +517,9 @@ ul, ol { list-style: none; padding: 0; }
    da chama que se vê. O fogo crescendo pode passar da caixa: overflow visível */
 .const-topo .chama { width: auto; height: var(--h-chama); aspect-ratio: 3 / 4; overflow: visible; }
 .chama.apagada { fill: none; stroke: var(--borda-ctrl); stroke-width: 1.5; }
-.streak { font: 700 2.5rem/1.05 var(--fonte-titulo); letter-spacing: var(--ls-titulo); }
+/* flex: o espaço real entre o número e "dias" (para o leitor de tela) some
+   no fim do número, e a distância continua só a margem do span */
+.streak { display: flex; align-items: baseline; font: 700 2.5rem/1.05 var(--fonte-titulo); letter-spacing: var(--ls-titulo); }
 .const-topo .streak { font-size: var(--n); }
 .streak span { margin-left: .2em; font-size: max(1.375rem, .46em); font-weight: 600; letter-spacing: 0; } /* piso: 22 px */
 .chama-legenda { margin-top: 4px; font-size: .9375rem; color: var(--ink-2); }
@@ -522,6 +527,7 @@ ul, ol { list-style: none; padding: 0; }
 /* vaga alta: chama em cima e número embaixo, centrados */
 @container heroi (min-height: 220px) {
   .heroi { flex-direction: column; gap: 10px; text-align: center; --n: clamp(4rem, 22cqh, 4.75rem); --h-chama: clamp(96px, 44cqh, 132px); }
+  .heroi .streak { justify-content: center; } /* o flex não segue o text-align */
 }
 
 /* a chama tem duas camadas: o contorno cinza (apagada) e o fogo (acesa).
@@ -558,7 +564,7 @@ ul, ol { list-style: none; padding: 0; }
 .visitante-miolo p { max-width: 26ch; font-size: 1rem; color: var(--ink-2); }
 .visitante-miolo .btn { min-height: max(44px, var(--alvo)); font-size: 1rem; }
 .dica { margin-top: 14px; font-size: .9375rem; color: var(--ink-2); }
-.dica a, .link-acao { color: var(--acao); font-weight: 600; }
+.dica a { color: var(--acao); font-weight: 600; }
 
 /* Trilhas: linhas de lista; a cor vai no nome e na barra, sem bolinha */
 .lista-trilhas { margin: -6px -12px -10px; }
@@ -769,18 +775,43 @@ dialog.dlg.fechando::backdrop { animation: apaga .18s ease-in forwards; }
 /* 10. ESTADOS ---------------------------------------------------------------- */
 /* carregando: a moldura fica; os cartões viram formas nos lugares reais */
 .esq { display: block; border-radius: 8px; background: var(--fill); animation: pulso 1.6s ease-in-out infinite; }
+/* o esqueleto é mais curto que a página: o <main> cresce e as abas do pé
+   (celular) ficam embaixo, onde estarão quando a página chegar */
+.esq-conteudo { flex: 1 0 auto; }
+/* pílulas com a altura das abas reais: 38 px na barra, 44 px no pé */
 .esq-pilula { width: 64px; height: 20px; border-radius: 999px; margin: 9px 6px; }
+.abas-pe .esq-pilula { margin-block: 12px; }
 .esq-grade { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 14px; margin-top: 12px; }
 .esq-coluna { display: grid; gap: 14px; align-content: start; }
 .esq-cartao { display: grid; gap: 12px; align-content: start; padding: 18px; border-radius: 22px; background: var(--surface); }
-.esq-campo { display: grid; gap: 12px; margin-top: calc(-1 * var(--h-barra)); padding: calc(var(--h-barra) + 28px) var(--calha) 40px; background: var(--fill); }
-.esq-divisao { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(0, 2.4fr); gap: 24px; width: min(var(--larg), 100%); margin: 24px auto 0; padding: 0 var(--calha); }
+/* Pomodoro: formas centradas, o título à esquerda e o anel redondo */
+.esq-pomodoro { justify-items: center; }
+.esq-a-esquerda { justify-self: start; }
+.esq-anel { aspect-ratio: 1; border-radius: 50%; margin: 6px 0; }
+/* campo da trilha: mesmo respiro do .campo; o miolo é um .campo-in (a coluna
+   centrada de verdade). As formas têm a altura das linhas reais (título,
+   3 linhas de descrição, a linha do progresso): a seção de baixo não pula */
+.esq-campo { margin-top: calc(-1 * var(--h-barra)); padding: calc(var(--h-barra) + 28px) 0 40px; background: var(--fill); }
+.esq-campo-in { display: grid; }
+.esq-campo-titulo { height: calc(1.05 * clamp(2.5rem, 5vw, 3.5rem)); }
+.esq-campo-desc { display: grid; gap: 9px; margin-top: 14px; padding: 4.5px 0; }
+.esq-campo-pe { margin-top: 14px; }
+/* divisão: dentro de uma .divisao real (o container), com as colunas da
+   .divisao-grade; no estreito o roteiro some, como na tela real */
+.esq-divisao-grade { display: grid; gap: 24px; }
+.esq-divisao-grade > .esq-roteiro { display: none; }
+.esq-rot-item { border-radius: 14px; }
+@container divisao (min-width: 820px) {
+  .esq-divisao-grade { grid-template-columns: clamp(300px, 22cqi, 380px) minmax(0, 1fr); align-items: start; }
+  .esq-divisao-grade > .esq-roteiro { display: grid; }
+}
 @media (max-width: 699px) {
   .esq-grade { grid-template-columns: minmax(0, 1fr); }
   .esq-grade > .esq-cartao { order: -1; } /* na ordem do celular: Pomodoro em cima */
-  .esq-campo { margin-top: 0; padding-top: 74px; }
-  .esq-divisao { grid-template-columns: minmax(0, 1fr); }
-  .esq-divisao > .esq-roteiro { display: none; }
+  .esq-campo { margin-top: 0; padding: 74px 0 28px; }
+  /* no celular a página real rola: com o esqueleto também mais alto que a
+     tela, as abas do pé grudam no mesmo lugar (sticky) */
+  .esq-conteudo { min-height: 100svh; }
 }
 
 /* erro geral e página não encontrada: centralizados na tela inteira */
@@ -803,6 +834,9 @@ dialog.dlg.fechando::backdrop { animation: apaga .18s ease-in forwards; }
 .login-campo::placeholder { color: var(--ink-2); }
 .login-form .btn { margin-top: 12px; }
 .login-enviado { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; padding: 16px; border-radius: 16px; background: var(--fill); }
+/* recebe o foco por código (para o leitor de tela ler o aviso), mas não é
+   um controle: sem anel, como o título da folha */
+.login-enviado:focus { outline: none; }
 .login-enviado .ic { width: 22px; height: 22px; color: var(--acao); grid-row: span 2; }
 .login-enviado strong { font-weight: 600; }
 .login-enviado p { font-size: .9375rem; color: var(--ink-2); }
@@ -857,5 +891,13 @@ dialog.dlg.fechando::backdrop { animation: apaga .18s ease-in forwards; }
   .barra-p { border: 1px solid CanvasText; }
   .barra-p > i { forced-color-adjust: none; background: Highlight; }
   .vidro, .folha, .cartao, .bloco, .roteiro { border: 1px solid CanvasText; }
+  /* controles que só tinham fundo: sem borda, viravam texto solto */
+  .btn, .btn-icone, .btn-circ, .stepper, .erro-inline button { border: 1px solid ButtonText; }
+  .passo input, .login-campo { border: 1px solid CanvasText; }
+  /* bloco escolhido no roteiro: o fundo tingido some; vira o item selecionado */
+  .rot-item[aria-current="true"] { forced-color-adjust: none; background: SelectedItem; color: SelectedItemText; }
+  .rot-item[aria-current="true"] :is(.rot-titulo, .rot-meta, .rot-cad) { color: SelectedItemText; }
+  .rot-item[aria-current="true"] .barra-p { background: SelectedItem; border-color: SelectedItemText; }
+  .rot-item[aria-current="true"] .barra-p > i { background: SelectedItemText; }
   :focus-visible { outline-color: Highlight; }
 }

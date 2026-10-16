@@ -1,8 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
+// Título da aba: cada página dá o seu ("IA · Automação · Roadmap"); a Home
+// fica só com "Roadmap". O anúncio de troca de página do leitor de tela lê
+// este título, então ele precisa mudar de uma página para outra
 export const metadata: Metadata = {
-  title: "Roadmap",
+  title: { default: "Roadmap", template: "%s · Roadmap" },
   description:
     "Roadmap de estudos — trilhas Dev, IA · Automação e Inglês, com pomodoro, streak e metas",
 };

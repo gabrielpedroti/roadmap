@@ -24,6 +24,10 @@ import type {
 import { BarraProgresso } from "./BarraProgresso";
 import { Icone } from "./Icone";
 
+// ATENÇÃO, "marca" tem dois sentidos neste arquivo: `Marca`, `varsDaMarca` e
+// a classe .com-marca são a marca COMERCIAL (Alura, DIO…) dos chips e tags;
+// já <span className="marca"> e .marca-v são o CÍRCULO de marcar o item.
+
 // Cores OFICIAIS de cada marca (conferidas em out/2026 no Simple Icons ou no
 // site/logo da própria marca). A mesma marca tem a mesma cor nos dois mapas.
 const COR = {
@@ -88,6 +92,19 @@ export type BlocoTela = Block & {
   crossRotulo: string | null;
   grupos: (ItemGroup & { itens: Item[] })[];
 };
+
+// progresso e desbloqueio de um bloco, recalculados a cada check (calcularEstado)
+type InfoDoBloco = {
+  progresso: number;
+  concluido: boolean;
+  desbloqueado: boolean;
+  prereqOk: boolean;
+  crossOk: boolean;
+};
+
+// Ao escolher um bloco no roteiro, só rola se o topo dele estiver escondido:
+// acima disto ele fica sob a barra de cima (--h-barra, até 68 px, + folga)
+const ABAIXO_DA_BARRA = 80;
 
 // Tela da trilha: o campo colorido (com o progresso da trilha) e a divisão.
 // - Largo (container ≥ 820 px): o roteiro (todos os blocos) à esquerda e o
@@ -167,7 +184,7 @@ export function ListaBlocos({
       const alvo = document.getElementById(`bloco-${blocoId}`);
       if (!alvo) return;
       const topo = alvo.getBoundingClientRect().top;
-      if (topo < 80 || topo > window.innerHeight) {
+      if (topo < ABAIXO_DA_BARRA || topo > window.innerHeight) {
         const reduzido = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         alvo.scrollIntoView({ block: "start", behavior: reduzido ? "auto" : "smooth" });
       }
@@ -246,143 +263,36 @@ export function ListaBlocos({
             <nav className="roteiro" aria-label={`Blocos da trilha ${trilha.nome}`}>
               <h2 className="roteiro-cab">Blocos</h2>
               <ol className="roteiro-lista">
-                {blocos.map((bloco) => {
-                  const info = estado.get(bloco.id)!;
-                  const bloqueado = !info.desbloqueado;
-                  return (
-                    <li key={bloco.id}>
-                      <button
-                        type="button"
-                        className={bloqueado ? "rot-item bloqueado" : "rot-item"}
-                        aria-controls={`bloco-${bloco.id}`}
-                        aria-current={escolhido === bloco.id ? "true" : undefined}
-                        onClick={() => escolher(bloco.id)}
-                      >
-                        <span className="rot-titulo">
-                          <Icone nome="cadeado" className="rot-cad" />
-                          <span>{semEmoji(bloco.titulo)}</span>
-                        </span>
-                        <span className="rot-meta">
-                          <span>{bloco.semanas_estimadas ?? ""}</span>
-                          <span className="tab">
-                            {textoDoPct({
-                              logado: !somenteLeitura,
-                              bloqueado,
-                              progresso: info.progresso,
-                              semanas: bloco.semanas_estimadas,
-                              noRoteiro: true,
-                            })}
-                          </span>
-                        </span>
-                        {!somenteLeitura && <BarraProgresso fracao={info.progresso} />}
-                      </button>
-                    </li>
-                  );
-                })}
+                {blocos.map((bloco) => (
+                  <ItemDoRoteiro
+                    key={bloco.id}
+                    bloco={bloco}
+                    info={estado.get(bloco.id)!}
+                    escolhido={escolhido === bloco.id}
+                    logado={!somenteLeitura}
+                    onEscolher={() => escolher(bloco.id)}
+                  />
+                ))}
               </ol>
             </nav>
 
             <div className="blocos">
-              {blocos.map((bloco) => {
-                const info = estado.get(bloco.id)!;
-                const bloqueado = !info.desbloqueado;
-                const aberto = abertos.has(bloco.id);
-                // só mostra os pré-requisitos que ainda FALTAM
-                const faltando = [
-                  !info.prereqOk ? bloco.prereqRotulo : null,
-                  !info.crossOk ? bloco.crossRotulo : null,
-                ].filter(Boolean);
-                const classes = ["bloco", bloqueado && "bloqueado", escolhido === bloco.id && "sel"]
-                  .filter(Boolean)
-                  .join(" ");
-
-                return (
-                  <section
-                    key={bloco.id}
-                    id={`bloco-${bloco.id}`}
-                    className={classes}
-                    data-aberto={aberto ? "" : undefined}
-                    aria-labelledby={`bloco-${bloco.id}-t`}
-                  >
-                    {/* <h2><button>: quem navega por títulos acha cada bloco.
-                        No largo o botão vira só título (desligado, sem papel) */}
-                    <h2 className="bloco-h">
-                      <button
-                        type="button"
-                        className="bloco-cab"
-                        {...(largo
-                          ? { disabled: true, role: "none" }
-                          : { "aria-expanded": aberto, "aria-controls": `bloco-${bloco.id}-c` })}
-                        onClick={() => alternarAberto(bloco.id)}
-                      >
-                        <span className="bloco-l1">
-                          <Icone nome="chev-dir" className="bloco-chev" />
-                          <Icone nome="cadeado" className="bloco-cad" />
-                          <span className="bloco-titulo" id={`bloco-${bloco.id}-t`}>
-                            {semEmoji(bloco.titulo)}
-                          </span>
-                          <span className="bloco-pct tab">
-                            {textoDoPct({
-                              logado: !somenteLeitura,
-                              bloqueado,
-                              progresso: info.progresso,
-                              semanas: bloco.semanas_estimadas,
-                              noRoteiro: false,
-                            })}
-                          </span>
-                        </span>
-                        {/* visitante: nenhum % e nenhuma barra (as semanas vão no espaço do %) */}
-                        {!somenteLeitura && <BarraProgresso fracao={info.progresso} />}
-                        {!somenteLeitura && bloco.semanas_estimadas && (
-                          <span className="bloco-meta">{bloco.semanas_estimadas}</span>
-                        )}
-                      </button>
-                    </h2>
-
-                    {bloqueado && faltando.length > 0 && (
-                      <p className="bloco-trava">
-                        <Icone nome="cadeado" />
-                        <span>
-                          Antes de começar: conclua {faltando.map((r) => semEmoji(r!)).join(" e ")}
-                        </span>
-                      </p>
-                    )}
-
-                    <div className="bloco-corpo" id={`bloco-${bloco.id}-c`}>
-                      {bloco.descricao && <p className="bloco-desc">{semEmoji(bloco.descricao)}</p>}
-                      {bloco.grupos.map((grupo) => {
-                        // todos com a mesma fonte: a tag sobe para o título do grupo
-                        const fonteGrupo = fonteDoGrupo(grupo.itens);
-                        const tagGrupo = fonteGrupo ? TAGS_FONTE[fonteGrupo] : null;
-                        const ehProjeto =
-                          grupo.itens.length > 0 && grupo.itens.every((i) => i.tipo === "project");
-                        return (
-                          <section key={grupo.id} className={ehProjeto ? "grupo grupo-projeto" : "grupo"}>
-                            <h3 className="grupo-titulo">
-                              {semEmoji(grupo.titulo)}
-                              {tagGrupo && <Tag texto={tagGrupo.texto} marca={tagGrupo.marca} />}
-                            </h3>
-                            <ul className="lista">
-                              {grupo.itens.map((item) => (
-                                <LinhaItem
-                                  key={item.id}
-                                  item={item}
-                                  marcado={feitos.has(item.id)}
-                                  desabilitado={bloqueado || somenteLeitura}
-                                  mostrarFonte={!tagGrupo}
-                                  onAlternar={() => alternarItem(item, bloqueado)}
-                                  comErro={erroItem?.itemId === item.id}
-                                  onTentarDeNovo={tentarDeNovo}
-                                />
-                              ))}
-                            </ul>
-                          </section>
-                        );
-                      })}
-                    </div>
-                  </section>
-                );
-              })}
+              {blocos.map((bloco) => (
+                <CartaoDoBloco
+                  key={bloco.id}
+                  bloco={bloco}
+                  info={estado.get(bloco.id)!}
+                  aberto={abertos.has(bloco.id)}
+                  escolhido={escolhido === bloco.id}
+                  largo={largo}
+                  logado={!somenteLeitura}
+                  feitos={feitos}
+                  itemComErro={erroItem?.itemId ?? null}
+                  onAlternarAberto={() => alternarAberto(bloco.id)}
+                  onAlternarItem={alternarItem}
+                  onTentarDeNovo={tentarDeNovo}
+                />
+              ))}
             </div>
           </div>
         </div>
@@ -391,12 +301,184 @@ export function ListaBlocos({
   );
 }
 
+// Um bloco no roteiro (largo): o título, a linha das semanas e do % e a
+// barra (só logado). A linha 2 só existe quando tem algo a mostrar: sem
+// semanas, o estado ("33%", "bloqueado") fica sozinho à esquerda, e o bloco
+// sem semanas e sem estado não ganha uma linha vazia
+function ItemDoRoteiro({
+  bloco,
+  info,
+  escolhido,
+  logado,
+  onEscolher,
+}: {
+  bloco: BlocoTela;
+  info: InfoDoBloco;
+  escolhido: boolean;
+  logado: boolean;
+  onEscolher: () => void;
+}) {
+  const bloqueado = !info.desbloqueado;
+  const estadoTexto = textoDoPct({
+    logado,
+    bloqueado,
+    progresso: info.progresso,
+    semanas: bloco.semanas_estimadas,
+    noRoteiro: true,
+  });
+  return (
+    <li>
+      <button
+        type="button"
+        className={bloqueado ? "rot-item bloqueado" : "rot-item"}
+        aria-controls={`bloco-${bloco.id}`}
+        aria-current={escolhido ? "true" : undefined}
+        onClick={onEscolher}
+      >
+        <span className="rot-titulo">
+          <Icone nome="cadeado" className="rot-cad" />
+          <span>{semEmoji(bloco.titulo)}</span>
+        </span>
+        {bloco.semanas_estimadas || estadoTexto ? (
+          <span className="rot-meta">
+            {bloco.semanas_estimadas && <span>{bloco.semanas_estimadas}</span>}
+            {estadoTexto && <span className="rot-estado tab">{estadoTexto}</span>}
+          </span>
+        ) : null}
+        {logado && <BarraProgresso fracao={info.progresso} />}
+      </button>
+    </li>
+  );
+}
+
+// Um bloco em cartão: no estreito é um item do acordeão; no largo, o bloco
+// escolhido no roteiro (sempre aberto, o CSS esconde os outros)
+function CartaoDoBloco({
+  bloco,
+  info,
+  aberto,
+  escolhido,
+  largo,
+  logado,
+  feitos,
+  itemComErro,
+  onAlternarAberto,
+  onAlternarItem,
+  onTentarDeNovo,
+}: {
+  bloco: BlocoTela;
+  info: InfoDoBloco;
+  aberto: boolean;
+  escolhido: boolean;
+  largo: boolean;
+  logado: boolean;
+  feitos: Set<string>;
+  itemComErro: string | null;
+  onAlternarAberto: () => void;
+  onAlternarItem: (item: Item, bloqueado: boolean) => void;
+  onTentarDeNovo: () => void;
+}) {
+  const bloqueado = !info.desbloqueado;
+  // só mostra os pré-requisitos que ainda FALTAM
+  const faltando = [
+    !info.prereqOk ? bloco.prereqRotulo : null,
+    !info.crossOk ? bloco.crossRotulo : null,
+  ].filter((r): r is string => r !== null);
+  const classes = ["bloco", bloqueado && "bloqueado", escolhido && "sel"]
+    .filter(Boolean)
+    .join(" ");
+
+  return (
+    <section
+      id={`bloco-${bloco.id}`}
+      className={classes}
+      data-aberto={aberto ? "" : undefined}
+      aria-labelledby={`bloco-${bloco.id}-t`}
+    >
+      {/* <h2><button>: quem navega por títulos acha cada bloco.
+          No largo o botão vira só título (desligado, sem papel) */}
+      <h2 className="bloco-h">
+        <button
+          type="button"
+          className="bloco-cab"
+          {...(largo
+            ? { disabled: true, role: "none" }
+            : { "aria-expanded": aberto, "aria-controls": `bloco-${bloco.id}-c` })}
+          onClick={onAlternarAberto}
+        >
+          <span className="bloco-l1">
+            <Icone nome="chev-dir" className="bloco-chev" />
+            <Icone nome="cadeado" className="bloco-cad" />
+            <span className="bloco-titulo" id={`bloco-${bloco.id}-t`}>
+              {semEmoji(bloco.titulo)}
+            </span>
+            <span className="bloco-pct tab">
+              {textoDoPct({
+                logado,
+                bloqueado,
+                progresso: info.progresso,
+                semanas: bloco.semanas_estimadas,
+                noRoteiro: false,
+              })}
+            </span>
+          </span>
+          {/* visitante: nenhum % e nenhuma barra (as semanas vão no espaço do %) */}
+          {logado && <BarraProgresso fracao={info.progresso} />}
+          {logado && bloco.semanas_estimadas && (
+            <span className="bloco-meta">{bloco.semanas_estimadas}</span>
+          )}
+        </button>
+      </h2>
+
+      {bloqueado && faltando.length > 0 && (
+        <p className="bloco-trava">
+          <Icone nome="cadeado" />
+          <span>Antes de começar: conclua {faltando.map(semEmoji).join(" e ")}</span>
+        </p>
+      )}
+
+      <div className="bloco-corpo" id={`bloco-${bloco.id}-c`}>
+        {bloco.descricao && <p className="bloco-desc">{semEmoji(bloco.descricao)}</p>}
+        {bloco.grupos.map((grupo) => {
+          // todos com a mesma fonte: a tag sobe para o título do grupo
+          const fonteGrupo = fonteDoGrupo(grupo.itens);
+          const tagGrupo = fonteGrupo ? TAGS_FONTE[fonteGrupo] : null;
+          const ehProjeto =
+            grupo.itens.length > 0 && grupo.itens.every((i) => i.tipo === "project");
+          return (
+            <section key={grupo.id} className={ehProjeto ? "grupo grupo-projeto" : "grupo"}>
+              <h3 className="grupo-titulo">
+                {semEmoji(grupo.titulo)}
+                {tagGrupo && <Tag texto={tagGrupo.texto} marca={tagGrupo.marca} />}
+              </h3>
+              <ul className="lista">
+                {grupo.itens.map((item) => (
+                  <LinhaItem
+                    key={item.id}
+                    item={item}
+                    marcado={feitos.has(item.id)}
+                    desabilitado={bloqueado || !logado}
+                    mostrarFonte={!tagGrupo}
+                    onAlternar={() => onAlternarItem(item, bloqueado)}
+                    comErro={itemComErro === item.id}
+                    onTentarDeNovo={onTentarDeNovo}
+                  />
+                ))}
+              </ul>
+            </section>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 // progresso + desbloqueio de cada bloco a partir do estado atual dos checks
 function calcularEstado(
   blocos: BlocoTela[],
   feitos: Set<string>,
   concluidosForaDaTrilha: string[]
-) {
+): Map<string, InfoDoBloco> {
   const itensDoBloco = new Map(
     blocos.map((b) => [
       b.id,

@@ -6,7 +6,6 @@ import { createClient } from "@/lib/supabase/client";
 import { historicoAoMudarMin, hojeSP } from "@/lib/streak";
 import type { InicioSemana, UserSettings } from "@/lib/types";
 import { Folha } from "./Folha";
-import { Icone } from "./Icone";
 import { Passo } from "./Passo";
 import { Segmentado } from "./Segmentado";
 
@@ -43,7 +42,7 @@ export function ModalConfigConstancia({
     inicio_semana: settings.inicio_semana ?? "seg",
   });
   const [salvando, setSalvando] = useState(false);
-  const [erro, setErro] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
   const [avisoDias, setAvisoDias] = useState("");
 
   // dias que contam: liga/desliga; pelo menos um dia precisa contar
@@ -64,7 +63,7 @@ export function ModalConfigConstancia({
   async function salvar(e: React.FormEvent) {
     e.preventDefault();
     setSalvando(true);
-    setErro(false);
+    setErro(null);
 
     // Se o mínimo do streak mudou, atualiza o histórico pra que a mudança
     // NÃO seja retroativa: o passado fica congelado no mínimo antigo e o novo
@@ -87,7 +86,8 @@ export function ModalConfigConstancia({
 
     setSalvando(false);
     if (error) {
-      setErro(true); // texto amigável; a folha fica aberta
+      // texto amigável (o error.message do Supabase vem em inglês); a folha fica aberta
+      setErro("Não deu para salvar. Confira a conexão e tente de novo.");
       return;
     }
     router.refresh();
@@ -102,6 +102,7 @@ export function ModalConfigConstancia({
       rotuloEnviar="Salvar"
       enviando={salvando}
       onEnviar={salvar}
+      erro={erro}
     >
       <h3 className="form-secao">Streak</h3>
       <div className="form-grupo">
@@ -116,8 +117,8 @@ export function ModalConfigConstancia({
             min={1}
             unidade="min"
             stepper
-            rotuloMenos="Menos 1 minuto"
-            rotuloMais="Mais 1 minuto"
+            rotuloMenos="Menos 1 minuto no mínimo por dia"
+            rotuloMais="Mais 1 minuto no mínimo por dia"
           />
         </div>
         <div className="form-linha col">
@@ -172,8 +173,8 @@ export function ModalConfigConstancia({
             passo={0.5}
             unidade="h"
             stepper
-            rotuloMenos="Menos meia hora"
-            rotuloMais="Mais meia hora"
+            rotuloMenos="Menos meia hora na meta semanal"
+            rotuloMais="Mais meia hora na meta semanal"
           />
         </div>
         <div className="form-linha">
@@ -188,18 +189,11 @@ export function ModalConfigConstancia({
             passo={0.5}
             unidade="h"
             stepper
-            rotuloMenos="Menos meia hora"
-            rotuloMais="Mais meia hora"
+            rotuloMenos="Menos meia hora na meta mensal"
+            rotuloMais="Mais meia hora na meta mensal"
           />
         </div>
       </div>
-
-      {erro && (
-        <p className="form-erro" role="alert">
-          <Icone nome="alerta" />
-          <span>Não deu para salvar. Confira a conexão e tente de novo.</span>
-        </p>
-      )}
     </Folha>
   );
 }

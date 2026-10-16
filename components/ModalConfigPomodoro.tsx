@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { UserSettings } from "@/lib/types";
 import { Folha } from "./Folha";
-import { Icone } from "./Icone";
 import { Passo } from "./Passo";
 
 // Folha "Tempos do pomodoro" (abre pela engrenagem do card Pomodoro). Só
@@ -26,7 +25,7 @@ export function ModalConfigPomodoro({
   const id = useId();
   const [form, setForm] = useState({ ...settings });
   const [salvando, setSalvando] = useState(false);
-  const [erro, setErro] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
 
   // número inteiro, nunca abaixo de 1
   function num(texto: string) {
@@ -36,7 +35,7 @@ export function ModalConfigPomodoro({
   async function salvar(e: React.FormEvent) {
     e.preventDefault();
     setSalvando(true);
-    setErro(false);
+    setErro(null);
 
     const supabase = createClient();
     const { error } = await supabase
@@ -45,7 +44,8 @@ export function ModalConfigPomodoro({
 
     setSalvando(false);
     if (error) {
-      setErro(true); // texto amigável (antes ia o error.message cru, em inglês)
+      // texto amigável: o error.message do Supabase vem em inglês
+      setErro("Não deu para salvar. Confira a conexão e tente de novo.");
       return;
     }
     router.refresh();
@@ -68,6 +68,7 @@ export function ModalConfigPomodoro({
       rotuloEnviar="Salvar"
       enviando={salvando}
       onEnviar={salvar}
+      erro={erro}
     >
       <p className="form-nota">
         Os tempos de foco e pausa também mudam na hora, pelos botões do timer.
@@ -87,13 +88,6 @@ export function ModalConfigPomodoro({
           </div>
         ))}
       </div>
-
-      {erro && (
-        <p className="form-erro" role="alert">
-          <Icone nome="alerta" />
-          <span>Não deu para salvar. Confira a conexão e tente de novo.</span>
-        </p>
-      )}
     </Folha>
   );
 }

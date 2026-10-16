@@ -89,9 +89,10 @@ export function Constancia({
           <div className="heroi">
             <Chama acesa={chama.acesa} />
             <div>
+              {/* o espaço é real: o leitor de tela lê "12 dias" (e não
+                  "12dias"); no visual quem separa é a margem do span */}
               <p className="streak tab">
-                {streakDias}
-                <span>{streakDias === 1 ? "dia" : "dias"}</span>
+                {streakDias} <span>{streakDias === 1 ? "dia" : "dias"}</span>
               </p>
               <p className="chama-legenda">{chama.legenda}</p>
             </div>

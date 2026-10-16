@@ -1,8 +1,9 @@
 "use client";
 
-import { useId, useState, Suspense } from "react";
+import { useEffect, useId, useRef, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { ErroForm } from "@/components/ErroForm";
 import { Icone } from "@/components/Icone";
 import { createClient } from "@/lib/supabase/client";
 
@@ -20,6 +21,14 @@ function FormularioLogin() {
   const searchParams = useSearchParams();
   const linkInvalido = searchParams.get("erro") === "link-invalido";
   const campoId = useId();
+  const enviadoRef = useRef<HTMLDivElement>(null);
+
+  // Enviado: o formulário (e o botão que tinha o foco) sai da tela. O foco
+  // vai para o aviso "Verifique seu e-mail", e o leitor de tela o lê na
+  // hora; sem isto o foco cairia no <body> e nada seria anunciado.
+  useEffect(() => {
+    if (estado === "enviado") enviadoRef.current?.focus();
+  }, [estado]);
 
   async function enviarLink(e: React.FormEvent) {
     e.preventDefault();
@@ -53,7 +62,7 @@ function FormularioLogin() {
         </p>
 
         {estado === "enviado" ? (
-          <div className="login-enviado" role="status">
+          <div className="login-enviado" ref={enviadoRef} tabIndex={-1}>
             <Icone nome="envelope" />
             <strong>Verifique seu e-mail</strong>
             <p>
@@ -69,6 +78,9 @@ function FormularioLogin() {
             <input
               id={campoId}
               type="email"
+              name="email"
+              autoComplete="email"
+              spellCheck={false}
               required
               autoFocus
               placeholder="seu@email.com"
@@ -88,20 +100,14 @@ function FormularioLogin() {
         )}
 
         {linkInvalido && estado === "inicial" && (
-          <p className="form-erro" role="alert">
-            <Icone nome="alerta" />
-            <span>O link expirou ou já foi usado. Peça um novo.</span>
-          </p>
+          <ErroForm>O link expirou ou já foi usado. Peça um novo.</ErroForm>
         )}
         {erro && (
-          <div className="form-erro" role="alert">
-            <Icone nome="alerta" />
-            <span>
-              Não deu para enviar o link. Confira o e-mail e tente de novo em
-              instantes.
-              <span className="login-detalhe">{erro}</span>
-            </span>
-          </div>
+          <ErroForm>
+            Não deu para enviar o link. Confira o e-mail e tente de novo em
+            instantes.
+            <span className="login-detalhe">{erro}</span>
+          </ErroForm>
         )}
 
         <p className="login-pe">

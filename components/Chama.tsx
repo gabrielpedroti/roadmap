@@ -1,7 +1,7 @@
 import { useId } from "react";
 import { CAMINHO_CHAMA } from "./Icone";
 
-// A chama da Constância, em SVG (o emoji saiu). Duas camadas: o contorno
+// A chama da Constância, em SVG. Duas camadas: o contorno
 // cinza (apagada) e o fogo em degradê (acesa). As animações de ACENDER estão
 // no CSS e valem para .chama:not(.apagada): trocar a classe "apagada" as
 // reinicia, sem JavaScript. Elas tocam ao abrir a tela e quando a chama passa

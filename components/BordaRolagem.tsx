@@ -9,6 +9,13 @@ import { useEffect } from "react";
 //   no servidor; aqui ele só é recalculado ao montar (a página pode voltar
 //   já rolada) e ao rolar.
 // Não desenha nada.
+
+// a névoa só aparece depois de rolar mais que isto (tremidas não contam)
+const ROLOU = 6;
+// e só enquanto ainda há página passando por baixo da barra de cima
+// (--h-barra, até 68 px, + folga). Se mudar a altura da barra, revise
+const FIM_DA_BARRA = 90;
+
 export function BordaRolagem() {
   useEffect(() => {
     const app = document.querySelector<HTMLElement>("[data-app]");
@@ -18,7 +25,7 @@ export function BordaRolagem() {
     function medir() {
       pedido = 0;
       const r = app!.getBoundingClientRect();
-      app!.toggleAttribute("data-rolou", r.top < -6 && r.bottom > 90);
+      app!.toggleAttribute("data-rolou", r.top < -ROLOU && r.bottom > FIM_DA_BARRA);
       const campo = app!.querySelector<HTMLElement>(".campo");
       const barra = app!.querySelector<HTMLElement>(".barra");
       if (campo && barra) {

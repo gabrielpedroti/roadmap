@@ -48,10 +48,12 @@ export default async function Home() {
   const trilhasInfo = Object.fromEntries(
     tracks.map((t) => [t.id, { nome: t.nome, cor: t.cor }])
   );
+  // as mesmas abas no topo (Barra) e no pé (celular)
+  const destinos = destinosDasAbas(tracks, "home");
 
   return (
     <div className="app app-painel" data-app>
-      <Barra email={user?.email ?? null} tracks={tracks} atual="home" titulo="Home" />
+      <Barra email={user?.email ?? null} destinos={destinos} titulo="Home" />
 
       <main className="conteudo miolo">
         {tracks.length === 0 ? (
@@ -62,8 +64,10 @@ export default async function Home() {
             </p>
           </section>
         ) : (
-          // a ordem de leitura é Trilhas, Constância, Pomodoro em todos os
-          // tamanhos; só a posição visual muda (CSS da .painel-grade)
+          // a ordem de leitura (e do Tab) é Trilhas, Constância, Pomodoro em
+          // todos os tamanhos; só a posição visual muda (CSS da .painel-grade).
+          // Decisão da spec (§5.1): no celular o Pomodoro aparece em cima,
+          // mas o foco continua seguindo esta ordem
           <div className="painel-grade">
             <section className="cartao trilhas" aria-labelledby="t-trilhas">
               <div className="cartao-cab">
@@ -139,7 +143,7 @@ export default async function Home() {
       </main>
 
       {/* abas do pé (só no celular): depois do <main>, na ordem de leitura */}
-      <Abas destinos={destinosDasAbas(tracks, "home")} posicao="pe" />
+      <Abas destinos={destinos} posicao="pe" />
     </div>
   );
 }

@@ -16,7 +16,9 @@ function dataDeHoje() {
   });
 }
 
-// "Home" e uma aba por trilha, na ordem do banco. `atual` = "home" ou o slug
+// "Home" e uma aba por trilha, na ordem do banco. `atual` = "home" ou o slug.
+// A página calcula UMA vez e passa a mesma lista para a Barra (abas do topo)
+// e para as <Abas posicao="pe"> do celular: as duas nunca discordam
 export function destinosDasAbas(tracks: Track[], atual: string): DestinoAba[] {
   return [
     { href: "/", rotulo: "Home", atual: atual === "home" },
@@ -35,13 +37,11 @@ export function destinosDasAbas(tracks: Track[], atual: string): DestinoAba[] {
 // <main>) e a conta vira um círculo no canto.
 export function Barra({
   email,
-  tracks,
-  atual,
+  destinos,
   titulo,
 }: {
   email: string | null;
-  tracks: Track[];
-  atual: string;
+  destinos: DestinoAba[]; // de destinosDasAbas
   titulo?: string;
 }) {
   return (
@@ -56,7 +56,7 @@ export function Barra({
       ) : (
         <span className="barra-ini" aria-hidden="true" />
       )}
-      <Abas destinos={destinosDasAbas(tracks, atual)} posicao="topo" />
+      <Abas destinos={destinos} posicao="topo" />
       <div className="barra-fim">
         <Conta email={email} />
       </div>

@@ -7,7 +7,6 @@ import { hojeSP } from "@/lib/streak";
 import { semEmoji } from "@/lib/texto";
 import type { Track } from "@/lib/types";
 import { Folha } from "./Folha";
-import { Icone } from "./Icone";
 import { Passo } from "./Passo";
 import { Segmentado } from "./Segmentado";
 
@@ -76,7 +75,7 @@ export function ModalRegistroManual({
     setSalvando(false);
 
     if (error) {
-      // texto amigável (antes ia o error.message cru, em inglês)
+      // texto amigável: o error.message do Supabase vem em inglês
       setErro("Não deu para registrar. Confira a conexão e tente de novo.");
       return;
     }
@@ -92,6 +91,7 @@ export function ModalRegistroManual({
       rotuloEnviar="Registrar"
       enviando={salvando}
       onEnviar={salvar}
+      erro={erro}
     >
       <div className="form-grupo">
         <div className="form-linha col">
@@ -176,13 +176,6 @@ export function ModalRegistroManual({
           </div>
         )}
       </div>
-
-      {erro && (
-        <p className="form-erro" role="alert">
-          <Icone nome="alerta" />
-          <span>{erro}</span>
-        </p>
-      )}
     </Folha>
   );
 }

@@ -1,3 +1,5 @@
+import { cache } from "react";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Abas } from "@/components/Abas";
 import { Barra, destinosDasAbas } from "@/components/Barra";
@@ -12,14 +14,31 @@ import { varsDaTrilha } from "@/lib/tons";
 // escolhido, as barras e os círculos marcados seguem a mesma cor. Os
 // blocos são cartões neutros — o contraste mantém a leitura fácil.
 // Visitante sem login VÊ tudo, mas não marca.
+
+// o título da aba e a página leem os mesmos dados: com cache(), a busca roda
+// UMA vez por requisição
+const carregar = cache(carregarPainel);
+
+// título da aba: o nome da trilha, sem emoji ("Dev · Roadmap")
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const { tracks } = await carregar();
+  const trilha = tracks.find((t) => t.slug === slug);
+  // trilha que não existe: a página chama notFound() (e o título acompanha)
+  return { title: trilha ? semEmoji(trilha.nome) : "Página não encontrada" };
+}
+
 export default async function TelaTrilha({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { user, tracks, blocks, groups, items, feitos } =
-    await carregarPainel();
+  const { user, tracks, blocks, groups, items, feitos } = await carregar();
 
   const trilha = tracks.find((t) => t.slug === slug);
   if (!trilha) notFound();
@@ -42,6 +61,9 @@ export default async function TelaTrilha({
       ? bloco.titulo
       : `${daTrilha?.nome ?? "?"} · ${bloco.titulo}`;
   }
+
+  // as mesmas abas no topo (Barra) e no pé (celular)
+  const destinos = destinosDasAbas(tracks, trilha.slug);
 
   // monta a estrutura aninhada que o client component consome
   const blocosParaTela: BlocoTela[] = blocosDaTrilha.map((b) => ({
@@ -75,10 +97,9 @@ export default async function TelaTrilha({
       className="app com-cor"
       style={varsDaTrilha(trilha.cor)}
       data-app
-      data-trilha-app=""
       data-sobre-campo=""
     >
-      <Barra email={user?.email ?? null} tracks={tracks} atual={trilha.slug} />
+      <Barra email={user?.email ?? null} destinos={destinos} />
       <main className="conteudo">
         <ListaBlocos
           trilha={{
@@ -91,7 +112,7 @@ export default async function TelaTrilha({
           userId={user?.id ?? null}
         />
       </main>
-      <Abas destinos={destinosDasAbas(tracks, trilha.slug)} posicao="pe" />
+      <Abas destinos={destinos} posicao="pe" />
     </div>
   );
 }

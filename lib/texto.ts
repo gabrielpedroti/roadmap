@@ -6,7 +6,8 @@
 const EMOJI =
   /(?:\p{Emoji_Presentation}|\p{Extended_Pictographic}\u{FE0F})(?:\u{200D}(?:\p{Emoji_Presentation}|\p{Extended_Pictographic}\u{FE0F}?))*\s*/gu;
 // sobras que viram emoji sozinhas: o seletor U+FE0F e a moldura de tecla
-// U+20E3 (o "1️⃣" é "1" + FE0F + 20E3; o "1" fica, as sobras saem)
+// U+20E3 (o emoji de tecla com o número 1 é o dígito "1" + FE0F + 20E3; o
+// "1" fica, as sobras saem)
 const SOBRAS = /[\u{FE0F}\u{20E3}]/gu;
 
 export function semEmoji(texto: string): string {

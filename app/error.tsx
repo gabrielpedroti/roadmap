@@ -4,7 +4,7 @@ import { Icone } from "@/components/Icone";
 
 // Tela de erro amigável (o App Router usa este arquivo automaticamente
 // quando algo quebra num Server Component — ex.: Supabase fora do ar).
-// Centralizada na tela inteira, sem cartão; ícone desenhado (o emoji saiu).
+// Centralizada na tela inteira, sem cartão; o ícone é SVG (components/Icone).
 export default function Erro({
   error,
   reset,

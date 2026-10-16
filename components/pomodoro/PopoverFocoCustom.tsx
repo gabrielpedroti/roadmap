@@ -4,9 +4,9 @@ import { useId, useState, type FormEvent, type RefObject } from "react";
 import { Passo } from "../Passo";
 import { VIDRO } from "../vidro";
 
-// "Foco personalizado": substitui o prompt() nativo. Abre do 4º segmento do
-// foco (o lápis). Começa em 35, como o prompt de antes. Valor inválido (0 ou
-// vazio) mostra o motivo no próprio campo, em vez de não fazer nada.
+// "Foco personalizado": popover que abre do 4º segmento do foco (o lápis) e
+// começa em 35 min. Valor inválido (0 ou vazio) mostra o motivo no próprio
+// campo, em vez de não fazer nada.
 // O Pomodoro monta este popover de novo a cada abertura (key), então o texto
 // e o erro daqui nunca sobram de uma vez para a outra.
 export function PopoverFocoCustom({
